@@ -1,99 +1,119 @@
-import Navigation from '@/components/layout/Navigation'
-import DashboardGrid from '@/components/layout/DashboardGrid'
-import TonightsSkyCard from '@/components/cards/TonightsSkyCard'
-import ActiveMissionsCard from '@/components/cards/ActiveMissionsCard'
-import TonightsChallengeCard from '@/components/cards/TonightsChallengeCard'
-import RecommendedObjectCard from '@/components/cards/RecommendedObjectCard'
-import LeaderboardSnapshotCard from '@/components/cards/LeaderboardSnapshotCard'
-import UserStatsCard from '@/components/cards/UserStatsCard'
-import type { Profile, Mission, MissionProgress, SkyConditions } from '@/lib/types'
+import Link from 'next/link'
+import AstroLogo from '@/components/shared/AstroLogo'
+import { Telescope, Camera, CheckCircle, Star, Cloud, Trophy } from 'lucide-react'
 
-// Mock data until Supabase is connected
-const mockProfile: Profile = {
-  id: 'mock-user',
-  username: 'stargazer',
-  display_name: 'Stargazer',
-  avatar_url: null,
-  level: 3,
-  points: 720,
-  observations_count: 12,
-  missions_completed: 5,
-  team_id: null,
-  location_lat: 41.7151,
-  location_lng: 44.8271,
-  created_at: new Date().toISOString(),
-}
-
-const mockMissions: Mission[] = [
-  { id: '1', title: 'Observe the Moon', description: null, object_name: 'Moon', reward_points: 50, difficulty: 'easy', is_daily: false, active: true, created_at: new Date().toISOString() },
-  { id: '2', title: 'Find Jupiter', description: null, object_name: 'Jupiter', reward_points: 100, difficulty: 'medium', is_daily: false, active: true, created_at: new Date().toISOString() },
-  { id: '3', title: 'Photograph the Pleiades', description: null, object_name: 'Pleiades', reward_points: 200, difficulty: 'hard', is_daily: false, active: true, created_at: new Date().toISOString() },
+const features = [
+  { icon: Telescope, title: 'Log Observations', desc: 'Photograph celestial objects and submit for verification' },
+  { icon: CheckCircle, title: 'Admin Verified', desc: 'Admins confirm your sighting and award points' },
+  { icon: Star, title: 'Earn & Rank', desc: 'Climb the leaderboard, complete missions, unlock badges' },
+  { icon: Cloud, title: 'Sky Conditions', desc: 'Real-time Tbilisi sky data — cloud cover, moon phase, best viewing window' },
+  { icon: Trophy, title: 'Compete', desc: 'Weekly and monthly leaderboards for Georgian astronomers' },
+  { icon: Camera, title: 'Gallery', desc: 'Build your personal observation archive' },
 ]
 
-const mockProgress: MissionProgress[] = [
-  { id: 'p1', user_id: 'mock-user', mission_id: '1', status: 'completed', completed_at: new Date().toISOString() },
+const missions = [
+  { emoji: '🌕', name: 'The Moon', pts: 50, diff: 'Beginner' },
+  { emoji: '🪐', name: 'Jupiter', pts: 75, diff: 'Beginner' },
+  { emoji: '✨', name: 'Orion Nebula', pts: 100, diff: 'Intermediate' },
+  { emoji: '🪐', name: 'Saturn', pts: 100, diff: 'Intermediate' },
+  { emoji: '💫', name: 'Pleiades', pts: 60, diff: 'Beginner' },
+  { emoji: '🌌', name: 'Andromeda Galaxy', pts: 175, diff: 'Hard' },
 ]
 
-const mockSkyConditions: SkyConditions = {
-  cloudCover: 25,
-  visibility: 15,
-  temperature: 18,
-  moonPhase: 0.3,
-  moonIllumination: 0.55,
-  sunrise: '06:28',
-  sunset: '20:12',
-  bestViewingStart: '22:00',
-  bestViewingEnd: '02:00',
-}
-
-const mockLeaderboard: Profile[] = [
-  { ...mockProfile, id: 'u1', username: 'astroKing', display_name: 'Astro King', points: 4200, level: 7 },
-  { ...mockProfile, id: 'u2', username: 'nightsky', display_name: 'Night Sky', points: 3100, level: 6 },
-  { ...mockProfile, id: 'u3', username: 'lunarObserver', display_name: 'Lunar Observer', points: 2400, level: 5 },
-  { ...mockProfile, id: 'u4', username: 'deepField', display_name: 'Deep Field', points: 1800, level: 4 },
-  { ...mockProfile, id: 'mock-user', username: 'stargazer', display_name: 'Stargazer', points: 720, level: 3 },
-]
-
-const mockChallenge = {
-  title: 'Photograph the Moon tonight',
-  description: 'Capture the Waxing Gibbous moon with any camera or telescope.',
-  reward_points: 200,
-  completed: false,
-}
-
-const mockRecommended = {
-  name: 'Orion Nebula (M42)',
-  type: 'Nebula',
-  bestTime: '21:30 – 23:00',
-  difficulty: 'easy' as const,
-  constellation: 'Orion',
-  guide: {
-    howToFind: 'Look for the three stars of Orion\'s Belt, then find the "sword" hanging below. M42 is the fuzzy middle object.',
-    equipment: 'Visible with naked eye, binoculars or any telescope will reveal more detail.',
-    tips: 'Best viewed during winter months. Avoid nights with high moon illumination.',
-  },
-}
-
-export default function DashboardPage() {
+export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-[var(--bg-void)]">
-      <div className="max-w-5xl mx-auto px-4 py-6 pb-24 sm:pb-6">
-        <header className="mb-6">
-          <h1 className="text-2xl font-bold text-[var(--text-primary)]">Sky Astroman</h1>
-          <p className="text-sm text-[var(--text-secondary)]">Tbilisi, Georgia · {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
-        </header>
+    <div className="max-w-3xl mx-auto px-4 py-10 sm:py-20 flex flex-col items-center gap-16 animate-page-enter">
 
-        <Navigation />
+      {/* Hero */}
+      <section className="text-center flex flex-col items-center gap-6">
+        <AstroLogo heightClass="h-12" />
+        <p className="text-[#FFD166] text-xs tracking-widest uppercase font-mono">✦ SKY ASTROMAN ✦</p>
+        <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold leading-tight">
+          <span className="text-[#FFD166]">Observe.</span>{' '}
+          <span className="text-white">Verify.</span>{' '}
+          <span className="text-[#38F0FF]">Rank.</span>
+        </h1>
+        <p className="text-[var(--text-secondary)] max-w-md text-base leading-relaxed">
+          The free social platform for stargazers. Log your observations, earn points, and compete with astronomers across Georgia.
+        </p>
+        <div className="flex flex-col sm:flex-row items-center gap-3">
+          <Link
+            href="/login"
+            className="px-10 py-4 rounded-xl font-bold text-base tracking-wide btn-primary"
+          >
+            Start Observing →
+          </Link>
+          <Link
+            href="/leaderboard"
+            className="px-8 py-4 rounded-xl font-medium text-sm btn-ghost"
+          >
+            View Leaderboard
+          </Link>
+        </div>
+        <div className="flex items-center gap-6 text-xs text-[var(--text-dim)] flex-wrap justify-center">
+          <span className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#34d399]" />
+            Free forever
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#FFD166]" />
+            Tbilisi, Georgia
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#38F0FF]" />
+            No crypto, no payments
+          </span>
+        </div>
+      </section>
 
-        <DashboardGrid>
-          <UserStatsCard profile={mockProfile} rank={5} />
-          <TonightsSkyCard conditions={mockSkyConditions} />
-          <ActiveMissionsCard missions={mockMissions} progress={mockProgress} />
-          <TonightsChallengeCard challenge={mockChallenge} />
-          <RecommendedObjectCard object={mockRecommended} />
-          <LeaderboardSnapshotCard users={mockLeaderboard} currentUserId="mock-user" />
-        </DashboardGrid>
-      </div>
+      <div className="ornament-line w-full" />
+
+      {/* Mission preview */}
+      <section className="w-full">
+        <h2 className="text-xl font-bold text-center mb-6 text-[var(--text-primary)]">Available Missions</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          {missions.map(m => (
+            <div key={m.name} className="glass-card p-4 flex flex-col items-center text-center gap-2">
+              <span className="text-3xl">{m.emoji}</span>
+              <p className="text-sm font-semibold text-white">{m.name}</p>
+              <p className="text-[#FFD166] text-xs font-bold">+{m.pts} pts</p>
+              <span className="text-[10px] text-[var(--text-dim)] uppercase tracking-wide">{m.diff}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <div className="ornament-line w-full" />
+
+      {/* Features */}
+      <section className="w-full">
+        <h2 className="text-xl font-bold text-center mb-6 text-[var(--text-primary)]">How It Works</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {features.map(({ icon: Icon, title, desc }) => (
+            <div key={title} className="glass-card p-5 flex flex-col gap-3">
+              <div className="w-9 h-9 rounded-xl bg-[rgba(255,209,102,0.1)] border border-[rgba(255,209,102,0.15)] flex items-center justify-center">
+                <Icon size={18} className="text-[#FFD166]" />
+              </div>
+              <p className="font-semibold text-sm text-white">{title}</p>
+              <p className="text-xs text-[var(--text-secondary)] leading-relaxed">{desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <div className="ornament-line w-full" />
+
+      {/* CTA */}
+      <section className="text-center flex flex-col items-center gap-4">
+        <p className="text-[var(--text-secondary)] text-sm">Ready to explore the Georgian sky?</p>
+        <Link
+          href="/login"
+          className="px-12 py-4 rounded-xl font-bold text-base btn-primary animate-pulse-glow"
+        >
+          Join Sky Astroman →
+        </Link>
+      </section>
+
     </div>
   )
 }

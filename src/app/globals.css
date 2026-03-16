@@ -29,11 +29,6 @@
 
 * { box-sizing: border-box; }
 
-a, button, input, select, textarea,
-[class*="glass-card"] {
-  transition: background-color 0.2s, border-color 0.2s, box-shadow 0.2s, opacity 0.2s, transform 0.2s, color 0.2s;
-}
-
 html { background: #070B14; }
 
 body {
@@ -42,25 +37,98 @@ body {
   font-family: system-ui, -apple-system, sans-serif;
   font-size: 15px;
   -webkit-font-smoothing: antialiased;
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 h1, h2, h3 { font-family: Georgia, Palatino, serif; }
 
+/* Glass card */
 .glass-card {
   background: var(--bg-card);
   border: 1px solid var(--border-glass);
   backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border-radius: 16px;
+  transition: background-color 0.2s, border-color 0.2s, box-shadow 0.2s;
 }
-
 .glass-card:hover {
   background: var(--bg-card-hover);
   border-color: rgba(56, 240, 255, 0.15);
 }
 
+/* Glass nav */
+.glass-nav {
+  background: rgba(7, 11, 20, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(56, 240, 255, 0.06);
+}
+
+/* Buttons */
+.btn-primary {
+  background: linear-gradient(135deg, #FFD166, #FFE08A);
+  color: #070B14;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  box-shadow: 0 4px 15px rgba(255, 209, 102, 0.2);
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.btn-primary:hover:not(:disabled) {
+  box-shadow: 0 4px 24px rgba(255, 209, 102, 0.4);
+  transform: translateY(-1px);
+}
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  border-radius: 12px;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+.btn-ghost:hover:not(:disabled) {
+  background: rgba(148, 163, 184, 0.08);
+  border-color: rgba(148, 163, 184, 0.28);
+  color: var(--text-primary);
+}
+
+/* Glows */
 .glow-gold { box-shadow: 0 0 20px rgba(255, 209, 102, 0.3); }
 .glow-cyan { box-shadow: 0 0 20px rgba(56, 240, 255, 0.3); }
+.glow-emerald { box-shadow: 0 0 20px rgba(52, 211, 153, 0.3); }
+.glow-purple { box-shadow: 0 0 20px rgba(122, 95, 255, 0.3); }
 
+/* Stars */
+.star {
+  position: absolute;
+  background: white;
+  border-radius: 50%;
+  animation: twinkle var(--duration, 5s) ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+  pointer-events: none;
+}
+@keyframes twinkle {
+  0%, 100% { opacity: 0.05; transform: scale(1) translateY(0); }
+  50% { opacity: 0.5; transform: scale(1.4) translateY(var(--drift, 0px)); }
+}
+
+.shooting-star {
+  position: absolute;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(56,240,255,0.8), rgba(122,95,255,0.3), transparent);
+  border-radius: 1px;
+  pointer-events: none;
+  opacity: 0;
+  animation: shooting-star 15s ease-in-out infinite;
+}
+@keyframes shooting-star {
+  0% { transform: translateX(0) translateY(0) rotate(-35deg); opacity: 0; width: 0; }
+  3% { opacity: 1; width: 80px; }
+  12% { opacity: 1; }
+  20% { transform: translateX(350px) translateY(200px) rotate(-35deg); opacity: 0; width: 80px; }
+  100% { opacity: 0; width: 0; }
+}
+
+/* Animations */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
@@ -72,3 +140,24 @@ h1, h2, h3 { font-family: Georgia, Palatino, serif; }
   50% { box-shadow: 0 0 25px rgba(255,209,102,0.5); }
 }
 .animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.animate-spin-slow { animation: spin-slow 20s linear infinite; }
+
+/* Ornamental line */
+.ornament-line {
+  height: 1px;
+  background: linear-gradient(to right, transparent 0%, rgba(255,209,102,0.18) 20%, rgba(56,240,255,0.35) 45%, rgba(255,209,102,0.35) 55%, rgba(56,240,255,0.18) 80%, transparent 100%);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(56,240,255,0.15); border-radius: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .star, .shooting-star { animation: none !important; opacity: 0.15; }
+}
