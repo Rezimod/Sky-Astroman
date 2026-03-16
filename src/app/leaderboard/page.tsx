@@ -1,45 +1,31 @@
 'use client'
-import { useState, useEffect } from 'react'
-import { createClient } from '@/lib/supabase/client'
-import { Trophy, Star, Eye } from 'lucide-react'
-import type { Profile } from '@/lib/types'
+import { useState } from 'react'
+import { Trophy, Eye } from 'lucide-react'
 
 type Period = 'all' | 'month' | 'week'
 
+const mockUsers = [
+  { id: '1', username: 'tbilisi_observer', display_name: 'Tbilisi Observer', level: 8, points: 2840, observations_count: 34, avatar_url: null },
+  { id: '2', username: 'night_sky_ge', display_name: 'Night Sky GE', level: 7, points: 2210, observations_count: 28, avatar_url: null },
+  { id: '3', username: 'stargazer_tbilisi', display_name: 'Stargazer', level: 3, points: 720, observations_count: 12, avatar_url: null },
+  { id: '4', username: 'cosmos_nika', display_name: 'Cosmos Nika', level: 5, points: 1150, observations_count: 19, avatar_url: null },
+  { id: '5', username: 'moon_watcher', display_name: 'Moon Watcher', level: 4, points: 890, observations_count: 15, avatar_url: null },
+  { id: '6', username: 'deep_sky_tbilisi', display_name: 'Deep Sky', level: 6, points: 1680, observations_count: 24, avatar_url: null },
+  { id: '7', username: 'stellar_giorgi', display_name: 'Stellar Giorgi', level: 2, points: 310, observations_count: 6, avatar_url: null },
+  { id: '8', username: 'orion_hunter', display_name: 'Orion Hunter', level: 3, points: 560, observations_count: 10, avatar_url: null },
+].sort((a, b) => b.points - a.points)
+
+const tabs: { key: Period; label: string }[] = [
+  { key: 'all', label: 'All Time' },
+  { key: 'month', label: 'This Month' },
+  { key: 'week', label: 'This Week' },
+]
+
+const medalEmojis = ['🥇', '🥈', '🥉']
+
 export default function LeaderboardPage() {
   const [period, setPeriod] = useState<Period>('all')
-  const [users, setUsers] = useState<Profile[]>([])
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    loadLeaderboard()
-  }, [period])
-
-  async function loadLeaderboard() {
-    setLoading(true)
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    setCurrentUserId(user?.id ?? null)
-
-    const { data } = await supabase
-      .from('profiles')
-      .select('*')
-      .order('points', { ascending: false })
-      .limit(50)
-
-    setUsers(data ?? [])
-    setLoading(false)
-  }
-
-  const tabs: { key: Period; label: string }[] = [
-    { key: 'all', label: 'All Time' },
-    { key: 'month', label: 'This Month' },
-    { key: 'week', label: 'This Week' },
-  ]
-
-  const medalColors = ['text-[#FFD166]', 'text-[#94a3b8]', 'text-amber-600']
-  const medalEmojis = ['🥇', '🥈', '🥉']
+  const currentUserId = '3' // demo user
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 animate-page-enter">
@@ -51,7 +37,6 @@ export default function LeaderboardPage() {
         <p className="text-sm text-[var(--text-secondary)]">Top stargazers by observation points</p>
       </header>
 
-      {/* Tabs */}
       <div className="flex gap-1 p-1 glass-card mb-5">
         {tabs.map(tab => (
           <button
@@ -68,19 +53,8 @@ export default function LeaderboardPage() {
         ))}
       </div>
 
-      {loading && (
-        <div className="glass-card p-8 text-center text-[var(--text-secondary)] text-sm">Loading...</div>
-      )}
-
-      {!loading && users.length === 0 && (
-        <div className="glass-card p-12 text-center">
-          <Star size={32} className="text-[var(--text-dim)] mx-auto mb-3" />
-          <p className="text-[var(--text-secondary)]">No observers yet. Be the first!</p>
-        </div>
-      )}
-
       <div className="flex flex-col gap-2">
-        {users.map((user, idx) => {
+        {mockUsers.map((user, idx) => {
           const isCurrentUser = user.id === currentUserId
           const rank = idx + 1
 
@@ -91,59 +65,39 @@ export default function LeaderboardPage() {
                 isCurrentUser ? 'border-[rgba(255,209,102,0.3)] glow-gold' : ''
               }`}
             >
-              {/* Rank */}
               <div className="w-8 text-center flex-shrink-0">
                 {rank <= 3 ? (
                   <span className="text-xl">{medalEmojis[rank - 1]}</span>
                 ) : (
-                  <span className={`text-sm font-bold ${rank <= 10 ? 'text-[var(--text-secondary)]' : 'text-[var(--text-dim)]'}`}>
-                    #{rank}
-                  </span>
+                  <span className="text-sm font-bold text-[var(--text-secondary)]">#{rank}</span>
                 )}
               </div>
 
-              {/* Avatar */}
               <div className="w-9 h-9 rounded-full bg-[rgba(255,209,102,0.1)] border border-[rgba(255,209,102,0.2)] flex items-center justify-center flex-shrink-0">
-                {user.avatar_url ? (
-                  <img src={user.avatar_url} alt={user.username} className="w-full h-full rounded-full object-cover" />
-                ) : (
-                  <span className="text-[#FFD166] text-sm font-bold">{user.username[0].toUpperCase()}</span>
-                )}
+                <span className="text-[#FFD166] text-sm font-bold">{user.username[0].toUpperCase()}</span>
               </div>
 
-              {/* Name + stats */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <p className={`font-semibold text-sm truncate ${isCurrentUser ? 'text-[#FFD166]' : 'text-white'}`}>
-                    {user.display_name ?? user.username}
+                    {user.display_name}
                   </p>
                   {isCurrentUser && <span className="text-[10px] text-[#FFD166] bg-[rgba(255,209,102,0.1)] px-1.5 py-0.5 rounded font-medium flex-shrink-0">You</span>}
                 </div>
                 <div className="flex items-center gap-3 mt-0.5">
                   <span className="text-[11px] text-[var(--text-dim)]">Lv.{user.level}</span>
-                  <span className="text-[11px] text-[var(--text-dim)]">
-                    <Eye size={10} className="inline mr-1" />{user.observations_count}
-                  </span>
+                  <span className="text-[11px] text-[var(--text-dim)]"><Eye size={10} className="inline mr-1" />{user.observations_count}</span>
                 </div>
               </div>
 
-              {/* Points */}
               <div className="text-right flex-shrink-0">
-                <p className={`font-bold text-sm ${rank === 1 ? 'text-[#FFD166]' : rank <= 3 ? medalColors[rank-1] : 'text-white'}`}>
-                  {user.points.toLocaleString()}
-                </p>
+                <p className={`font-bold text-sm ${rank === 1 ? 'text-[#FFD166]' : 'text-white'}`}>{user.points.toLocaleString()}</p>
                 <p className="text-[10px] text-[var(--text-dim)]">pts</p>
               </div>
             </div>
           )
         })}
       </div>
-
-      {period !== 'all' && (
-        <p className="text-center text-xs text-[var(--text-dim)] mt-4">
-          Period filtering coming soon — showing all-time for now
-        </p>
-      )}
     </div>
   )
 }

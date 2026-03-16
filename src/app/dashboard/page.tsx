@@ -1,4 +1,5 @@
 'use client'
+import { useEffect, useState } from 'react'
 import DashboardGrid from '@/components/layout/DashboardGrid'
 import TonightsSkyCard from '@/components/cards/TonightsSkyCard'
 import ActiveMissionsCard from '@/components/cards/ActiveMissionsCard'
@@ -9,7 +10,7 @@ import UserStatsCard from '@/components/cards/UserStatsCard'
 import type { Profile, Mission, MissionProgress, SkyConditions } from '@/lib/types'
 
 const mockProfile: Profile = {
-  id: 'mock-user', username: 'stargazer', display_name: 'Stargazer',
+  id: 'demo', username: 'stargazer_tbilisi', display_name: 'Stargazer',
   avatar_url: null, level: 3, points: 720, observations_count: 12,
   missions_completed: 5, team_id: null, location_lat: 41.7151,
   location_lng: 44.8271, created_at: new Date().toISOString(),
@@ -22,17 +23,24 @@ const mockMissions: Mission[] = [
 ]
 
 const mockProgress: MissionProgress[] = [
-  { id: 'p1', user_id: 'mock-user', mission_id: 'moon', status: 'completed', completed_at: new Date().toISOString() },
+  { id: 'p1', user_id: 'demo', mission_id: 'moon', status: 'completed', completed_at: new Date().toISOString() },
 ]
 
-const mockSkyConditions: SkyConditions = {
-  cloudCover: 25, visibility: 15, temperature: 18,
-  moonPhase: 0.3, moonIllumination: 0.59,
-  sunrise: '06:48', sunset: '19:52',
-  bestViewingStart: '22:00', bestViewingEnd: '02:00',
-}
-
 export default function DashboardPage() {
+  const [sky, setSky] = useState<SkyConditions | null>(null)
+
+  useEffect(() => {
+    fetch('/api/sky/conditions')
+      .then(r => r.json())
+      .then(setSky)
+      .catch(() => setSky({
+        cloudCover: 30, visibility: 12, temperature: 16,
+        moonPhase: 0.35, moonIllumination: 0.62,
+        sunrise: '06:45', sunset: '19:55',
+        bestViewingStart: '21:30', bestViewingEnd: '02:00',
+      }))
+  }, [])
+
   return (
     <div className="max-w-5xl mx-auto px-4 py-6 animate-page-enter">
       <header className="mb-6">
@@ -41,11 +49,11 @@ export default function DashboardPage() {
       </header>
       <DashboardGrid>
         <UserStatsCard profile={mockProfile} />
-        <TonightsSkyCard conditions={mockSkyConditions} />
+        <TonightsSkyCard conditions={sky} loading={!sky} />
         <ActiveMissionsCard missions={mockMissions} progress={mockProgress} />
         <TonightsChallengeCard challenge={{
           title: 'Photograph the Moon tonight',
-          description: 'Capture a clear shot of the lunar surface and identify at least 2 craters.',
+          description: 'Capture the lunar surface and identify 2 craters.',
           reward_points: 200,
           completed: false,
         }} />
@@ -56,9 +64,9 @@ export default function DashboardPage() {
           difficulty: 'easy',
           constellation: 'Taurus',
           guide: {
-            howToFind: 'Look for the brightest non-twinkling point in the eastern sky after 10pm.',
-            equipment: 'Any telescope 60mm+. Even binoculars show the Galilean moons.',
-            tips: 'Use 100–200x magnification to see cloud bands clearly.',
+            howToFind: 'Brightest non-twinkling point in the eastern sky after 10pm.',
+            equipment: 'Any telescope 60mm+. Binoculars show Galilean moons.',
+            tips: 'Use 100–200x magnification to see cloud bands.',
           },
         }} />
         <LeaderboardSnapshotCard users={[mockProfile]} currentUserId={mockProfile.id} />

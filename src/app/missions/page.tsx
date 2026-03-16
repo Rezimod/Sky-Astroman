@@ -1,6 +1,5 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { Satellite, CheckCircle2, Clock } from 'lucide-react'
 import { MISSIONS, DIFFICULTY_CONFIG } from '@/lib/missions'
 import { MissionIcon } from '@/components/shared/PlanetIcons'
@@ -11,33 +10,20 @@ export default function MissionsPage() {
   const [activeMission, setActiveMission] = useState<MissionDef | null>(null)
   const [completedIds, setCompletedIds] = useState<Set<string>>(new Set())
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set())
-  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    loadProgress()
+    try {
+      const saved = localStorage.getItem('sky_pending_missions')
+      if (saved) setPendingIds(new Set(JSON.parse(saved)))
+    } catch {}
   }, [])
 
-  async function loadProgress() {
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { setLoading(false); return }
-
-    const { data } = await supabase
-      .from('observations')
-      .select('object_name, status')
-      .eq('user_id', user.id)
-
-    const completed = new Set<string>()
-    const pending = new Set<string>()
-    data?.forEach(obs => {
-      const mission = MISSIONS.find(m => m.name === obs.object_name)
-      if (!mission) return
-      if (obs.status === 'approved') completed.add(mission.id)
-      else if (obs.status === 'pending') pending.add(mission.id)
+  function handleSuccess(missionId: string) {
+    setPendingIds(prev => {
+      const next = new Set(prev).add(missionId)
+      localStorage.setItem('sky_pending_missions', JSON.stringify([...next]))
+      return next
     })
-    setCompletedIds(completed)
-    setPendingIds(pending)
-    setLoading(false)
   }
 
   const isNight = new Date().getHours() >= 18 || new Date().getHours() < 5
@@ -48,7 +34,7 @@ export default function MissionsPage() {
         <ObservationModal
           mission={activeMission}
           onClose={() => setActiveMission(null)}
-          onSuccess={loadProgress}
+          onSuccess={() => handleSuccess(activeMission.id)}
         />
       )}
 
@@ -65,7 +51,6 @@ export default function MissionsPage() {
             </span>
           </div>
 
-          {/* Stats bar */}
           <div className="glass-card p-3 flex items-center justify-around mb-4">
             <div className="text-center">
               <p className="text-lg font-bold text-[#FFD166]">{completedIds.size}</p>
@@ -84,13 +69,11 @@ export default function MissionsPage() {
           </div>
         </section>
 
-        {/* Mission grid — identical layout to Stellar */}
         <div className="grid grid-cols-2 gap-2.5">
           {MISSIONS.map(mission => {
             const done = completedIds.has(mission.id)
             const pending = pendingIds.has(mission.id)
             const diffConfig = DIFFICULTY_CONFIG[mission.difficulty]
-            const diffDots = diffConfig.dots
 
             return (
               <div
@@ -110,9 +93,7 @@ export default function MissionsPage() {
                   </div>
                 )}
 
-                <div className="mb-3">
-                  <MissionIcon id={mission.id} size={44} />
-                </div>
+                <div className="mb-3"><MissionIcon id={mission.id} size={44} /></div>
 
                 <p className="text-white font-semibold text-[13px] leading-snug mb-1.5">{mission.name}</p>
 
@@ -120,7 +101,7 @@ export default function MissionsPage() {
                   <div className="flex gap-1 justify-center">
                     {[1,2,3,4,5].map(d => (
                       <span key={d} className="w-1 h-1 rounded-full" style={{
-                        backgroundColor: d <= diffDots ? diffConfig.color : 'rgba(255,255,255,0.1)'
+                        backgroundColor: d <= diffConfig.dots ? diffConfig.color : 'rgba(255,255,255,0.1)'
                       }} />
                     ))}
                   </div>
@@ -130,13 +111,9 @@ export default function MissionsPage() {
                 <p className="text-[#FFD166] text-[11px] font-bold mb-3">+{mission.points} pts</p>
 
                 {done ? (
-                  <div className="w-full py-2 rounded-lg text-[11px] text-slate-700 text-center" style={{ background: 'rgba(255,255,255,0.02)' }}>
-                    Complete
-                  </div>
+                  <div className="w-full py-2 rounded-lg text-[11px] text-slate-700 text-center" style={{ background: 'rgba(255,255,255,0.02)' }}>Complete</div>
                 ) : pending ? (
-                  <div className="w-full py-2 rounded-lg text-[11px] text-amber-400/50 text-center" style={{ background: 'rgba(251,191,36,0.04)' }}>
-                    Pending Review
-                  </div>
+                  <div className="w-full py-2 rounded-lg text-[11px] text-amber-400/50 text-center" style={{ background: 'rgba(251,191,36,0.04)' }}>Pending Review</div>
                 ) : (
                   <button
                     onClick={() => setActiveMission(mission)}
@@ -151,7 +128,6 @@ export default function MissionsPage() {
           })}
         </div>
 
-        {/* How it works */}
         <div className="glass-card p-4">
           <p className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-widest mb-3">How Missions Work</p>
           <div className="flex flex-col gap-2">
