@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { DEFAULT_LOCATION, OPEN_METEO_URL } from '@/lib/constants'
+import { getTonightsObjects } from '@/lib/astronomy'
 import type { SkyConditions } from '@/lib/types'
 
 export async function GET(req: NextRequest) {
@@ -21,16 +22,18 @@ export async function GET(req: NextRequest) {
     const temperature = data.current?.temperature_2m ?? data.hourly?.temperature_2m?.[currentHour] ?? 15
     const moonPhase = data.daily?.moon_phase?.[0] ?? 0.5
 
-    // Find best viewing window (lowest cloud cover between 21:00–04:00)
     const nightHours = [21, 22, 23, 0, 1, 2, 3, 4]
     let bestStart = '21:00'
     let bestEnd = '23:00'
     if (data.hourly?.cloud_cover) {
       const nightData = nightHours.map(h => ({ hour: h, cloud: data.hourly.cloud_cover[h] ?? 100 }))
-      const sorted = nightData.sort((a, b) => a.cloud - b.cloud)
+      const sorted = [...nightData].sort((a, b) => a.cloud - b.cloud)
       bestStart = `${String(sorted[0].hour).padStart(2, '0')}:00`
       bestEnd = `${String(sorted[1].hour).padStart(2, '0')}:00`
     }
+
+    // Real-time planet & deep sky object visibility
+    const planets = getTonightsObjects()
 
     const conditions: SkyConditions = {
       cloudCover,
@@ -42,10 +45,28 @@ export async function GET(req: NextRequest) {
       sunset: data.daily?.sunset?.[0]?.slice(11, 16) ?? '19:45',
       bestViewingStart: bestStart,
       bestViewingEnd: bestEnd,
+      planets,
     }
 
     return NextResponse.json(conditions)
   } catch (err) {
-    return NextResponse.json({ error: 'Failed to fetch sky conditions' }, { status: 500 })
+    // Fallback: return astronomy data even if weather fails
+    try {
+      const planets = getTonightsObjects()
+      return NextResponse.json({
+        cloudCover: 0,
+        visibility: 10,
+        temperature: 15,
+        moonPhase: 0.5,
+        moonIllumination: 0.5,
+        sunrise: '06:30',
+        sunset: '19:45',
+        bestViewingStart: '21:00',
+        bestViewingEnd: '03:00',
+        planets,
+      })
+    } catch {
+      return NextResponse.json({ error: 'Failed to fetch sky conditions' }, { status: 500 })
+    }
   }
 }

@@ -7,7 +7,7 @@ interface CelestialObject {
   name: string
   type: string
   bestTime: string
-  difficulty: 'easy' | 'medium' | 'hard'
+  difficulty: 'easy' | 'medium' | 'hard' | 'expert'
   constellation: string
   guide: {
     howToFind: string

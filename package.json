@@ -28,6 +28,7 @@
     "@types/node": "^25.5.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "astronomy-engine": "^2.1.19",
     "autoprefixer": "^10.4.27",
     "clsx": "^2.1.1",
     "eslint": "^9.39.4",

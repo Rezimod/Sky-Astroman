@@ -70,4 +70,7 @@ export interface SkyConditions {
   sunset: string
   bestViewingStart: string
   bestViewingEnd: string
+  planets?: import('./astronomy').VisibleObject[]
 }
+
+export type { VisibleObject, GeneratedMission } from './astronomy'
