@@ -1,17 +1,11 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { Satellite, CheckCircle2, Clock, Telescope, Eye, Binoculars } from 'lucide-react'
+import { Satellite, CheckCircle2, Clock, Telescope, Eye } from 'lucide-react'
 import { DIFFICULTY_CONFIG } from '@/lib/missions'
 import { MissionIcon } from '@/components/shared/PlanetIcons'
 import ObservationModal from '@/components/observations/ObservationModal'
+import { useLanguage } from '@/contexts/LanguageContext'
 import type { GeneratedMission } from '@/lib/types'
-
-const EQUIPMENT_LABEL: Record<string, string> = {
-  naked_eye: 'Naked Eye',
-  binoculars: 'Binoculars',
-  small_telescope: 'Small Telescope',
-  telescope: 'Telescope',
-}
 
 const EQUIPMENT_ICON: Record<string, React.ReactNode> = {
   naked_eye: <Eye size={10} />,
@@ -29,11 +23,26 @@ const DIFF_MAP: Record<string, keyof typeof DIFFICULTY_CONFIG> = {
 }
 
 export default function MissionsPage() {
+  const { t, lang } = useLanguage()
   const [missions, setMissions] = useState<GeneratedMission[]>([])
   const [loading, setLoading] = useState(true)
   const [activeMission, setActiveMission] = useState<GeneratedMission | null>(null)
   const [completedIds, setCompletedIds] = useState<Set<string>>(new Set())
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set())
+
+  const EQUIPMENT_LABEL: Record<string, string> = {
+    naked_eye:       t('landing.naked_eye'),
+    binoculars:      t('landing.binoculars'),
+    small_telescope: t('landing.small_telescope'),
+    telescope:       t('landing.telescope'),
+  }
+
+  const EQUIPMENT_ICON: Record<string, React.ReactNode> = {
+    naked_eye:       <Eye size={10} />,
+    binoculars:      <Eye size={10} />,
+    small_telescope: <Telescope size={10} />,
+    telescope:       <Telescope size={10} />,
+  }
 
   useEffect(() => {
     try {
@@ -92,14 +101,14 @@ export default function MissionsPage() {
         <section>
           <div className="flex items-center gap-2 mb-2">
             <Satellite size={16} strokeWidth={1.5} className="text-[#38F0FF]" />
-            <h1 className="text-xl sm:text-2xl font-bold text-white">Tonight&apos;s Missions</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-white">{t('landing.missionsTitle')}</h1>
           </div>
           <div className="flex items-center gap-2 mb-4">
             <div className={`w-1.5 h-1.5 rounded-full ${isNight ? 'bg-[#34d399] animate-pulse' : 'bg-yellow-500'}`} />
             <span className="text-xs text-[var(--text-dim)]">
               {isNight
-                ? `${visibleCount} objects visible tonight · Generated from real sky data`
-                : 'Daytime — missions generated for tonight\'s sky'}
+                ? `${visibleCount} ${t('landing.visibleCount')} · ${t('landing.missionsSub')}`
+                : lang === 'ka' ? 'დღეა — მისიები ღამის ცის მიხედვით' : 'Daytime — missions generated for tonight\'s sky'}
             </span>
           </div>
 
@@ -107,22 +116,22 @@ export default function MissionsPage() {
           <div className="glass-card p-3 flex items-center justify-around mb-4">
             <div className="text-center">
               <p className="text-lg font-bold text-[#34d399]">{easyCount}</p>
-              <p className="text-[10px] text-[var(--text-dim)] uppercase tracking-wide">Naked Eye</p>
+              <p className="text-[10px] text-[var(--text-dim)] uppercase tracking-wide">{t('landing.naked_eye')}</p>
             </div>
             <div className="w-px h-8 bg-[var(--border-glass)]" />
             <div className="text-center">
               <p className="text-lg font-bold text-[#FFD166]">{visibleCount}</p>
-              <p className="text-[10px] text-[var(--text-dim)] uppercase tracking-wide">Visible Tonight</p>
+              <p className="text-[10px] text-[var(--text-dim)] uppercase tracking-wide">{lang === 'ka' ? 'ხილული' : 'Visible'}</p>
             </div>
             <div className="w-px h-8 bg-[var(--border-glass)]" />
             <div className="text-center">
               <p className="text-lg font-bold text-amber-400">{pendingIds.size}</p>
-              <p className="text-[10px] text-[var(--text-dim)] uppercase tracking-wide">Pending</p>
+              <p className="text-[10px] text-[var(--text-dim)] uppercase tracking-wide">{t('missions.pending')}</p>
             </div>
             <div className="w-px h-8 bg-[var(--border-glass)]" />
             <div className="text-center">
               <p className="text-lg font-bold text-[var(--text-secondary)]">{completedIds.size}</p>
-              <p className="text-[10px] text-[var(--text-dim)] uppercase tracking-wide">Done</p>
+              <p className="text-[10px] text-[var(--text-dim)] uppercase tracking-wide">{t('missions.completed')}</p>
             </div>
           </div>
         </section>
@@ -164,7 +173,9 @@ export default function MissionsPage() {
                     <span className="text-3xl">{mission.objectEmoji}</span>
                   </div>
 
-                  <p className="text-white font-semibold text-[13px] leading-snug mb-1.5">{mission.objectName}</p>
+                  <p className="text-white font-semibold text-[13px] leading-snug mb-1.5">
+                    {lang === 'ka' ? mission.titleGe.replace(/^[^ ]+ /, '') : mission.objectName}
+                  </p>
 
                   {/* Difficulty dots */}
                   <div className="flex flex-col items-center gap-1 mb-2">
@@ -192,16 +203,16 @@ export default function MissionsPage() {
                   <p className="text-[#FFD166] text-[11px] font-bold mb-3">+{mission.points} pts</p>
 
                   {done ? (
-                    <div className="w-full py-2 rounded-lg text-[11px] text-slate-700 text-center" style={{ background: 'rgba(255,255,255,0.02)' }}>Complete</div>
+                    <div className="w-full py-2 rounded-lg text-[11px] text-slate-700 text-center" style={{ background: 'rgba(255,255,255,0.02)' }}>{t('missions.complete')}</div>
                   ) : pending ? (
-                    <div className="w-full py-2 rounded-lg text-[11px] text-amber-400/50 text-center" style={{ background: 'rgba(251,191,36,0.04)' }}>Pending Review</div>
+                    <div className="w-full py-2 rounded-lg text-[11px] text-amber-400/50 text-center" style={{ background: 'rgba(251,191,36,0.04)' }}>{t('missions.pendingReview')}</div>
                   ) : (
                     <button
                       onClick={() => setActiveMission(mission)}
                       className="w-full py-2.5 rounded-lg text-[12px] font-bold transition-all active:scale-95 hover:opacity-90"
                       style={{ background: 'linear-gradient(135deg, #FFD166, #CC9A33)', color: '#070B14' }}
                     >
-                      Begin →
+                      {t('missions.begin')}
                     </button>
                   )}
                 </div>
@@ -212,14 +223,14 @@ export default function MissionsPage() {
 
         {/* How it works */}
         <div className="glass-card p-4">
-          <p className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-widest mb-3">How Missions Work</p>
+          <p className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-widest mb-3">{t('missions.howTitle')}</p>
           <div className="flex flex-col gap-2">
             {[
-              ['1', 'Missions are generated nightly based on what\'s actually visible from Tbilisi'],
-              ['2', 'Go outside and observe the target at the shown time'],
-              ['3', 'Photograph it (naked eye or through your telescope)'],
-              ['4', 'Submit your photo — admin verifies and awards points'],
-            ].map(([num, text]) => (
+              t('missions.step1'),
+              t('missions.step2'),
+              t('missions.step3'),
+              t('missions.step4'),
+            ].map((text, i) => [String(i + 1), text] as [string, string]).map(([num, text]) => (
               <div key={num} className="flex items-start gap-3">
                 <span className="w-5 h-5 rounded-full bg-[rgba(255,209,102,0.1)] border border-[rgba(255,209,102,0.2)] text-[#FFD166] text-[10px] font-bold flex items-center justify-center flex-shrink-0">{num}</span>
                 <p className="text-xs text-[var(--text-secondary)] leading-relaxed">{text}</p>

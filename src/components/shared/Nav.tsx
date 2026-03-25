@@ -3,19 +3,21 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Satellite, Trophy, Cloud, User, LayoutDashboard } from 'lucide-react'
 import AstroLogo from './AstroLogo'
-
-const tabs = [
-  { href: '/dashboard', label: 'Dashboard', icon: <LayoutDashboard size={17} /> },
-  { href: '/missions', label: 'Missions', icon: <Satellite size={17} /> },
-  { href: '/leaderboard', label: 'Leaderboard', icon: <Trophy size={17} /> },
-  { href: '/sky-tools/conditions', label: 'Sky', icon: <Cloud size={17} /> },
-  { href: '/profile', label: 'Profile', icon: <User size={17} /> },
-]
+import { useLanguage } from '@/contexts/LanguageContext'
 
 export default function Nav() {
   const pathname = usePathname()
+  const { t, lang, setLang } = useLanguage()
   const isLanding = pathname === '/' || pathname === '/login'
   if (isLanding) return null
+
+  const tabs = [
+    { href: '/dashboard',           labelKey: 'nav.dashboard',   icon: <LayoutDashboard size={17} /> },
+    { href: '/missions',            labelKey: 'nav.missions',    icon: <Satellite size={17} /> },
+    { href: '/leaderboard',         labelKey: 'nav.leaderboard', icon: <Trophy size={17} /> },
+    { href: '/sky-tools/conditions',labelKey: 'nav.sky',         icon: <Cloud size={17} /> },
+    { href: '/profile',             labelKey: 'nav.profile',     icon: <User size={17} /> },
+  ]
 
   return (
     <nav className="glass-nav sticky top-0 z-40">
@@ -36,16 +38,24 @@ export default function Nav() {
                 }`}
               >
                 {tab.icon}
-                <span>{tab.label}</span>
+                <span>{t(tab.labelKey)}</span>
               </Link>
             ))}
           </div>
-          <Link
-            href="/login"
-            className="text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-glass)] px-3 py-1.5 rounded-lg hover:bg-white/5 transition-all"
-          >
-            Sign out
-          </Link>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setLang(lang === 'ka' ? 'en' : 'ka')}
+              className="text-[11px] font-bold px-2.5 py-1 rounded-md border border-[var(--border-glass)] text-[var(--text-secondary)] hover:text-white hover:bg-white/5 transition-all tracking-wider"
+            >
+              {lang === 'ka' ? 'EN' : 'ქარ'}
+            </button>
+            <Link
+              href="/login"
+              className="text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-glass)] px-3 py-1.5 rounded-lg hover:bg-white/5 transition-all"
+            >
+              {t('nav.signout')}
+            </Link>
+          </div>
         </div>
       </div>
     </nav>

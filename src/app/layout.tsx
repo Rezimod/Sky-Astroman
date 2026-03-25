@@ -4,6 +4,7 @@ import Nav from '@/components/shared/Nav'
 import BottomNav from '@/components/shared/BottomNav'
 import StarField from '@/components/shared/StarField'
 import Footer from '@/components/shared/Footer'
+import { LanguageProvider } from '@/contexts/LanguageContext'
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -19,13 +20,15 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="ka">
       <body className="min-h-screen flex flex-col" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-        <StarField />
-        <Nav />
-        <main className="relative z-10 flex-1 pb-20 sm:pb-0">{children}</main>
-        <Footer />
-        <BottomNav />
+        <LanguageProvider>
+          <StarField />
+          <Nav />
+          <main className="relative z-10 flex-1 pb-20 sm:pb-0">{children}</main>
+          <Footer />
+          <BottomNav />
+        </LanguageProvider>
       </body>
     </html>
   )
