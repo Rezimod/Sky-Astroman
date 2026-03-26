@@ -6,14 +6,21 @@ import { useLanguage } from '@/contexts/LanguageContext'
 import { computeSkyScore } from '@/lib/skyScore'
 import type { VisibleObject } from '@/lib/astronomy'
 
-// Direct Open-Meteo fetch — same approach as dashboard (proven to work in browser)
+// moon_phase is NOT a valid Open-Meteo daily param → removed to avoid 400 errors
 const METEO_URL =
   'https://api.open-meteo.com/v1/forecast' +
   '?latitude=41.7151&longitude=44.8271' +
-  '&current=temperature_2m,relative_humidity_2m,wind_speed_10m,cloud_cover,weather_code' +
-  '&hourly=cloud_cover,visibility,temperature_2m,dew_point_2m' +
-  '&daily=sunrise,sunset,moon_phase' +
+  '&current=temperature_2m,relative_humidity_2m,wind_speed_10m,cloud_cover' +
+  '&hourly=cloud_cover,visibility,temperature_2m' +
+  '&daily=sunrise,sunset' +
   '&timezone=Asia%2FTbilisi&forecast_days=2'
+
+// Simple moon phase: days since known new moon / lunar cycle length
+function getMoonPhase(): number {
+  const knownNew = new Date('2024-01-11').getTime()
+  const cycle    = 29.53058867 * 24 * 60 * 60 * 1000
+  return ((Date.now() - knownNew) % cycle) / cycle
+}
 
 interface WeatherData {
   cloudCover: number
@@ -29,13 +36,13 @@ interface WeatherData {
 
 function parseMeteo(d: any): WeatherData {
   const hour = new Date().getHours()
-  const cloudCover  = d.current?.cloud_cover             ?? d.hourly?.cloud_cover?.[hour]     ?? 50
-  const humidity    = d.current?.relative_humidity_2m    ?? 60
+  const cloudCover  = d.current?.cloud_cover          ?? d.hourly?.cloud_cover?.[hour]    ?? 50
+  const humidity    = d.current?.relative_humidity_2m ?? 60
   const windSpeed   = Math.round(d.current?.wind_speed_10m ?? 0)
   const temperature = Math.round(d.current?.temperature_2m ?? d.hourly?.temperature_2m?.[hour] ?? 15)
   const visRaw      = d.hourly?.visibility?.[hour] ?? 10000
   const visibility  = Math.round(visRaw / 1000)
-  const moonPhase   = d.daily?.moon_phase?.[0] ?? 0.5
+  const moonPhase   = getMoonPhase()
   const sunrise     = d.daily?.sunrise?.[0]?.slice(11, 16) ?? '06:30'
   const sunset      = d.daily?.sunset?.[0]?.slice(11, 16)  ?? '20:00'
 
@@ -164,22 +171,14 @@ export default function SkyConditionsPage() {
     else setLoading(true)
     setError(false)
 
+    // Weather fetch — primary, blocking
     try {
-      const [meteoRes, condRes] = await Promise.all([
-        fetch(METEO_URL),
-        fetch('/api/sky/conditions'),
-      ])
-
-      if (meteoRes.ok) {
-        const d = await meteoRes.json()
+      const res = await fetch(METEO_URL)
+      if (res.ok) {
+        const d = await res.json()
         setWeather(parseMeteo(d))
       } else {
         setError(true)
-      }
-
-      if (condRes.ok) {
-        const cond = await condRes.json()
-        if (cond.planets) setPlanets(cond.planets)
       }
     } catch {
       setError(true)
@@ -188,6 +187,12 @@ export default function SkyConditionsPage() {
     setLastUpdate(new Date().toLocaleTimeString(lang === 'ka' ? 'ka-GE' : 'en-US', { hour: '2-digit', minute: '2-digit' }))
     setLoading(false)
     setRefreshing(false)
+
+    // Planets fetch — secondary, non-blocking, silent on failure
+    fetch('/api/sky/conditions')
+      .then(r => r.ok ? r.json() : null)
+      .then(cond => { if (cond?.planets) setPlanets(cond.planets) })
+      .catch(() => {})
   }, [lang])
 
   useEffect(() => {
