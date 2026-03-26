@@ -9,6 +9,11 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        'space-900': '#0B0B1A',
+        'space-800': '#15152F',
+        'space-700': '#1E1E45',
+        'space-accent': '#6366F1',
+        'space-glow': '#A855F7',
         void: '#070B14',
         cosmos: '#0F1F3D',
         brass: '#FFD166',
@@ -18,11 +23,12 @@ const config: Config = {
         emerald: '#34d399',
       },
       fontFamily: {
-        serif: ['Georgia', 'Palatino', 'serif'],
+        sans: ['"Noto Sans Georgian"', 'system-ui', 'sans-serif'],
         mono: ['JetBrains Mono', 'Fira Code', 'Courier New', 'monospace'],
       },
       borderRadius: {
-        card: '16px',
+        card: '24px',
+        '4xl': '2rem',
       },
     },
   },

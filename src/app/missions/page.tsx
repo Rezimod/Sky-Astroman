@@ -1,26 +1,26 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { Satellite, CheckCircle2, Clock, Telescope, Eye } from 'lucide-react'
+import { CheckCircle2, Clock } from 'lucide-react'
 import { DIFFICULTY_CONFIG } from '@/lib/missions'
-import { MissionIcon } from '@/components/shared/PlanetIcons'
 import ObservationModal from '@/components/observations/ObservationModal'
 import { useLanguage } from '@/contexts/LanguageContext'
 import type { GeneratedMission } from '@/lib/types'
 
-const EQUIPMENT_ICON: Record<string, React.ReactNode> = {
-  naked_eye: <Eye size={10} />,
-  binoculars: <Eye size={10} />,
-  small_telescope: <Telescope size={10} />,
-  telescope: <Telescope size={10} />,
-}
-
-// Map GeneratedMission difficulty → DIFFICULTY_CONFIG key
 const DIFF_MAP: Record<string, keyof typeof DIFFICULTY_CONFIG> = {
   easy: 'Beginner',
   medium: 'Intermediate',
   hard: 'Hard',
   expert: 'Expert',
 }
+
+const DIFF_BADGE: Record<string, { label: string; labelGe: string; classes: string }> = {
+  easy:   { label: 'Easy',   labelGe: 'მარტივი', classes: 'bg-green-500/10 text-green-400 border-green-500/20' },
+  medium: { label: 'Medium', labelGe: 'საშუალო', classes: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' },
+  hard:   { label: 'Hard',   labelGe: 'რთული',   classes: 'bg-red-500/10 text-red-400 border-red-500/20' },
+  expert: { label: 'Expert', labelGe: 'ექსპერტი', classes: 'bg-purple-500/10 text-purple-400 border-purple-500/20' },
+}
+
+type FilterKey = 'all' | 'easy' | 'medium' | 'hard'
 
 export default function MissionsPage() {
   const { t, lang } = useLanguage()
@@ -29,20 +29,8 @@ export default function MissionsPage() {
   const [activeMission, setActiveMission] = useState<GeneratedMission | null>(null)
   const [completedIds, setCompletedIds] = useState<Set<string>>(new Set())
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set())
-
-  const EQUIPMENT_LABEL: Record<string, string> = {
-    naked_eye:       t('landing.naked_eye'),
-    binoculars:      t('landing.binoculars'),
-    small_telescope: t('landing.small_telescope'),
-    telescope:       t('landing.telescope'),
-  }
-
-  const EQUIPMENT_ICON: Record<string, React.ReactNode> = {
-    naked_eye:       <Eye size={10} />,
-    binoculars:      <Eye size={10} />,
-    small_telescope: <Telescope size={10} />,
-    telescope:       <Telescope size={10} />,
-  }
+  const [filter, setFilter] = useState<FilterKey>('all')
+  const [search, setSearch] = useState('')
 
   useEffect(() => {
     try {
@@ -56,10 +44,7 @@ export default function MissionsPage() {
   useEffect(() => {
     fetch('/api/missions')
       .then(r => r.json())
-      .then(data => {
-        if (Array.isArray(data)) setMissions(data)
-        setLoading(false)
-      })
+      .then(data => { if (Array.isArray(data)) setMissions(data); setLoading(false) })
       .catch(() => setLoading(false))
   }, [])
 
@@ -72,10 +57,23 @@ export default function MissionsPage() {
     setActiveMission(null)
   }
 
-  const isNight = new Date().getHours() >= 18 || new Date().getHours() < 5
+  const featured = missions[0] ?? null
+  const filtered = missions.filter(m => {
+    if (filter !== 'all' && m.difficulty !== filter) return false
+    if (search) {
+      const q = search.toLowerCase()
+      const name = lang === 'ka' ? m.titleGe : m.objectName
+      if (!name.toLowerCase().includes(q)) return false
+    }
+    return true
+  })
 
-  const easyCount = missions.filter(m => m.difficulty === 'easy').length
-  const visibleCount = missions.filter(m => m.isVisible).length
+  const filterTabs: { key: FilterKey; label: string; labelGe: string }[] = [
+    { key: 'all',    label: 'All',    labelGe: 'ყველა'   },
+    { key: 'easy',   label: 'Easy',   labelGe: 'მარტივი' },
+    { key: 'medium', label: 'Medium', labelGe: 'საშუალო' },
+    { key: 'hard',   label: 'Hard',   labelGe: 'რთული'   },
+  ]
 
   return (
     <>
@@ -98,149 +96,182 @@ export default function MissionsPage() {
         />
       )}
 
-      <div className="max-w-2xl mx-auto px-4 py-4 sm:py-6 animate-page-enter flex flex-col gap-4">
-        {/* Header */}
-        <section>
-          <div className="flex items-center gap-2 mb-2">
-            <Satellite size={16} strokeWidth={1.5} className="text-[#38F0FF]" />
-            <h1 className="text-xl sm:text-2xl font-bold text-white">{t('missions.title')}</h1>
-            <p className="text-xs text-[var(--text-dim)] mt-0.5">{t('missions.subtitle')}</p>
-          </div>
-          <div className="flex items-center gap-2 mb-4">
-            <div className={`w-1.5 h-1.5 rounded-full ${isNight ? 'bg-[#34d399] animate-pulse' : 'bg-yellow-500'}`} />
-            <span className="text-xs text-[var(--text-dim)]">
-              {isNight
-                ? `${visibleCount} ${t('landing.visibleCount')} · ${t('landing.missionsSub')}`
-                : lang === 'ka' ? 'დღეა — მისიები ღამის ცის მიხედვით' : 'Daytime — missions generated for tonight\'s sky'}
-            </span>
-          </div>
+      <div className="w-full animate-page-enter">
 
-          {/* Stats */}
-          <div className="glass-card p-3 flex items-center justify-around mb-4">
-            <div className="text-center">
-              <p className="text-lg font-bold text-[#34d399]">{easyCount}</p>
-              <p className="text-[10px] text-[var(--text-dim)] uppercase tracking-wide">{t('landing.naked_eye')}</p>
-            </div>
-            <div className="w-px h-8 bg-[var(--border-glass)]" />
-            <div className="text-center">
-              <p className="text-lg font-bold text-[#FFD166]">{visibleCount}</p>
-              <p className="text-[10px] text-[var(--text-dim)] uppercase tracking-wide">{lang === 'ka' ? 'ხილული' : 'Visible'}</p>
-            </div>
-            <div className="w-px h-8 bg-[var(--border-glass)]" />
-            <div className="text-center">
-              <p className="text-lg font-bold text-amber-400">{pendingIds.size}</p>
-              <p className="text-[10px] text-[var(--text-dim)] uppercase tracking-wide">{t('missions.pending')}</p>
-            </div>
-            <div className="w-px h-8 bg-[var(--border-glass)]" />
-            <div className="text-center">
-              <p className="text-lg font-bold text-[var(--text-secondary)]">{completedIds.size}</p>
-              <p className="text-[10px] text-[var(--text-dim)] uppercase tracking-wide">{t('missions.completed')}</p>
-            </div>
-          </div>
-        </section>
-
-        {/* Mission grid */}
-        {loading ? (
-          <div className="grid grid-cols-2 gap-2.5">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="rounded-2xl h-48 animate-pulse" style={{ background: 'rgba(255,255,255,0.03)' }} />
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 gap-2.5">
-            {missions.map(mission => {
-              const done = completedIds.has(mission.id)
-              const pending = pendingIds.has(mission.id)
-              const diffKey = DIFF_MAP[mission.difficulty] ?? 'Beginner'
-              const diffConfig = DIFFICULTY_CONFIG[diffKey]
-
-              return (
-                <div
-                  key={mission.id}
-                  className="relative flex flex-col items-center text-center rounded-2xl px-3 pt-5 pb-4 transition-all duration-200"
-                  style={{
-                    background: 'rgba(255,255,255,0.03)',
-                    border: `1px solid ${done ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.08)'}`,
-                    opacity: done ? 0.45 : 1,
-                  }}
-                  onMouseEnter={e => { if (!done) { (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(255,209,102,0.25)'; (e.currentTarget as HTMLDivElement).style.boxShadow = '0 0 20px rgba(255,209,102,0.08)' } }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.borderColor = done ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.08)'; (e.currentTarget as HTMLDivElement).style.boxShadow = 'none' }}
-                >
-                  {(done || pending) && (
-                    <div className="absolute top-2.5 right-2.5">
-                      {done ? <CheckCircle2 size={13} className="text-slate-600" /> : <Clock size={13} className="text-amber-400/50" />}
-                    </div>
-                  )}
-
-                  <div className="mb-3">
-                    <span className="text-3xl">{mission.objectEmoji}</span>
-                  </div>
-
-                  <p className="text-white font-semibold text-[13px] leading-snug mb-1.5">
-                    {lang === 'ka' ? mission.titleGe.replace(/^[^ ]+ /, '') : mission.objectName}
-                  </p>
-
-                  {/* Difficulty dots */}
-                  <div className="flex flex-col items-center gap-1 mb-2">
-                    <div className="flex gap-1 justify-center">
-                      {[1, 2, 3, 4, 5].map(d => (
-                        <span key={d} className="w-1 h-1 rounded-full" style={{
-                          backgroundColor: d <= diffConfig.dots ? diffConfig.color : 'rgba(255,255,255,0.1)'
-                        }} />
-                      ))}
-                    </div>
-                    <span className="text-[9px] text-slate-600 font-medium tracking-wide uppercase">{lang === 'ka' ? diffConfig.labelGe : diffConfig.label}</span>
-                  </div>
-
-                  {/* Best time + altitude */}
-                  <p className="text-[10px] text-[var(--text-dim)] mb-1">
-                    {mission.bestTime} · {mission.maxAltitude}° alt
-                  </p>
-
-                  {/* Equipment badge */}
-                  <div className="flex items-center gap-1 text-[9px] text-[var(--text-dim)] mb-3">
-                    {EQUIPMENT_ICON[mission.equipment]}
-                    <span>{EQUIPMENT_LABEL[mission.equipment]}</span>
-                  </div>
-
-                  <p className="text-[#FFD166] text-[11px] font-bold mb-3">+{mission.points} pts</p>
-
-                  {done ? (
-                    <div className="w-full py-2 rounded-lg text-[11px] text-slate-700 text-center" style={{ background: 'rgba(255,255,255,0.02)' }}>{t('missions.complete')}</div>
-                  ) : pending ? (
-                    <div className="w-full py-2 rounded-lg text-[11px] text-amber-400/50 text-center" style={{ background: 'rgba(251,191,36,0.04)' }}>{t('missions.pendingReview')}</div>
-                  ) : (
-                    <button
-                      onClick={() => setActiveMission(mission)}
-                      className="w-full py-2.5 rounded-lg text-[12px] font-bold transition-all active:scale-95 hover:opacity-90"
-                      style={{ background: 'linear-gradient(135deg, #FFD166, #CC9A33)', color: '#070B14' }}
-                    >
-                      {t('missions.begin')}
-                    </button>
-                  )}
+        {/* Hero banner — featured mission */}
+        {!loading && featured && (
+          <section className="max-w-7xl mx-auto px-6 pt-10">
+            <div className="relative overflow-hidden rounded-[2.5rem] border border-white/10 bg-space-800">
+              <div className="absolute inset-0 bg-gradient-to-r from-space-900 via-space-900/60 to-transparent z-10" />
+              <div
+                className="absolute inset-0 opacity-20"
+                style={{ background: 'radial-gradient(ellipse at 70% 50%, rgba(99,102,241,0.4), transparent 70%)' }}
+              />
+              <div className="relative z-20 p-10 lg:p-16 max-w-2xl">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-space-glow/20 border border-space-glow/30 text-[10px] font-bold text-white uppercase tracking-wider mb-6">
+                  <span className="animate-pulse">✨</span>
+                  {lang === 'ka' ? 'კვირის მისია' : 'Mission of the week'}
                 </div>
-              )
-            })}
-          </div>
+                <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4 leading-tight">
+                  {lang === 'ka' ? featured.titleGe : featured.title}
+                </h1>
+                <p className="text-slate-300 text-lg mb-8 leading-relaxed">
+                  {lang === 'ka' ? featured.descriptionGe : featured.description}
+                </p>
+                <div className="flex items-center gap-8">
+                  <button
+                    onClick={() => !completedIds.has(featured.id) && !pendingIds.has(featured.id) && setActiveMission(featured)}
+                    className="bg-white text-space-900 font-bold px-8 py-3.5 rounded-full hover:bg-slate-100 transition-all flex items-center gap-2 disabled:opacity-50"
+                    disabled={completedIds.has(featured.id) || pendingIds.has(featured.id)}
+                  >
+                    {completedIds.has(featured.id)
+                      ? (lang === 'ka' ? 'შესრულებულია' : 'Completed')
+                      : pendingIds.has(featured.id)
+                      ? (lang === 'ka' ? 'მიმოხილვაშია' : 'Under review')
+                      : (lang === 'ka' ? 'დაიწყე მისია' : 'Start mission')}
+                    <span>›</span>
+                  </button>
+                  <div className="flex items-center gap-4 text-white">
+                    <div className="flex flex-col">
+                      <span className="text-[10px] uppercase text-slate-400 font-bold tracking-widest">{lang === 'ka' ? 'ჯილდო' : 'Reward'}</span>
+                      <span className="font-bold text-xl">+{featured.points} XP</span>
+                    </div>
+                    <div className="w-px h-8 bg-white/20" />
+                    <div className="flex flex-col">
+                      <span className="text-[10px] uppercase text-slate-400 font-bold tracking-widest">{lang === 'ka' ? 'სირთულე' : 'Difficulty'}</span>
+                      <span className={`font-bold text-xl ${DIFF_BADGE[featured.difficulty]?.classes.split(' ')[1] ?? 'text-white'}`}>
+                        {lang === 'ka' ? DIFF_BADGE[featured.difficulty]?.labelGe : DIFF_BADGE[featured.difficulty]?.label}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
         )}
 
-        {/* How it works */}
-        <div className="glass-card p-4">
-          <p className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-widest mb-3">{t('missions.howTitle')}</p>
-          <div className="flex flex-col gap-2">
-            {[
-              t('missions.step1'),
-              t('missions.step2'),
-              t('missions.step3'),
-              t('missions.step4'),
-            ].map((text, i) => [String(i + 1), text] as [string, string]).map(([num, text]) => (
-              <div key={num} className="flex items-start gap-3">
-                <span className="w-5 h-5 rounded-full bg-[rgba(255,209,102,0.1)] border border-[rgba(255,209,102,0.2)] text-[#FFD166] text-[10px] font-bold flex items-center justify-center flex-shrink-0">{num}</span>
-                <p className="text-xs text-[var(--text-secondary)] leading-relaxed">{text}</p>
-              </div>
-            ))}
+        {/* Filter + grid */}
+        <section className="max-w-7xl mx-auto px-6 py-12">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+            <div className="flex items-center p-1 bg-white/5 border border-white/10 rounded-2xl w-fit">
+              {filterTabs.map(tab => (
+                <button
+                  key={tab.key}
+                  onClick={() => setFilter(tab.key)}
+                  className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${
+                    filter === tab.key
+                      ? 'bg-space-accent text-white shadow-lg'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  {lang === 'ka' ? tab.labelGe : tab.label}
+                </button>
+              ))}
+            </div>
+            <div className="relative group">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">🔍</span>
+              <input
+                type="text"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder={lang === 'ka' ? 'მოძებნე მისია...' : 'Search missions...'}
+                className="bg-white/5 border border-white/10 rounded-2xl py-3.5 pl-10 pr-6 text-sm text-white w-full md:w-72 focus:outline-none focus:ring-2 focus:ring-space-accent/50 focus:bg-white/10 transition-all placeholder:text-slate-600"
+              />
+            </div>
           </div>
-        </div>
+
+          {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="bg-white/5 border border-white/10 rounded-[2rem] h-52 animate-pulse" />
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filtered.map(mission => {
+                const done = completedIds.has(mission.id)
+                const pending = pendingIds.has(mission.id)
+                const badge = DIFF_BADGE[mission.difficulty]
+
+                return (
+                  <div
+                    key={mission.id}
+                    className="bg-white/5 border border-white/10 rounded-[2rem] p-6 hover:bg-white/10 transition-all group relative overflow-hidden"
+                    style={{ opacity: done ? 0.5 : 1 }}
+                  >
+                    {done && (
+                      <div className="absolute top-0 right-0 p-6">
+                        <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center text-green-400 border border-green-500/20">
+                          <CheckCircle2 size={18} />
+                        </div>
+                      </div>
+                    )}
+                    {pending && !done && (
+                      <div className="absolute top-0 right-0 p-6">
+                        <div className="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center text-yellow-400 border border-yellow-500/20">
+                          <Clock size={18} />
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="w-14 h-14 rounded-2xl bg-space-800 border border-white/10 flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition-transform">
+                      {mission.objectEmoji}
+                    </div>
+
+                    <div className="space-y-2 mb-6">
+                      <div className="flex items-center gap-2">
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase border ${badge?.classes}`}>
+                          {lang === 'ka' ? badge?.labelGe : badge?.label}
+                        </span>
+                        <span className="text-xs text-slate-400">{mission.bestTime}</span>
+                      </div>
+                      <h3 className="text-xl font-bold text-white">
+                        {lang === 'ka' ? mission.titleGe.replace(/^[^ ]+ /, '') : mission.objectName}
+                      </h3>
+                      <p className="text-sm text-slate-400 leading-relaxed line-clamp-2">
+                        {lang === 'ka' ? mission.descriptionGe : mission.description}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-6 border-t border-white/5">
+                      <div className="flex flex-col">
+                        <span className="text-[10px] text-slate-500 font-bold uppercase">{lang === 'ka' ? 'ჯილდო' : 'Reward'}</span>
+                        <span className="font-bold text-white">+{mission.points} XP</span>
+                      </div>
+                      {done ? (
+                        <div className="bg-white/10 text-white px-5 py-2 rounded-xl text-sm font-bold opacity-50 cursor-not-allowed">
+                          {lang === 'ka' ? 'შესრულებულია' : 'Completed'}
+                        </div>
+                      ) : pending ? (
+                        <div className="bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 px-5 py-2 rounded-xl text-sm font-bold">
+                          {t('missions.pendingReview')}
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => setActiveMission(mission)}
+                          className="bg-space-accent hover:bg-indigo-500 text-white px-5 py-2 rounded-xl text-sm font-bold transition-colors shadow-lg shadow-space-accent/20"
+                        >
+                          {t('missions.begin')}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+
+              {/* Suggest mission placeholder */}
+              <div className="bg-white/5 border border-white/10 border-dashed rounded-[2rem] p-6 flex flex-col items-center justify-center text-center group cursor-pointer hover:bg-white/5 transition-all">
+                <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform text-3xl">
+                  +
+                </div>
+                <h3 className="text-lg font-bold text-slate-400 group-hover:text-white transition-colors">
+                  {lang === 'ka' ? 'შემოგვთავაზე მისია' : 'Suggest a mission'}
+                </h3>
+                <p className="text-xs text-slate-500 mt-2">{lang === 'ka' ? 'გაქვს საინტერესო იდეა?' : 'Have an interesting idea?'}</p>
+              </div>
+            </div>
+          )}
+        </section>
       </div>
     </>
   )
