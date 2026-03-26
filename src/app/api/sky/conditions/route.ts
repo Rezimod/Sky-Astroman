@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+
+export const dynamic = 'force-dynamic'
 import { DEFAULT_LOCATION, OPEN_METEO_URL } from '@/lib/constants'
 import { getTonightsObjects } from '@/lib/astronomy'
 import type { SkyConditions } from '@/lib/types'
@@ -11,7 +13,7 @@ export async function GET(req: NextRequest) {
 
     const url = `${OPEN_METEO_URL}?latitude=${lat}&longitude=${lng}&hourly=cloud_cover,visibility,temperature_2m&daily=sunrise,sunset,moon_phase&current=cloud_cover,temperature_2m&timezone=Asia%2FTbilisi&forecast_days=1`
 
-    const res = await fetch(url, { next: { revalidate: 1800 } })
+    const res = await fetch(url, { next: { revalidate: 600 } })
     if (!res.ok) throw new Error('Open-Meteo fetch failed')
 
     const data = await res.json()

@@ -1,12 +1,65 @@
 'use client'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import AstroLogo from '@/components/shared/AstroLogo'
+import { useLanguage } from '@/contexts/LanguageContext'
+import { createClient } from '@/lib/supabase/client'
 
 export default function LoginPage() {
   const router = useRouter()
+  const { t } = useLanguage()
+  const [mode, setMode] = useState<'signin' | 'signup'>('signin')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [message, setMessage] = useState('')
 
-  const handleLogin = () => {
-    router.push('/dashboard')
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setError('')
+    setMessage('')
+    setLoading(true)
+    const supabase = createClient()
+
+    if (mode === 'signin') {
+      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      if (error) {
+        setError(t('login.error'))
+      } else {
+        router.push('/dashboard')
+        router.refresh()
+      }
+    } else {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+      })
+      if (error) {
+        setError(error.message)
+      } else if (data.session) {
+        router.push('/dashboard')
+        router.refresh()
+      } else {
+        setMessage(t('login.checkEmail'))
+      }
+    }
+    setLoading(false)
+  }
+
+  async function handleGoogle() {
+    const supabase = createClient()
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
+    })
+  }
+
+  function toggleMode() {
+    setMode(mode === 'signin' ? 'signup' : 'signin')
+    setError('')
+    setMessage('')
   }
 
   return (
@@ -14,13 +67,14 @@ export default function LoginPage() {
       <div className="w-full max-w-sm animate-page-enter">
         <div className="text-center mb-8 flex flex-col items-center gap-3">
           <AstroLogo heightClass="h-10" />
-          <h1 className="text-2xl font-bold text-white">Sign in to Sky Astroman</h1>
-          <p className="text-sm text-[var(--text-secondary)]">Log observations, earn points, climb the leaderboard</p>
+          <h1 className="text-2xl font-bold text-white">{t('login.title')}</h1>
+          <p className="text-sm text-[var(--text-secondary)]">{t('login.subtitle')}</p>
         </div>
 
         <div className="glass-card p-6 flex flex-col gap-4">
+          {/* Google OAuth */}
           <button
-            onClick={handleLogin}
+            onClick={handleGoogle}
             className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl border border-[var(--border-glass)] bg-white/5 hover:bg-white/10 text-white text-sm font-medium transition-all"
           >
             <svg width="18" height="18" viewBox="0 0 18 18">
@@ -29,24 +83,68 @@ export default function LoginPage() {
               <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
               <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
             </svg>
-            Continue with Google
+            {t('login.google')}
           </button>
 
           <div className="flex items-center gap-3">
             <div className="flex-1 h-px bg-[var(--border-glass)]" />
-            <span className="text-xs text-[var(--text-dim)]">or</span>
+            <span className="text-xs text-[var(--text-dim)]">{t('login.orDivider')}</span>
             <div className="flex-1 h-px bg-[var(--border-glass)]" />
           </div>
 
-          <button
-            onClick={handleLogin}
-            className="w-full py-3 rounded-xl font-bold text-sm btn-primary"
-          >
-            Enter with Email →
-          </button>
+          {/* Email/password form */}
+          <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+            <input
+              type="email"
+              required
+              placeholder={t('login.email')}
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              className="w-full bg-white/5 border border-[var(--border-glass)] rounded-xl px-4 py-3 text-white text-sm placeholder-[var(--text-dim)] focus:outline-none focus:border-[var(--accent-cyan)] transition-colors"
+            />
+            <input
+              type="password"
+              required
+              minLength={6}
+              placeholder={t('login.password')}
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              className="w-full bg-white/5 border border-[var(--border-glass)] rounded-xl px-4 py-3 text-white text-sm placeholder-[var(--text-dim)] focus:outline-none focus:border-[var(--accent-cyan)] transition-colors"
+            />
+
+            {error && (
+              <p className="text-red-400 text-xs text-center">{error}</p>
+            )}
+            {message && (
+              <p className="text-[#34d399] text-xs text-center">{message}</p>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 rounded-xl font-bold text-sm btn-primary disabled:opacity-50 transition-opacity"
+            >
+              {loading
+                ? t('login.loading')
+                : mode === 'signin'
+                ? t('login.signIn')
+                : t('login.register')}
+            </button>
+          </form>
+
+          {/* Toggle mode */}
+          <p className="text-center text-xs text-[var(--text-dim)]">
+            {mode === 'signin' ? t('login.noAccount') : t('login.haveAccount')}{' '}
+            <button
+              onClick={toggleMode}
+              className="text-[var(--accent-cyan)] hover:text-[#FFD166] transition-colors font-medium"
+            >
+              {mode === 'signin' ? t('login.registerLink') : t('login.signInLink')}
+            </button>
+          </p>
 
           <p className="text-center text-xs text-[var(--text-dim)]">
-            No password needed. No crypto. No payments.
+            {t('login.noCrypto')}
           </p>
         </div>
       </div>

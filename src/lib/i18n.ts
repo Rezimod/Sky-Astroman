@@ -81,12 +81,25 @@ export const translations = {
     feat6t:       { en: 'Gallery',                     ka: 'გალერეა' },
     feat6d:       { en: 'Build your personal observation archive', ka: 'შექმენი პერსონალური დაკვირვებების არქივი' },
   },
-  // Login
+  // Login / Auth
   login: {
-    title:        { en: 'Sign in to Sky Astroman',    ka: 'შესვლა Sky Astroman-ში' },
+    title:        { en: 'Sign in to Sky Astroman',    ka: 'Sky Astroman-ში შესვლა' },
     subtitle:     { en: 'Log observations, earn points, climb the leaderboard', ka: 'ჩაწერე დაკვირვებები, დააგროვე ქულები' },
     emailBtn:     { en: 'Enter with Email →',          ka: 'შესვლა ელ-ფოსტით →' },
-    noCrypto:     { en: 'No password needed. No crypto. No payments.', ka: 'პაროლი არ სჭირდება. კრიპტო არ არის.' },
+    noCrypto:     { en: 'Free forever. No crypto. No payments.',  ka: 'სრულიად უფასო. კრიპტო არ არის.' },
+    email:        { en: 'Email address',               ka: 'ელ-ფოსტის მისამართი' },
+    password:     { en: 'Password (min. 6 chars)',     ka: 'პაროლი (მინ. 6 სიმბოლო)' },
+    signIn:       { en: 'Sign In',                     ka: 'შესვლა' },
+    register:     { en: 'Create Account',              ka: 'ანგარიშის შექმნა' },
+    google:       { en: 'Continue with Google',        ka: 'Google-ით შესვლა' },
+    orDivider:    { en: 'or',                          ka: 'ან' },
+    noAccount:    { en: 'No account?',                 ka: 'ანგარიში არ გაქვს?' },
+    haveAccount:  { en: 'Have an account?',            ka: 'ანგარიში გაქვს?' },
+    registerLink: { en: 'Register',                    ka: 'რეგისტრაცია' },
+    signInLink:   { en: 'Sign In',                     ka: 'შესვლა' },
+    loading:      { en: 'Loading...',                  ka: 'იტვირთება...' },
+    error:        { en: 'Failed. Check your email and password.', ka: 'შეცდომა. შეამოწმე ელ-ფოსტა და პაროლი.' },
+    checkEmail:   { en: 'Account created! Check your email to confirm.', ka: 'ანგარიში შეიქმნა! გადაამოწმე ელ-ფოსტა დასადასტურებლად.' },
   },
   // Dashboard
   dashboard: {

@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server'
+
+export const dynamic = 'force-dynamic'
 import { getTonightsObjects, generateMissions } from '@/lib/astronomy'
 
 export async function GET() {
