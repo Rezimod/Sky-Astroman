@@ -1,216 +1,175 @@
 'use client'
 import { useState } from 'react'
 import Link from 'next/link'
-import { Crown, Sparkles } from 'lucide-react'
+import { Crown, ArrowRight } from 'lucide-react'
 import { useLanguage } from '@/contexts/LanguageContext'
 
 type Period = 'all' | 'month' | 'week'
 
 const mockUsers = [
-  { id: '1', username: 'tbilisi_observer', display_name: 'გიორგი მაისურაძე', title: 'ვარსკვლავთმრიცხველი', level: 8, points: 8450, observations_count: 34 },
-  { id: '2', username: 'night_sky_ge',     display_name: 'ნინო დოლიძე',       title: 'ასტროფოტოგრაფი',    level: 7, points: 7200, observations_count: 28 },
-  { id: '3', username: 'stellar_giorgi',   display_name: 'ლევან ჭანტურია',    title: 'დამწყები',           level: 5, points: 6800, observations_count: 19 },
-  { id: '4', username: 'cosmos_nika',      display_name: 'ანა გიორგაძე',      title: 'დამწყები',           level: 5, points: 5100, observations_count: 19 },
-  { id: '5', username: 'moon_watcher',     display_name: 'თორნიკე კაპანაძე',  title: 'დამწყები',           level: 4, points: 4950, observations_count: 15 },
-  { id: '6', username: 'deep_sky_tbilisi', display_name: 'მარიამ ბერიძე',     title: 'მთვარის მაძიებელი', level: 6, points: 4820, observations_count: 24 },
-  { id: '7', username: 'orion_hunter',     display_name: 'სანდრო ხუციშვილი',  title: 'დამწყები',           level: 3, points: 4600, observations_count: 10 },
-  { id: '8', username: 'stargazer_tbilisi',display_name: 'Stargazer',          title: 'დამწყები',           level: 3, points: 720,  observations_count: 12 },
+  { id: '1', username: 'tbilisi_observer', display_name: 'გიორგი მ.',     title: 'ვარსკვლავთმრიცხველი', level: 8, points: 8450, observations_count: 34, initials: 'გ.მ' },
+  { id: '2', username: 'night_sky_ge',     display_name: 'ნინო დ.',        title: 'ასტროფოტოგრაფი',    level: 7, points: 7200, observations_count: 28, initials: 'ნ.დ' },
+  { id: '3', username: 'stellar_giorgi',   display_name: 'ლევანი ჭ.',      title: 'დამწყები',           level: 5, points: 6800, observations_count: 19, initials: 'ლ.ჭ' },
+  { id: '4', username: 'cosmos_nika',      display_name: 'ანა გ.',          title: 'დამწყები',           level: 5, points: 5100, observations_count: 19, initials: 'ა.გ' },
+  { id: '5', username: 'moon_watcher',     display_name: 'თ. კაპანაძე',   title: 'დამწყები',           level: 4, points: 4950, observations_count: 15, initials: 'თ.კ' },
+  { id: '6', username: 'deep_sky',         display_name: 'მარიამ ბ.',      title: 'მთვარის მაძიებელი', level: 6, points: 4820, observations_count: 24, initials: 'მ.ბ' },
+  { id: '7', username: 'orion_hunter',     display_name: 'სანდრო ხ.',      title: 'დამწყები',           level: 3, points: 4600, observations_count: 10, initials: 'ს.ხ' },
+  { id: '8', username: 'stargazer',        display_name: 'Stargazer',       title: 'დამწყები',           level: 3, points: 720,  observations_count: 12, initials: 'SG' },
 ].sort((a, b) => b.points - a.points)
 
 const CURRENT_USER_ID = '8'
 
-function initials(name: string) {
-  const parts = name.split(' ')
-  if (parts.length >= 2) return `${parts[0][0]}.${parts[1][0]}`
-  return name.slice(0, 2).toUpperCase()
-}
-
 export default function LeaderboardPage() {
-  const { t, lang } = useLanguage()
+  const { lang } = useLanguage()
   const [period, setPeriod] = useState<Period>('week')
 
-  const periodTabs: { key: Period; label: { en: string; ka: string } }[] = [
-    { key: 'week',  label: { en: 'Week',    ka: 'კვირა'  } },
-    { key: 'month', label: { en: 'Month',   ka: 'თვე'    } },
-    { key: 'all',   label: { en: 'All time', ka: 'საერთო' } },
+  const periodTabs: { key: Period; en: string; ka: string }[] = [
+    { key: 'week',  en: 'WEEK',     ka: 'კვირა'  },
+    { key: 'month', en: 'MONTH',    ka: 'თვე'    },
+    { key: 'all',   en: 'ALL TIME', ka: 'საერთო' },
   ]
 
-  const top3 = mockUsers.slice(0, 3)
-  const rest = mockUsers.slice(3)
-  const currentUser = mockUsers.find(u => u.id === CURRENT_USER_ID)
+  const top3    = mockUsers.slice(0, 3)
+  const rest    = mockUsers.slice(3)
+  const current = mockUsers.find(u => u.id === CURRENT_USER_ID)
   const currentRank = mockUsers.findIndex(u => u.id === CURRENT_USER_ID) + 1
 
+  const podiumOrder = [top3[1], top3[0], top3[2]]
+  const podiumHeights = ['h-24', 'h-32', 'h-20']
+  const podiumBorders = ['border-[#94A3B8]/30', 'border-[#FFD166]/50', 'border-[#CD7C3A]/40']
+  const podiumColors  = ['text-[#94A3B8]',       'text-[#FFD166]',       'text-[#CD7C3A]']
+  const podiumRanks   = [2, 1, 3]
+
   return (
-    <div className="max-w-5xl mx-auto px-6 pt-12 pb-32 animate-page-enter">
+    <div className="max-w-4xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 pb-28 sm:pb-10 animate-page-enter">
 
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-4xl font-bold text-white mb-2">{t('leaderboard.title')}</h1>
-          <p className="text-slate-400">{t('leaderboard.subtitle')}</p>
+          <span className="text-[10px] font-bold tracking-[0.15em] text-[#64748B] uppercase block mb-1">
+            {lang === 'ka' ? 'გლობალური რეიტინგი' : 'Global Rankings'}
+          </span>
+          <h1 className="text-xl sm:text-2xl font-bold text-white">
+            {lang === 'ka' ? 'ლიდერბორდი' : 'Leaderboard'}
+          </h1>
         </div>
-        <div className="flex p-1 bg-white/5 border border-white/10 rounded-xl">
+        <div className="flex items-center gap-1 p-1 bg-white/[0.03] border border-white/[0.06] rounded-lg self-start sm:self-auto">
           {periodTabs.map(tab => (
             <button
               key={tab.key}
               onClick={() => setPeriod(tab.key)}
-              className={`px-6 py-2 text-sm font-bold rounded-lg transition-all ${
-                period === tab.key
-                  ? 'text-white bg-space-accent shadow-lg'
-                  : 'text-slate-400 hover:text-white'
+              className={`px-3 sm:px-4 py-1.5 rounded text-[11px] font-bold tracking-wider transition-all ${
+                period === tab.key ? 'bg-[#6366F1] text-white' : 'text-[#64748B] hover:text-white'
               }`}
             >
-              {lang === 'ka' ? tab.label.ka : tab.label.en}
+              {lang === 'ka' ? tab.ka : tab.en}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Top 3 podium */}
-      <div className="grid grid-cols-3 gap-4 mb-12 items-end">
-        {/* 2nd place */}
-        <div className="flex flex-col items-center">
-          <div className="relative mb-4">
-            <div className="w-20 h-20 rounded-full border-4 border-slate-400/30 p-1">
-              <div className="w-full h-full rounded-full bg-slate-700 flex items-center justify-center text-lg font-bold text-white">
-                {initials(top3[1].display_name)}
-              </div>
-            </div>
-            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-slate-400 text-space-900 text-xs font-black px-3 py-0.5 rounded-full">2</div>
-          </div>
-          <div className="text-center bg-white/5 border border-white/10 rounded-2xl p-4 w-full h-32 flex flex-col justify-center">
-            <span className="text-white font-bold block truncate text-sm">{top3[1].display_name}</span>
-            <span className="text-xs text-slate-400 block mb-2">{top3[1].title}</span>
-            <span className="text-lg font-black text-white">{top3[1].points.toLocaleString()} <span className="text-[10px] text-slate-400 uppercase">XP</span></span>
-          </div>
-        </div>
-
-        {/* 1st place */}
-        <div className="flex flex-col items-center">
-          <div className="text-yellow-400 mb-2 drop-shadow-[0_0_10px_rgba(250,204,21,0.5)] flex justify-center"><Crown size={32} /></div>
-          <div className="relative mb-4">
-            <div className="w-28 h-28 rounded-full border-4 border-yellow-400 p-1 shadow-[0_0_30px_rgba(250,204,21,0.2)]">
-              <div className="w-full h-full rounded-full bg-gradient-to-br from-space-accent to-space-glow flex items-center justify-center text-2xl font-bold text-white">
-                {initials(top3[0].display_name)}
-              </div>
-            </div>
-            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-yellow-400 text-space-900 text-sm font-black px-4 py-1 rounded-full shadow-lg">1</div>
-          </div>
-          <div className="text-center bg-space-accent/10 border border-space-accent/30 rounded-2xl p-6 w-full h-40 flex flex-col justify-center relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-2 opacity-10 text-space-accent"><Sparkles size={32} /></div>
-            <span className="text-lg text-white font-bold block truncate">{top3[0].display_name}</span>
-            <span className="text-xs text-space-accent font-bold block mb-2">{top3[0].title}</span>
-            <span className="text-2xl font-black text-white">{top3[0].points.toLocaleString()} <span className="text-[10px] text-space-accent uppercase">XP</span></span>
-          </div>
-        </div>
-
-        {/* 3rd place */}
-        <div className="flex flex-col items-center">
-          <div className="relative mb-4">
-            <div className="w-20 h-20 rounded-full border-4 border-orange-700/30 p-1">
-              <div className="w-full h-full rounded-full bg-slate-700 flex items-center justify-center text-lg font-bold text-white">
-                {initials(top3[2].display_name)}
-              </div>
-            </div>
-            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-orange-700/60 text-white text-xs font-black px-3 py-0.5 rounded-full">3</div>
-          </div>
-          <div className="text-center bg-white/5 border border-white/10 rounded-2xl p-4 w-full h-32 flex flex-col justify-center">
-            <span className="text-white font-bold block truncate text-sm">{top3[2].display_name}</span>
-            <span className="text-xs text-slate-400 block mb-2">{top3[2].title}</span>
-            <span className="text-lg font-black text-white">{top3[2].points.toLocaleString()} <span className="text-[10px] text-slate-400 uppercase">XP</span></span>
-          </div>
-        </div>
-      </div>
-
-      {/* Table for #4+ */}
-      <div className="bg-white/5 border border-white/10 rounded-3xl overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="border-b border-white/10 bg-white/5">
-                <th className="px-8 py-5 text-xs font-bold uppercase tracking-wider text-slate-500 w-20">{lang === 'ka' ? 'ადგილი' : 'Rank'}</th>
-                <th className="px-6 py-5 text-xs font-bold uppercase tracking-wider text-slate-500">{lang === 'ka' ? 'მომხმარებელი' : 'User'}</th>
-                <th className="px-6 py-5 text-xs font-bold uppercase tracking-wider text-slate-500 hidden md:table-cell">{lang === 'ka' ? 'წოდება' : 'Title'}</th>
-                <th className="px-6 py-5 text-xs font-bold uppercase tracking-wider text-slate-500 text-right">{lang === 'ka' ? 'ქულები (XP)' : 'Points (XP)'}</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/5">
-              {rest.map((user, idx) => {
-                const rank = idx + 4
-                const isMe = user.id === CURRENT_USER_ID
-                return (
-                  <tr
-                    key={user.id}
-                    className={`group transition-colors ${isMe ? 'bg-space-accent/5' : 'hover:bg-white/5'}`}
-                  >
-                    <td className={`px-8 py-4 text-sm font-bold ${isMe ? 'text-space-accent' : 'text-slate-400 group-hover:text-white'}`}>
-                      #{rank}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold text-white border ${isMe ? 'bg-space-accent border-space-accent/50' : 'bg-slate-800 border-white/10'}`}>
-                          {initials(user.display_name)}
-                        </div>
-                        <div>
-                          <span className={`text-sm font-bold ${isMe ? 'text-space-accent' : 'text-white'}`}>{user.display_name}</span>
-                          {isMe && <span className="ml-2 text-[10px] bg-space-accent/20 text-space-accent px-2 py-0.5 rounded-full font-bold">{lang === 'ka' ? 'შენ' : 'You'}</span>}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 hidden md:table-cell">
-                      <span className="text-xs font-medium text-slate-400 bg-white/5 px-3 py-1 rounded-full border border-white/5">{user.title}</span>
-                    </td>
-                    <td className="px-6 py-4 text-right font-black text-white">{user.points.toLocaleString()}</td>
-                  </tr>
-                )
-              })}
-              <tr className="bg-white/[0.02]">
-                <td colSpan={4} className="px-8 py-8 text-center text-slate-500 italic text-sm">
-                  {lang === 'ka' ? 'დამატებით 93 დამკვირვებელი...' : '93 more observers...'}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Sticky user bar */}
-      {currentUser && (
-        <div className="fixed bottom-0 sm:bottom-0 left-0 right-0 z-[100] bg-space-800/80 backdrop-blur-2xl border-t border-space-accent/30 py-4 shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
-          <div className="max-w-5xl mx-auto px-6 flex items-center justify-between">
-            <div className="flex items-center gap-6">
-              <div className="text-center">
-                <span className="text-[10px] font-bold text-space-accent uppercase block tracking-widest">{lang === 'ka' ? 'შენი ადგილი' : 'Your rank'}</span>
-                <span className="text-2xl font-black text-white">#{currentRank}</span>
-              </div>
-              <div className="h-10 w-px bg-white/10" />
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-space-accent flex items-center justify-center text-white font-bold ring-4 ring-space-accent/20">
-                  {initials(currentUser.display_name)}
-                </div>
-                <div>
-                  <h4 className="text-sm font-bold text-white leading-none mb-1">{currentUser.display_name}</h4>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-slate-400">{lang === 'ka' ? 'პროგრესი ტოპ 100-მდე:' : 'Progress to top 100:'}</span>
-                    <div className="w-24 h-1.5 bg-white/5 rounded-full overflow-hidden">
-                      <div className="bg-space-accent h-full w-[15%]" />
-                    </div>
+      {/* Podium top 3 */}
+      <div className="card p-5 sm:p-6 mb-4">
+        <div className="flex items-end justify-center gap-3 sm:gap-6">
+          {podiumOrder.map((user, i) => {
+            const rank = podiumRanks[i]
+            const isFirst = rank === 1
+            return (
+              <div key={user.id} className="flex flex-col items-center gap-2 sm:gap-3 flex-1 max-w-[140px]">
+                {isFirst && <Crown size={20} className="text-[#FFD166]" />}
+                <div className={`relative w-12 h-12 sm:w-16 sm:h-16 rounded-full border-2 ${podiumBorders[i]} flex items-center justify-center text-sm sm:text-base font-bold text-white ${isFirst ? 'bg-gradient-to-br from-[#6366F1] to-[#A855F7]' : 'bg-[#1E2235]'}`}>
+                  {user.initials.slice(0, 2)}
+                  <div className={`absolute -bottom-2 left-1/2 -translate-x-1/2 w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-black ${isFirst ? 'bg-[#FFD166] text-[#0D1117]' : 'bg-[#1E2235] border border-white/10 text-white'}`}>
+                    {rank}
                   </div>
                 </div>
+                <div className={`${podiumHeights[i]} w-full rounded-t-lg flex flex-col items-center justify-start pt-4 text-center px-2`}
+                  style={{ background: isFirst ? 'rgba(99,102,241,0.08)' : 'rgba(255,255,255,0.02)', border: '1px solid', borderColor: isFirst ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.06)', borderBottom: 'none' }}
+                >
+                  <p className="text-xs font-bold text-white truncate w-full">{user.display_name}</p>
+                  <p className={`text-[11px] font-bold mt-1 ${podiumColors[i]}`}>{user.points.toLocaleString()}</p>
+                  <p className="text-[9px] text-[#475569] uppercase tracking-wide hidden sm:block mt-0.5">XP</p>
+                </div>
               </div>
-            </div>
-            <div className="flex items-center gap-6">
-              <div className="text-right hidden sm:block">
-                <span className="text-[10px] font-bold text-slate-500 uppercase block tracking-widest">{lang === 'ka' ? 'ჯამური ქულა' : 'Total XP'}</span>
-                <span className="text-2xl font-black text-white">{currentUser.points} <span className="text-xs text-space-accent">XP</span></span>
-              </div>
-              <Link
-                href="/missions"
-                className="bg-white text-space-900 font-bold px-6 py-3 rounded-xl text-sm hover:bg-slate-200 transition-colors"
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Ranks 4+ */}
+      <div className="card overflow-hidden mb-4">
+        <div className="hidden sm:grid grid-cols-12 px-5 py-3 border-b border-white/[0.06]">
+          <span className="col-span-1 text-[10px] font-bold tracking-wider text-[#475569] uppercase">#</span>
+          <span className="col-span-5 text-[10px] font-bold tracking-wider text-[#475569] uppercase">{lang === 'ka' ? 'მომხმარებელი' : 'User'}</span>
+          <span className="col-span-3 text-[10px] font-bold tracking-wider text-[#475569] uppercase hidden sm:block">{lang === 'ka' ? 'წოდება' : 'Title'}</span>
+          <span className="col-span-3 text-[10px] font-bold tracking-wider text-[#475569] uppercase text-right">{lang === 'ka' ? 'ქულა' : 'Points'}</span>
+        </div>
+        <div>
+          {rest.map((user, idx) => {
+            const rank = idx + 4
+            const isMe = user.id === CURRENT_USER_ID
+            return (
+              <div
+                key={user.id}
+                className={`flex items-center gap-3 sm:gap-0 sm:grid sm:grid-cols-12 px-4 sm:px-5 py-3 border-b border-white/[0.04] transition-colors last:border-0 ${isMe ? 'bg-[#6366F1]/[0.05]' : 'hover:bg-white/[0.02]'}`}
               >
-                {lang === 'ka' ? 'ქულების დაგროვება' : 'Earn points'}
-              </Link>
+                <span className={`sm:col-span-1 text-[11px] font-bold font-mono flex-shrink-0 ${isMe ? 'text-[#6366F1]' : 'text-[#475569]'}`}>
+                  {String(rank).padStart(2,'0')}
+                </span>
+                <div className="sm:col-span-5 flex items-center gap-2.5 flex-1 min-w-0">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold text-white border flex-shrink-0 ${isMe ? 'bg-[#6366F1] border-[#6366F1]/40' : 'bg-[#1E2235] border-white/[0.08]'}`}>
+                    {user.initials.slice(0,2)}
+                  </div>
+                  <div className="min-w-0">
+                    <span className={`text-sm font-bold block truncate ${isMe ? 'text-[#818CF8]' : 'text-white'}`}>{user.display_name}</span>
+                    {isMe && <span className="text-[9px] font-bold text-[#6366F1] uppercase tracking-wider">{lang === 'ka' ? 'შენ' : 'You'}</span>}
+                  </div>
+                </div>
+                <span className="sm:col-span-3 text-xs text-[#475569] hidden sm:block">
+                  <span className="bg-white/[0.04] border border-white/[0.06] px-2 py-0.5 rounded text-[10px]">{user.title}</span>
+                </span>
+                <span className="sm:col-span-3 text-sm font-bold text-white sm:text-right flex-shrink-0">
+                  {user.points.toLocaleString()}
+                </span>
+              </div>
+            )
+          })}
+          <div className="px-5 py-4 text-center">
+            <span className="text-[11px] text-[#334155] italic">
+              {lang === 'ka' ? '+ 93 სხვა ასტრონომი...' : '+ 93 more astronomers...'}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Sticky current user bar */}
+      {current && (
+        <div className="fixed bottom-14 sm:bottom-0 left-0 right-0 z-40 border-t border-[#6366F1]/20 backdrop-blur-xl"
+          style={{ background: 'rgba(9,12,20,0.90)' }}
+        >
+          <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="text-center">
+                <div className="text-[10px] font-bold text-[#6366F1] uppercase tracking-widest">{lang === 'ka' ? 'შენი ადგილი' : 'Your Rank'}</div>
+                <div className="text-xl font-bold text-white">#{currentRank}</div>
+              </div>
+              <div className="w-px h-8 bg-white/10" />
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-full bg-[#6366F1] flex items-center justify-center text-[11px] font-bold text-white">SG</div>
+                <div>
+                  <div className="text-sm font-bold text-white leading-none">{current.display_name}</div>
+                  <div className="text-[10px] text-[#475569] mt-0.5">{current.points} XP</div>
+                </div>
+              </div>
             </div>
+            <Link
+              href="/missions"
+              className="flex items-center gap-1.5 text-[11px] font-bold px-4 py-2 rounded-lg transition-all"
+              style={{ background: '#6366F1', color: 'white' }}
+            >
+              {lang === 'ka' ? 'ქულების დაგროვება' : 'Earn Points'}
+              <ArrowRight size={12} />
+            </Link>
           </div>
         </div>
       )}

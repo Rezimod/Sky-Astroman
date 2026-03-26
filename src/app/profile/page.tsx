@@ -1,14 +1,16 @@
 'use client'
 import { useRouter } from 'next/navigation'
-import { Crown, MapPin, Wind, Thermometer, CheckCircle, Clock, User, Telescope, Camera, Satellite, Star, Flame, Award, LogOut } from 'lucide-react'
+import { Crown, MapPin, Wind, Thermometer, CheckCircle, Clock, Telescope, Camera, Satellite, Star, Flame, Award, LogOut } from 'lucide-react'
 import { getPointsToNextLevel } from '@/lib/constants'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { createClient } from '@/lib/supabase/client'
 
 const mockProfile = {
+  initials: 'SG',
+  display_name: 'Stargazer',
   username: 'stargazer_tbilisi',
-  display_name: 'გიორგი მაისურაძე',
-  title: 'ვარსკვლავთმრიცხველი',
+  title_en: 'NOVICE STARGAZER',
+  title_ka: 'დამწყები',
   level: 3,
   points: 720,
   observations_count: 12,
@@ -36,7 +38,7 @@ const achievements = [
 
 export default function ProfilePage() {
   const router = useRouter()
-  const { t, lang } = useLanguage()
+  const { lang } = useLanguage()
   const levelProgress = getPointsToNextLevel(mockProfile.points)
 
   async function handleSignOut() {
@@ -46,145 +48,157 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12 animate-page-enter">
-      <div className="grid lg:grid-cols-12 gap-6 sm:gap-8">
+    <div className="max-w-6xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 animate-page-enter">
 
-        {/* Left column */}
-        <div className="lg:col-span-4 space-y-5 sm:space-y-6">
+      {/* Header */}
+      <div className="mb-5">
+        <span className="text-[10px] font-bold tracking-[0.15em] text-[#64748B] uppercase block mb-1">
+          {lang === 'ka' ? 'პილოტის პროფილი' : 'Pilot Profile'}
+        </span>
+        <h1 className="text-xl sm:text-2xl font-bold text-white">
+          {lang === 'ka' ? 'ჩემი ანგარიში' : 'My Account'}
+        </h1>
+      </div>
+
+      <div className="grid lg:grid-cols-12 gap-3 sm:gap-4">
+
+        {/* Left */}
+        <div className="lg:col-span-4 space-y-3">
 
           {/* Avatar card */}
-          <div className="bg-space-800/40 backdrop-blur-xl border border-white/10 rounded-[2rem] p-6 sm:p-8 text-center">
-            <div className="relative inline-block mb-6">
-              <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full border-4 border-space-accent p-1">
-                <div className="w-full h-full rounded-full bg-gradient-to-br from-space-accent to-space-glow flex items-center justify-center text-white text-3xl font-bold">
-                  {mockProfile.display_name.charAt(0)}
-                </div>
+          <div className="card p-6 text-center">
+            {/* Avatar with orbit ring */}
+            <div className="relative inline-flex items-center justify-center mb-5" style={{ width: 96, height: 96 }}>
+              <svg width="96" height="96" viewBox="0 0 96 96" className="absolute inset-0">
+                <circle cx="48" cy="48" r="44" fill="none" stroke="rgba(99,102,241,0.2)" strokeWidth="1.5" strokeDasharray="5 4" />
+              </svg>
+              <svg width="96" height="96" viewBox="0 0 96 96" className="absolute inset-0 orbit-ring">
+                <circle cx="48" cy="4" r="4" fill="#6366F1" />
+              </svg>
+              <div className="w-16 h-16 rounded-full bg-[#1E2235] border border-white/10 flex items-center justify-center text-xl font-bold text-white relative z-10">
+                {mockProfile.initials}
               </div>
-              <div className="absolute -bottom-2 -right-2 bg-yellow-400 text-space-900 w-10 h-10 rounded-full flex items-center justify-center border-4 border-space-800 shadow-lg">
-                <Crown size={18} />
+              <div className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-[#FFD166] border-2 border-[#0D1117] flex items-center justify-center z-20">
+                <Crown size={14} className="text-[#0D1117]" />
               </div>
             </div>
-            <h2 className="text-xl sm:text-2xl font-bold text-white mb-1">{mockProfile.display_name}</h2>
-            <p className="text-space-accent font-medium mb-6">{mockProfile.title} (LVL {mockProfile.level})</p>
 
-            <div className="space-y-4">
-              <div className="bg-white/5 rounded-2xl p-4 border border-white/5 flex justify-between items-center">
-                <div className="text-left">
-                  <span className="text-xs text-slate-400 block">{lang === 'ka' ? 'ჯამური XP' : 'Total XP'}</span>
-                  <span className="text-xl font-bold text-white">{mockProfile.points.toLocaleString()}</span>
-                </div>
-                <div className="text-right">
-                  <span className="text-xs text-slate-400 block">{lang === 'ka' ? 'რეიტინგი' : 'Rank'}</span>
-                  <span className="text-xl font-bold text-white">#8</span>
-                </div>
+            <h2 className="text-lg font-bold text-white mb-0.5">{mockProfile.display_name}</h2>
+            <p className="text-[11px] font-bold tracking-[0.12em] text-[#6366F1] mb-1">
+              LVL {mockProfile.level} · {lang === 'ka' ? mockProfile.title_ka : mockProfile.title_en}
+            </p>
+            <p className="text-[11px] text-[#475569] mb-5">@{mockProfile.username}</p>
+
+            <div className="grid grid-cols-2 gap-2 mb-4">
+              <div className="bg-white/[0.03] border border-white/[0.06] rounded-lg p-3 text-center">
+                <div className="text-xs text-[#64748B] uppercase tracking-wide mb-1">{lang === 'ka' ? 'ქულა' : 'Total XP'}</div>
+                <div className="text-xl font-bold text-white">{mockProfile.points}</div>
               </div>
-              <div className="w-full bg-white/5 h-2 rounded-full overflow-hidden">
+              <div className="bg-white/[0.03] border border-white/[0.06] rounded-lg p-3 text-center">
+                <div className="text-xs text-[#64748B] uppercase tracking-wide mb-1">{lang === 'ka' ? 'რეიტინგი' : 'Rank'}</div>
+                <div className="text-xl font-bold text-white">#8</div>
+              </div>
+            </div>
+
+            <div className="text-left">
+              <div className="flex justify-between items-center mb-1.5">
+                <span className="text-[10px] text-[#64748B] uppercase tracking-wider font-bold">{lang === 'ka' ? 'XP პროგრესი' : 'XP Progress'}</span>
+                <span className="text-[10px] text-[#475569]">{mockProfile.points} / {levelProgress.needed}</span>
+              </div>
+              <div className="h-1 bg-white/[0.05] rounded-full overflow-hidden">
                 <div
-                  className="bg-gradient-to-r from-space-accent to-space-glow h-full transition-all duration-700"
-                  style={{ width: `${levelProgress.progress}%` }}
+                  className="h-full rounded-full transition-all duration-700"
+                  style={{ width: `${levelProgress.progress}%`, background: 'linear-gradient(90deg, #6366F1, #A855F7)' }}
                 />
               </div>
-              <p className="text-[10px] text-slate-500 text-center uppercase tracking-widest">
-                {lang === 'ka'
-                  ? `შემდეგ დონემდე დარჩა ${levelProgress.needed - levelProgress.current} XP`
-                  : `${levelProgress.needed - levelProgress.current} XP to next level`}
+              <p className="text-[10px] text-[#334155] mt-1.5">
+                {levelProgress.needed - levelProgress.current} XP {lang === 'ka' ? `→ LVL ${mockProfile.level + 1}` : `to Level ${mockProfile.level + 1}`}
               </p>
             </div>
           </div>
 
-          {/* Location card */}
-          <div className="bg-space-800/40 backdrop-blur-xl border border-white/10 rounded-[2rem] p-5 sm:p-6">
+          {/* Location */}
+          <div className="card p-5">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold text-white flex items-center gap-2">
-                <MapPin size={16} className="text-space-accent" />
-                {lang === 'ka' ? 'ჩემი ლოკაცია' : 'My location'}
-              </h3>
-              <span className="text-[10px] bg-green-500/10 text-green-400 border border-green-500/20 px-2 py-0.5 rounded uppercase font-bold">
-                {lang === 'ka' ? 'ლაივი' : 'Live'}
+              <div className="flex items-center gap-2">
+                <MapPin size={13} className="text-[#6366F1]" />
+                <span className="text-[10px] font-bold tracking-[0.12em] text-[#64748B] uppercase">
+                  {lang === 'ka' ? 'მდებარეობა' : 'Location'}
+                </span>
+              </div>
+              <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase tracking-wider">
+                {lang === 'ka' ? 'ლაივ' : 'Live'}
               </span>
             </div>
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-sm text-slate-400">{lang === 'ka' ? 'თბილისი, საქართველო' : 'Tbilisi, Georgia'}</span>
+            <div className="flex justify-between items-center mb-3">
+              <span className="text-sm text-[#94A3B8]">{lang === 'ka' ? 'თბილისი, საქართველო' : 'Tbilisi, Georgia'}</span>
               <span className="text-sm font-bold text-white">
                 {new Date().toLocaleTimeString(lang === 'ka' ? 'ka-GE' : 'en-US', { hour: '2-digit', minute: '2-digit' })}
               </span>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="bg-white/5 p-3 rounded-xl border border-white/5">
-                <Wind size={14} className="text-blue-400 mb-1" />
-                <div className="text-xs text-slate-500">{lang === 'ka' ? 'ქარი' : 'Wind'}</div>
-                <div className="text-sm font-bold text-white">4 {lang === 'ka' ? 'კმ/სთ' : 'km/h'}</div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="bg-white/[0.03] border border-white/[0.06] rounded-lg p-2.5 flex items-center gap-2">
+                <Wind size={12} className="text-blue-400 flex-shrink-0" />
+                <div>
+                  <div className="text-[9px] text-[#475569] uppercase tracking-wide">{lang === 'ka' ? 'ქარი' : 'Wind'}</div>
+                  <div className="text-xs font-bold text-white">4 km/h</div>
+                </div>
               </div>
-              <div className="bg-white/5 p-3 rounded-xl border border-white/5">
-                <Thermometer size={14} className="text-orange-400 mb-1" />
-                <div className="text-xs text-slate-500">{lang === 'ka' ? 'ტემპ.' : 'Temp.'}</div>
-                <div className="text-sm font-bold text-white">12°C</div>
+              <div className="bg-white/[0.03] border border-white/[0.06] rounded-lg p-2.5 flex items-center gap-2">
+                <Thermometer size={12} className="text-orange-400 flex-shrink-0" />
+                <div>
+                  <div className="text-[9px] text-[#475569] uppercase tracking-wide">{lang === 'ka' ? 'ტემპ.' : 'Temp'}</div>
+                  <div className="text-xs font-bold text-white">12°C</div>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Right column */}
-        <div className="lg:col-span-8 space-y-5 sm:space-y-6">
+        {/* Right */}
+        <div className="lg:col-span-8 space-y-3">
 
           {/* Stats row */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="bg-white/5 border border-white/10 rounded-3xl p-5 sm:p-6 hover:bg-white/10 transition-colors">
-              <div className="flex items-center gap-3 sm:gap-4 mb-4">
-                <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-400">
-                  <CheckCircle size={22} />
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { Icon: CheckCircle, val: mockProfile.missions_completed, label_en: 'Missions', label_ka: 'მისიები', color: '#6366F1', bg: 'rgba(99,102,241,0.08)', sub_en: '+2 this month', sub_ka: '+2 ამ თვეში' },
+              { Icon: Flame,       val: 7, label_en: 'Day Streak', label_ka: 'სთრიქი',    color: '#F97316', bg: 'rgba(249,115,22,0.08)', sub_en: 'Best: 14 days', sub_ka: 'მაქს: 14 დღე' },
+              { Icon: Award,       val: achievements.filter(a => a.earned).length, label_en: 'Badges', label_ka: 'ბეიჯები', color: '#A855F7', bg: 'rgba(168,85,247,0.08)', sub_en: `${achievements.filter(a=>!a.earned).length} to unlock`, sub_ka: `${achievements.filter(a=>!a.earned).length} ლოდინშია` },
+            ].map(s => (
+              <div key={s.label_en} className="card p-4">
+                <div className="w-9 h-9 rounded-lg flex items-center justify-center mb-3" style={{ background: s.bg }}>
+                  <s.Icon size={18} style={{ color: s.color }} />
                 </div>
-                <div>
-                  <span className="text-xs text-slate-400 uppercase tracking-wider">{t('profile.missions')}</span>
-                  <h4 className="text-2xl font-bold text-white">{mockProfile.missions_completed}</h4>
-                </div>
+                <div className="text-2xl font-bold text-white mb-0.5">{s.val}</div>
+                <div className="text-[10px] text-[#64748B] uppercase tracking-wider">{lang === 'ka' ? s.label_ka : s.label_en}</div>
+                <div className="text-[10px] text-[#475569] mt-1">{lang === 'ka' ? s.sub_ka : s.sub_en}</div>
               </div>
-              <div className="text-xs text-green-400 font-medium">+2 {lang === 'ka' ? 'ამ თვეში' : 'this month'}</div>
-            </div>
-            <div className="bg-white/5 border border-white/10 rounded-3xl p-5 sm:p-6 hover:bg-white/10 transition-colors">
-              <div className="flex items-center gap-3 sm:gap-4 mb-4">
-                <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-orange-500/10 flex items-center justify-center text-orange-400">
-                  <Flame size={22} />
-                </div>
-                <div>
-                  <span className="text-xs text-slate-400 uppercase tracking-wider">{lang === 'ka' ? 'სთრიქი' : 'Streak'}</span>
-                  <h4 className="text-2xl font-bold text-white">7 {lang === 'ka' ? 'დღე' : 'days'}</h4>
-                </div>
-              </div>
-              <div className="text-xs text-slate-500">{lang === 'ka' ? 'საუკეთესო: 14 დღე' : 'Best: 14 days'}</div>
-            </div>
-            <div className="bg-white/5 border border-white/10 rounded-3xl p-5 sm:p-6 hover:bg-white/10 transition-colors">
-              <div className="flex items-center gap-3 sm:gap-4 mb-4">
-                <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-400">
-                  <Award size={22} />
-                </div>
-                <div>
-                  <span className="text-xs text-slate-400 uppercase tracking-wider">{lang === 'ka' ? 'ბეიჯები' : 'Badges'}</span>
-                  <h4 className="text-2xl font-bold text-white">{achievements.filter(a => a.earned).length}</h4>
-                </div>
-              </div>
-              <div className="text-xs text-slate-500">{achievements.filter(a => !a.earned).length} {lang === 'ka' ? 'მიღწევა ლოდინშია' : 'more to unlock'}</div>
-            </div>
+            ))}
           </div>
 
           {/* Achievements */}
-          <div className="bg-space-800/40 backdrop-blur-xl border border-white/10 rounded-[2rem] p-6 sm:p-8">
-            <div className="flex items-center justify-between mb-6 sm:mb-8">
-              <h3 className="text-xl font-bold text-white">{lang === 'ka' ? 'მიღწევები' : 'Achievements'}</h3>
-              <button className="text-sm font-medium text-space-accent hover:underline">
-                {lang === 'ka' ? 'ყველას ნახვა' : 'View all'}
+          <div className="card p-5">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-[10px] font-bold tracking-[0.15em] text-[#64748B] uppercase">
+                {lang === 'ka' ? 'მიღწევები' : 'Achievements'}
+              </span>
+              <button className="text-[11px] font-bold text-[#6366F1] hover:text-[#818CF8] transition-colors">
+                {lang === 'ka' ? 'ყველა' : 'View all'}
               </button>
             </div>
-            <div className="flex flex-wrap gap-6 sm:gap-8">
+            <div className="flex flex-wrap gap-5 sm:gap-8">
               {achievements.map(a => (
-                <div key={a.label} className={`flex flex-col items-center gap-3 group ${!a.earned ? 'opacity-40 grayscale' : ''}`}>
-                  <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-space-accent group-hover:scale-110 transition-transform cursor-pointer relative">
-                    <a.Icon size={24} />
+                <div
+                  key={a.label}
+                  className={`flex flex-col items-center gap-2 group ${!a.earned ? 'opacity-30 grayscale' : ''}`}
+                >
+                  <div className="w-12 h-12 rounded-xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center group-hover:border-[#6366F1]/40 transition-all cursor-pointer relative overflow-hidden">
+                    <a.Icon size={20} className="text-[#6366F1] relative z-10" />
                     {a.earned && (
-                      <div className="absolute inset-0 bg-space-accent/20 rounded-full blur-lg opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <div className="absolute inset-0 bg-[#6366F1]/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                     )}
                   </div>
-                  <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest text-center">
+                  <span className="text-[9px] text-[#475569] font-bold uppercase tracking-wider text-center max-w-[56px] leading-tight">
                     {lang === 'ka' ? a.label : a.labelEn}
                   </span>
                 </div>
@@ -193,37 +207,35 @@ export default function ProfilePage() {
           </div>
 
           {/* Recent activity */}
-          <div className="bg-space-800/40 backdrop-blur-xl border border-white/10 rounded-[2rem] p-6 sm:p-8">
-            <h3 className="text-xl font-bold text-white mb-6 sm:mb-8">{t('profile.recentObs')}</h3>
-            <div className="space-y-6">
+          <div className="card p-5">
+            <span className="text-[10px] font-bold tracking-[0.15em] text-[#64748B] uppercase block mb-4">
+              {lang === 'ka' ? 'ბოლო დაკვირვებები' : 'Recent Observations'}
+            </span>
+            <div className="space-y-4">
               {mockObservations.map((obs, idx) => (
-                <div key={obs.id} className="flex gap-4 relative">
+                <div key={obs.id} className="flex gap-3 relative">
                   {idx < mockObservations.length - 1 && (
-                    <div className="absolute left-5 top-10 bottom-[-24px] w-px bg-white/10" />
+                    <div className="absolute left-4 top-9 bottom-[-16px] w-px bg-white/[0.06]" />
                   )}
                   <div
-                    className="w-10 h-10 rounded-full border flex items-center justify-center shrink-0 z-10 text-sm"
-                    style={{
-                      background: `${STATUS_COLOR[obs.status]}20`,
-                      borderColor: `${STATUS_COLOR[obs.status]}40`,
-                      color: STATUS_COLOR[obs.status],
-                    }}
+                    className="w-8 h-8 rounded-full border flex items-center justify-center flex-shrink-0 z-10"
+                    style={{ background: `${STATUS_COLOR[obs.status]}15`, borderColor: `${STATUS_COLOR[obs.status]}30`, color: STATUS_COLOR[obs.status] }}
                   >
-                    {obs.status === 'approved' ? <CheckCircle size={16} /> : <Clock size={16} />}
+                    {obs.status === 'approved' ? <CheckCircle size={14} /> : <Clock size={14} />}
                   </div>
-                  <div className="flex-1 pb-6">
-                    <div className="flex items-center justify-between mb-1">
-                      <h4 className="font-bold text-white">
+                  <div className="flex-1 pb-4">
+                    <div className="flex items-center justify-between mb-0.5">
+                      <h4 className="text-sm font-bold text-white">
                         {lang === 'ka' ? obs.object_name_ka : obs.object_name}
                       </h4>
-                      <span className="text-xs text-slate-500">
+                      <span className="text-[10px] text-[#475569]">
                         {new Date(obs.created_at).toLocaleDateString(lang === 'ka' ? 'ka-GE' : 'en-US')}
                       </span>
                     </div>
-                    <p className="text-sm text-slate-400">
+                    <p className="text-xs text-[#64748B]">
                       {obs.status === 'approved'
-                        ? (lang === 'ka' ? `მიღებულია +${obs.points_awarded} XP` : `Approved — +${obs.points_awarded} XP`)
-                        : (lang === 'ka' ? 'მიმოხილვის მოლოდინში' : 'Awaiting review')}
+                        ? (lang === 'ka' ? `დამტკიცდა · +${obs.points_awarded} XP` : `Approved · +${obs.points_awarded} XP`)
+                        : (lang === 'ka' ? 'განხილვის მოლოდინში' : 'Awaiting review')}
                     </p>
                   </div>
                 </div>
@@ -232,13 +244,13 @@ export default function ProfilePage() {
           </div>
 
           {/* Sign out */}
-          <div className="text-center">
+          <div className="text-center py-2">
             <button
               onClick={handleSignOut}
-              className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-red-400 transition-colors"
+              className="inline-flex items-center gap-2 text-xs text-[#475569] hover:text-red-400 transition-colors font-medium"
             >
-              <LogOut size={14} />
-              {t('profile.signout')}
+              <LogOut size={13} />
+              {lang === 'ka' ? 'სისტემიდან გასვლა' : 'Sign out'}
             </button>
           </div>
         </div>

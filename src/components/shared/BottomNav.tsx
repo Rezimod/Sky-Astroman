@@ -11,31 +11,32 @@ export default function BottomNav() {
   if (isLanding) return null
 
   const tabs = [
-    { href: '/dashboard',            labelKey: 'nav.home',     icon: <LayoutDashboard size={20} /> },
-    { href: '/missions',             labelKey: 'nav.missions', icon: <Satellite size={20} /> },
-    { href: '/leaderboard',          labelKey: 'nav.ranks',    icon: <Trophy size={20} /> },
-    { href: '/sky-tools/conditions', labelKey: 'nav.sky',      icon: <Cloud size={20} /> },
-    { href: '/profile',              labelKey: 'nav.profile',  icon: <User size={20} /> },
+    { href: '/dashboard',            labelKey: 'nav.home',     icon: LayoutDashboard },
+    { href: '/missions',             labelKey: 'nav.missions', icon: Satellite       },
+    { href: '/leaderboard',          labelKey: 'nav.ranks',    icon: Trophy          },
+    { href: '/sky-tools/conditions', labelKey: 'nav.sky',      icon: Cloud           },
+    { href: '/profile',              labelKey: 'nav.profile',  icon: User            },
   ]
 
   return (
     <nav
-      className="sm:hidden fixed bottom-0 left-0 right-0 z-50 bg-space-900/90 backdrop-blur-xl border-t border-white/10"
-      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+      className="sm:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-white/[0.06]"
+      style={{ background: 'rgba(9,12,20,0.95)', backdropFilter: 'blur(20px)', paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       <div className="flex items-stretch">
         {tabs.map(tab => {
           const active = pathname === tab.href || pathname.startsWith(tab.href + '/')
+          const Icon = tab.icon
           return (
             <Link
               key={tab.href}
               href={tab.href}
-              className={`flex-1 flex flex-col items-center justify-center gap-1 py-3 transition-colors ${
-                active ? 'text-space-accent' : 'text-slate-500 active:text-slate-300'
+              className={`flex-1 flex flex-col items-center justify-center gap-1 py-2.5 transition-colors ${
+                active ? 'text-[#6366F1]' : 'text-[#475569] active:text-[#94A3B8]'
               }`}
             >
-              {tab.icon}
-              <span className="text-[10px] font-medium">{t(tab.labelKey)}</span>
+              <Icon size={18} />
+              <span className="text-[9px] font-bold tracking-wider uppercase">{t(tab.labelKey)}</span>
             </Link>
           )
         })}
