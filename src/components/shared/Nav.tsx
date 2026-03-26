@@ -14,7 +14,7 @@ export default function Nav() {
   const tabs = [
     { href: '/dashboard',           labelKey: 'nav.dashboard',   icon: <LayoutDashboard size={17} /> },
     { href: '/missions',            labelKey: 'nav.missions',    icon: <Satellite size={17} /> },
-    { href: '/leaderboard',         labelKey: 'nav.leaderboard', icon: <Trophy size={17} /> },
+    { href: '/leaderboard',         labelKey: 'nav.ranks',       icon: <Trophy size={17} /> },
     { href: '/sky-tools/conditions',labelKey: 'nav.sky',         icon: <Cloud size={17} /> },
     { href: '/profile',             labelKey: 'nav.profile',     icon: <User size={17} /> },
   ]

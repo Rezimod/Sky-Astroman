@@ -5,7 +5,7 @@ export const translations = {
   nav: {
     dashboard:    { en: 'Dashboard',    ka: 'მთავარი' },
     missions:     { en: 'Missions',     ka: 'მისიები' },
-    leaderboard:  { en: 'Leaderboard',  ka: 'ლიდერბორდი' },
+    leaderboard:  { en: 'Ranks',        ka: 'რეიტინგი' },
     sky:          { en: 'Sky',          ka: 'ცა' },
     profile:      { en: 'Profile',      ka: 'პროფილი' },
     teams:        { en: 'Teams',        ka: 'გუნდები' },
@@ -16,23 +16,23 @@ export const translations = {
   // Landing page
   landing: {
     tagline:       { en: 'TBILISI · GEORGIA',                     ka: 'თბილისი · საქართველო' },
-    heroLine1:     { en: 'Explore the night sky',                  ka: 'შეისწავლე ღამის ცა' },
-    heroLine2:     { en: 'from Tbilisi, every night',              ka: 'თბილისიდან — ყოველ ღამე' },
-    heroSub:       { en: 'Georgia\'s astronomy community. Log what you see, complete nightly missions, and rise through the ranks.', ka: 'საქართველოს ასტრომანთა სათემო პლატფორმა. ჩაწერე დაკვირვებები, შეასრულე ღამის მისიები და გახდი ლიდერი.' },
-    startBtn:      { en: 'Start Exploring →',                      ka: 'დაიწყე →' },
-    leaderBtn:     { en: 'Leaderboard',                            ka: 'ლიდერბორდი' },
-    free:          { en: 'Free forever',                           ka: 'სრულიად უფასო' },
-    location:      { en: 'Tbilisi, Georgia',                       ka: 'თბილისი, საქართველო' },
-    noCrypto:      { en: 'New missions every night',               ka: 'ახალი მისიები ყოველ ღამე' },
+    heroLine1:     { en: "What's in the sky?",             ka: 'რა ჩანს ცაზე?' },
+    heroLine2:     { en: 'Observe. Log. Compete.',          ka: 'დააკვირდი. ჩაწერე. შეეჯიბრე.' },
+    heroSub:       { en: "Georgia's astronomy community — track observations, complete nightly missions, and rise through the ranks.", ka: 'საქართველოს ასტრომანთა სათემო პლატფორმა — ჩაწერე დაკვირვებები, შეასრულე ღამის მისიები, გახდი ლიდერი.' },
+    startBtn:      { en: 'Start →',                         ka: 'დაიწყე →' },
+    leaderBtn:     { en: 'Ranks',                           ka: 'რეიტინგი' },
+    free:          { en: 'Free',                            ka: 'უფასო' },
+    location:      { en: 'Tbilisi',                         ka: 'თბილისი' },
+    noCrypto:      { en: 'Open Platform',                   ka: 'ღია პლატფორმა' },
     // Visible tonight section
-    tonightTitle:  { en: "Tonight's Sky",                          ka: 'დღეს ღამე ცაზე' },
-    tonightSub:    { en: 'Live from Tbilisi right now',            ka: 'პირდაპირი ეთერი თბილისიდან' },
+    tonightTitle:  { en: 'Sky Now',                         ka: 'ცის პირობები ახლა' },
+    tonightSub:    { en: 'Live from Tbilisi',               ka: 'პირდაპირი ეთერი თბილისიდან' },
     visibleCount:  { en: 'objects visible tonight',               ka: 'ობიექტი ხილულია ამ ღამე' },
     altitude:      { en: 'peak alt',                              ka: 'მაქს. სიმაღლე' },
     bestAt:        { en: 'best at',                               ka: 'საუკეთესო დრო' },
     // Missions section
-    missionsTitle: { en: "Tonight's Missions",                     ka: 'დღეს ღამის მისიები' },
-    missionsSub:   { en: 'Built from tonight\'s actual sky',       ka: 'დაფუძნებული დღევანდელი ცის მდგომარეობაზე' },
+    missionsTitle: { en: "Tonight's Missions",              ka: 'ღამის მისიები' },
+    missionsSub:   { en: "Built from tonight's sky",        ka: 'დღევანდელი ცის მიხედვით' },
     seeAll:        { en: 'See all missions →',                     ka: 'ყველა მისია →' },
     // APOD section
     apodTitle:     { en: "NASA's Picture of the Day",              ka: 'NASA-ს დღის სურათი' },
@@ -40,15 +40,17 @@ export const translations = {
     apodError:     { en: 'Image unavailable today',                ka: 'სურათი დღეს მიუწვდომელია' },
     // How it works
     howTitle:      { en: 'How It Works',                           ka: 'როგორ მუშაობს' },
-    step1t:        { en: 'Check the Sky',                          ka: 'გადამოწმე ცა' },
-    step1d:        { en: 'See which planets and objects are visible from Tbilisi tonight', ka: 'ნახე, რომელი პლანეტები და ობიექტები ჩანს დღეს ღამე თბილისიდან' },
-    step2t:        { en: 'Pick a Mission',                         ka: 'აირჩიე მისია' },
-    step2d:        { en: 'Every night brings fresh targets based on what\'s actually in the sky', ka: 'ყოველ ღამე ახალი სამიზნეები — ცის რეალური მდგომარეობის მიხედვით' },
-    step3t:        { en: 'Shoot & Submit',                         ka: 'გადაიღე და გაგზავნე' },
-    step3d:        { en: 'Photograph the object and submit. Points land in your account once verified', ka: 'გადაიღე ობიექტი, გაგზავნე ფოტო — ადმინი ამოწმებს და ქულები ემატება ანგარიშს' },
+    step1t:        { en: 'Check the Sky',                   ka: 'შეამოწმე ცა' },
+    step1d:        { en: 'See what planets and objects are visible from Tbilisi tonight', ka: 'ნახე, რომელი პლანეტები ჩანს დღეს ღამე თბილისიდან' },
+    step2t:        { en: 'Pick a Mission',                  ka: 'აირჩიე მისია' },
+    step2d:        { en: 'Every night new targets appear based on real sky conditions', ka: 'ყოველ ღამე ახალი სამიზნეები — ცის რეალური მდგომარეობის მიხედვით' },
+    step3t:        { en: 'Shoot & Submit',                  ka: 'გადაიღე და გაგზავნე' },
+    step3d:        { en: 'Photograph the object and submit your photo through the app', ka: 'გადაიღე ობიექტი და გაგზავნე ფოტო აპლიკაციით' },
+    step4t:        { en: 'Earn Points',                     ka: 'დააგროვე ქულები' },
+    step4d:        { en: 'Admin verifies your photo — points land in your account and your rank climbs', ka: 'ადმინი ამოწმებს ფოტოს, ქულები ემატება ანგარიშს და რეიტინგი იმატებს' },
     // CTA
-    ctaTitle:      { en: 'The sky is clear. Are you?',             ka: 'ცა გახსნილია. მზა ხარ?' },
-    ctaBtn:        { en: 'Join Sky Astroman →',                    ka: 'შემოგვიერთდი →' },
+    ctaTitle:      { en: 'Ready?',                          ka: 'მზად ხარ?' },
+    ctaBtn:        { en: 'Join Sky Astroman →',             ka: 'შემოგვიერთდი →' },
     // Equipment labels
     naked_eye:     { en: 'Naked Eye',                            ka: 'შეუიარაღებელი თვალი' },
     binoculars:    { en: 'Binoculars',                           ka: 'ბინოკლი' },
@@ -103,10 +105,10 @@ export const translations = {
   },
   // Dashboard
   dashboard: {
-    title:          { en: "Tonight's Sky",          ka: 'დღეს ღამე ცაზე' },
+    title:          { en: 'Home',                  ka: 'მთავარი' },
     location:       { en: 'Tbilisi, Georgia',        ka: 'თბილისი, საქართველო' },
     activeMissions: { en: 'Active Missions',         ka: 'აქტიური მისიები' },
-    challenge:      { en: "Tonight's Challenge",     ka: 'დღეს ღამის გამოწვევა' },
+    challenge:      { en: "Tonight's Challenge",   ka: 'ღამის გამოწვევა' },
     recommended:    { en: 'Recommended Tonight',     ka: 'რეკომენდებული ღამით' },
     noMissions:     { en: 'No active missions.',     ka: 'აქტიური მისია არ არის.' },
     bestViewing:    { en: 'Best viewing:',           ka: 'საუკეთესო დრო:' },
@@ -126,6 +128,7 @@ export const translations = {
   // Missions
   missions: {
     title:        { en: 'Missions',                    ka: 'მისიები' },
+    subtitle:     { en: 'Missions based on current sky',        ka: 'მისიები ახლანდელი ცის მიხედვით' },
     completed:    { en: 'Completed',                   ka: 'შესრულებული' },
     pending:      { en: 'Pending',                     ka: 'მოლოდინში' },
     available:    { en: 'Available',                   ka: 'ხელმისაწვდომი' },
@@ -153,8 +156,8 @@ export const translations = {
   },
   // Leaderboard
   leaderboard: {
-    title:        { en: 'Leaderboard',                 ka: 'ლიდერბორდი' },
-    subtitle:     { en: 'Top stargazers by observation points', ka: 'საუკეთესო ვარსკვლავმოყვარეები ქულების მიხედვით' },
+    title:        { en: 'Ranks',                                ka: 'რეიტინგი' },
+    subtitle:     { en: 'Top stargazers ranked by points',      ka: 'საუკეთესო ასტრომანები ქულების მიხედვით' },
     allTime:      { en: 'All Time',                    ka: 'ყველა დრო' },
     thisMonth:    { en: 'This Month',                  ka: 'ეს თვე' },
     thisWeek:     { en: 'This Week',                   ka: 'ეს კვირა' },
@@ -163,8 +166,8 @@ export const translations = {
   },
   // Sky conditions
   sky: {
-    title:          { en: "Tonight's Sky",                    ka: 'დღეს ღამე ცაზე' },
-    subtitle:       { en: 'Tbilisi, Georgia · 41.7°N, 44.8°E', ka: 'თბილისი · 41.7°N, 44.8°E' },
+    title:          { en: 'Sky Conditions',                       ka: 'ცის პირობები' },
+    subtitle:       { en: 'Tbilisi, Georgia · 41.7°N, 44.8°E',   ka: 'თბილისი · 41.7°N, 44.8°E' },
     updated:        { en: 'Updated',                          ka: 'განახლდა' },
     cloudCover:     { en: 'Cloud Cover',                      ka: 'ღრუბლიანობა' },
     clearSky:       { en: 'clear sky',                        ka: 'სუფთა ცა' },
@@ -206,7 +209,7 @@ export const translations = {
   },
   // Footer
   footer: {
-    tagline:      { en: 'Sky Astroman — Astronomy for Georgia', ka: 'Sky Astroman — ასტრონომია საქართველოსთვის' },
+    tagline:      { en: 'Sky Astroman — Sky at a Glance',       ka: 'Sky Astroman — ცა ერთი შეხედვით' },
     location:     { en: 'Tbilisi, Georgia',                    ka: 'თბილისი, საქართველო' },
   },
   // Profile

@@ -13,8 +13,8 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  title: 'Sky Astroman — Strava for Astronomy',
-  description: 'Observe the night sky, log missions, earn points, compete with fellow stargazers.',
+  title: 'Sky Astroman — ცა ერთი შეხედვით',
+  description: 'საქართველოს ასტრომანთა პლატფორმა. ჩაწერე დაკვირვებები, შეასრულე მისიები, გახდი ლიდერი.',
   appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'Sky Astroman' },
 }
 

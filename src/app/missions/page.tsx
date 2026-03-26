@@ -103,7 +103,8 @@ export default function MissionsPage() {
         <section>
           <div className="flex items-center gap-2 mb-2">
             <Satellite size={16} strokeWidth={1.5} className="text-[#38F0FF]" />
-            <h1 className="text-xl sm:text-2xl font-bold text-white">{t('landing.missionsTitle')}</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-white">{t('missions.title')}</h1>
+            <p className="text-xs text-[var(--text-dim)] mt-0.5">{t('missions.subtitle')}</p>
           </div>
           <div className="flex items-center gap-2 mb-4">
             <div className={`w-1.5 h-1.5 rounded-full ${isNight ? 'bg-[#34d399] animate-pulse' : 'bg-yellow-500'}`} />

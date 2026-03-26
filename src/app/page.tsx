@@ -100,11 +100,12 @@ export default function LandingPage() {
           <span className="text-[10px] tracking-[0.3em] text-[var(--text-dim)] uppercase font-mono">
             {t('landing.tagline')}
           </span>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold leading-tight">
-            <span className="text-[var(--text-secondary)]">{t('landing.heroLine1')}</span>
-            <br />
-            <span className="text-[#FFD166]">{t('landing.heroLine2')}</span>
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold leading-tight text-[#FFD166]">
+            {t('landing.heroLine1')}
           </h1>
+          <p className="text-xl sm:text-2xl font-semibold text-[var(--text-secondary)] tracking-wide">
+            {t('landing.heroLine2')}
+          </p>
           <p className="text-[var(--text-secondary)] max-w-md text-sm sm:text-base leading-relaxed">
             {t('landing.heroSub')}
           </p>
@@ -291,11 +292,12 @@ export default function LandingPage() {
         {/* ── How it works ─────────────────────────────────────── */}
         <section className="w-full">
           <h2 className="text-xl font-bold text-white text-center mb-6">{t('landing.howTitle')}</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {[
               { icon: Cloud,     titleKey: 'landing.step1t', descKey: 'landing.step1d', color: '#38F0FF' },
               { icon: Telescope, titleKey: 'landing.step2t', descKey: 'landing.step2d', color: '#FFD166' },
               { icon: Camera,    titleKey: 'landing.step3t', descKey: 'landing.step3d', color: '#34d399' },
+              { icon: Star,      titleKey: 'landing.step4t', descKey: 'landing.step4d', color: '#FFD166' },
             ].map(({ icon: Icon, titleKey, descKey, color }, i) => (
               <div key={i} className="glass-card p-5 flex flex-col gap-3">
                 <div
