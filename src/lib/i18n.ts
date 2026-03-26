@@ -103,8 +103,25 @@ export const translations = {
   },
   // Dashboard
   dashboard: {
-    title:        { en: "Tonight's Sky",               ka: 'დღეს ღამე ცაზე' },
-    location:     { en: 'Tbilisi, Georgia',            ka: 'თბილისი, საქართველო' },
+    title:          { en: "Tonight's Sky",          ka: 'დღეს ღამე ცაზე' },
+    location:       { en: 'Tbilisi, Georgia',        ka: 'თბილისი, საქართველო' },
+    activeMissions: { en: 'Active Missions',         ka: 'აქტიური მისიები' },
+    challenge:      { en: "Tonight's Challenge",     ka: 'დღეს ღამის გამოწვევა' },
+    recommended:    { en: 'Recommended Tonight',     ka: 'რეკომენდებული ღამით' },
+    noMissions:     { en: 'No active missions.',     ka: 'აქტიური მისია არ არის.' },
+    bestViewing:    { en: 'Best viewing:',           ka: 'საუკეთესო დრო:' },
+    conditions:     { en: 'Conditions',              ka: 'პირობები' },
+    illumination:   { en: 'Illumination',            ka: 'განათება' },
+    howToFind:      { en: 'How to find',             ka: 'როგორ ვიპოვოთ' },
+    equipment:      { en: 'Equipment',               ka: 'მოწყობილობა' },
+    tips:           { en: 'Tips',                    ka: 'რჩევები' },
+    viewGuide:      { en: 'View Guide',              ka: 'გზამკვლევი' },
+    hideGuide:      { en: 'Hide Guide',              ka: 'გადამალვა' },
+    viewAll:        { en: 'View All',                ka: 'ყველა' },
+    daily:          { en: 'Daily',                   ka: 'ყოველდღიური' },
+    level:          { en: 'Level',                   ka: 'დონე' },
+    ptsToLevel:     { en: 'pts to Level',            ka: 'ქულა დონემდე' },
+    peakAlt:        { en: 'Peak altitude:',          ka: 'მაქს. სიმაღლე:' },
   },
   // Missions
   missions: {

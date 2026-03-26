@@ -1,6 +1,8 @@
+'use client'
 import Link from 'next/link'
 import CardWrapper from '@/components/layout/CardWrapper'
 import LevelIndicator from '@/components/ui/LevelIndicator'
+import { useLanguage } from '@/contexts/LanguageContext'
 import type { Profile } from '@/lib/types'
 
 interface LeaderboardSnapshotCardProps {
@@ -9,17 +11,19 @@ interface LeaderboardSnapshotCardProps {
 }
 
 export default function LeaderboardSnapshotCard({ users, currentUserId }: LeaderboardSnapshotCardProps) {
+  const { t } = useLanguage()
+
   return (
     <CardWrapper>
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider">
-          Leaderboard
+          {t('leaderboard.title')}
         </h3>
         <Link
           href="/leaderboard"
           className="text-xs text-[var(--accent-cyan)] hover:text-[var(--accent-gold)] transition-colors"
         >
-          View All
+          {t('dashboard.viewAll')}
         </Link>
       </div>
       <div className="space-y-2.5">

@@ -40,12 +40,23 @@ export default function LandingPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    const OPEN_METEO = 'https://api.open-meteo.com/v1/forecast?latitude=41.7151&longitude=44.8271&hourly=cloud_cover,visibility,temperature_2m&daily=sunrise,sunset,moon_phase&current=cloud_cover,temperature_2m&timezone=Asia%2FTbilisi&forecast_days=1'
     Promise.all([
       fetch('/api/sky/conditions').then(r => r.json()).catch(() => null),
       fetch('/api/missions').then(r => r.json()).catch(() => []),
       fetch('/api/apod').then(r => r.json()).catch(() => null),
-    ]).then(([skyData, missionData, apodData]) => {
-      if (skyData && !skyData.error) setSky(skyData)
+      fetch(OPEN_METEO).then(r => r.json()).catch(() => null),
+    ]).then(([skyData, missionData, apodData, meteo]) => {
+      if (skyData && !skyData.error) {
+        if (meteo && !meteo.error) {
+          const hour = new Date().getHours()
+          skyData.cloudCover  = meteo.current?.cloud_cover    ?? meteo.hourly?.cloud_cover?.[hour]    ?? skyData.cloudCover
+          skyData.temperature = meteo.current?.temperature_2m ?? meteo.hourly?.temperature_2m?.[hour] ?? skyData.temperature
+          const mp = meteo.daily?.moon_phase?.[0]
+          if (mp !== undefined) { skyData.moonPhase = mp; skyData.moonIllumination = Math.sin(mp * Math.PI) }
+        }
+        setSky(skyData)
+      }
       if (Array.isArray(missionData)) setMissions(missionData)
       if (apodData && !apodData.error) setApod(apodData)
       else setApodError(true)

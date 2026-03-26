@@ -1,4 +1,6 @@
+'use client'
 import CardWrapper from '@/components/layout/CardWrapper'
+import { useLanguage } from '@/contexts/LanguageContext'
 import type { SkyConditions } from '@/lib/types'
 
 interface TonightsSkyCardProps {
@@ -6,25 +8,27 @@ interface TonightsSkyCardProps {
   loading?: boolean
 }
 
-function getMoonPhaseName(phase: number): string {
-  if (phase < 0.05 || phase > 0.95) return 'New Moon'
-  if (phase < 0.25) return 'Waxing Crescent'
-  if (phase < 0.3) return 'First Quarter'
-  if (phase < 0.45) return 'Waxing Gibbous'
-  if (phase < 0.55) return 'Full Moon'
-  if (phase < 0.7) return 'Waning Gibbous'
-  if (phase < 0.75) return 'Last Quarter'
-  return 'Waning Crescent'
+function getMoonPhaseKey(phase: number): string {
+  if (phase < 0.05 || phase > 0.95) return 'sky.newMoon'
+  if (phase < 0.25) return 'sky.waxCrescent'
+  if (phase < 0.3)  return 'sky.firstQuarter'
+  if (phase < 0.45) return 'sky.waxGibbous'
+  if (phase < 0.55) return 'sky.fullMoon'
+  if (phase < 0.7)  return 'sky.wanGibbous'
+  if (phase < 0.75) return 'sky.lastQuarter'
+  return 'sky.wanCrescent'
 }
 
-function getVisibilityLabel(cloudCover: number): { label: string; color: string } {
-  if (cloudCover < 20) return { label: 'Excellent', color: 'text-[var(--accent-emerald)]' }
-  if (cloudCover < 40) return { label: 'Good', color: 'text-[var(--accent-cyan)]' }
-  if (cloudCover < 70) return { label: 'Fair', color: 'text-[var(--accent-gold)]' }
-  return { label: 'Poor', color: 'text-red-400' }
+function getVisibilityKey(cloudCover: number): { key: string; color: string } {
+  if (cloudCover < 20) return { key: 'sky.excellent', color: 'text-[var(--accent-emerald)]' }
+  if (cloudCover < 40) return { key: 'sky.good',      color: 'text-[var(--accent-cyan)]' }
+  if (cloudCover < 70) return { key: 'sky.fair',      color: 'text-[var(--accent-gold)]' }
+  return { key: 'sky.poor', color: 'text-red-400' }
 }
 
 export default function TonightsSkyCard({ conditions, loading }: TonightsSkyCardProps) {
+  const { t } = useLanguage()
+
   if (loading || !conditions) {
     return (
       <CardWrapper>
@@ -37,22 +41,22 @@ export default function TonightsSkyCard({ conditions, loading }: TonightsSkyCard
     )
   }
 
-  const { label, color } = getVisibilityLabel(conditions.cloudCover)
+  const { key: visKey, color } = getVisibilityKey(conditions.cloudCover)
 
   return (
     <CardWrapper glow="cyan">
       <h3 className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-3">
-        Tonight&apos;s Sky
+        {t('sky.title')}
       </h3>
       <div className="grid grid-cols-2 gap-3 mb-4">
-        <SkyMetric label="Conditions" value={label} valueClass={color} />
-        <SkyMetric label="Cloud Cover" value={`${conditions.cloudCover}%`} />
-        <SkyMetric label="Moon Phase" value={getMoonPhaseName(conditions.moonPhase)} />
-        <SkyMetric label="Illumination" value={`${Math.round(conditions.moonIllumination * 100)}%`} />
+        <SkyMetric label={t('dashboard.conditions')} value={t(visKey)} valueClass={color} />
+        <SkyMetric label={t('sky.cloudCover')} value={`${conditions.cloudCover}%`} />
+        <SkyMetric label={t('sky.moonPhase')} value={t(getMoonPhaseKey(conditions.moonPhase))} />
+        <SkyMetric label={t('dashboard.illumination')} value={`${Math.round(conditions.moonIllumination * 100)}%`} />
       </div>
       <div className="border-t border-[var(--border-glass)] pt-3">
         <p className="text-xs text-[var(--text-secondary)]">
-          Best viewing:{' '}
+          {t('dashboard.bestViewing')}{' '}
           <span className="text-[var(--accent-cyan)] font-medium">
             {conditions.bestViewingStart} – {conditions.bestViewingEnd}
           </span>

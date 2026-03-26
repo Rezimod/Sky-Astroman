@@ -1,6 +1,8 @@
+'use client'
 import CardWrapper from '@/components/layout/CardWrapper'
 import ProgressBar from '@/components/ui/ProgressBar'
 import LevelIndicator from '@/components/ui/LevelIndicator'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { getPointsToNextLevel } from '@/lib/constants'
 import type { Profile } from '@/lib/types'
 
@@ -10,6 +12,7 @@ interface UserStatsCardProps {
 }
 
 export default function UserStatsCard({ profile, rank }: UserStatsCardProps) {
+  const { t } = useLanguage()
   const { current, needed, progress } = getPointsToNextLevel(profile.points)
 
   return (
@@ -28,15 +31,15 @@ export default function UserStatsCard({ profile, rank }: UserStatsCardProps) {
           <p className="text-xs text-[var(--text-secondary)] mb-3">@{profile.username}</p>
 
           <div className="grid grid-cols-3 gap-3 mb-4">
-            <Stat label="Points" value={profile.points.toLocaleString()} />
-            <Stat label="Observations" value={profile.observations_count.toString()} />
-            <Stat label="Missions" value={profile.missions_completed.toString()} />
+            <Stat label={t('profile.points')} value={profile.points.toLocaleString()} />
+            <Stat label={t('profile.observations')} value={profile.observations_count.toString()} />
+            <Stat label={t('profile.missions')} value={profile.missions_completed.toString()} />
           </div>
 
           <div>
             <div className="flex justify-between text-xs text-[var(--text-secondary)] mb-1.5">
-              <span>Level {profile.level}</span>
-              <span>{current} / {needed} pts to Level {profile.level + 1}</span>
+              <span>{t('dashboard.level')} {profile.level}</span>
+              <span>{current} / {needed} {t('dashboard.ptsToLevel')} {profile.level + 1}</span>
             </div>
             <ProgressBar value={progress} color="gold" />
           </div>
