@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { CheckCircle2, Clock } from 'lucide-react'
+import { CheckCircle2, Clock, Search, Sparkles, Plus } from 'lucide-react'
 import { DIFFICULTY_CONFIG } from '@/lib/missions'
 import ObservationModal from '@/components/observations/ObservationModal'
 import { useLanguage } from '@/contexts/LanguageContext'
@@ -109,7 +109,7 @@ export default function MissionsPage() {
               />
               <div className="relative z-20 p-10 lg:p-16 max-w-2xl">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-space-glow/20 border border-space-glow/30 text-[10px] font-bold text-white uppercase tracking-wider mb-6">
-                  <span className="animate-pulse">✨</span>
+                  <Sparkles size={12} className="animate-pulse" />
                   {lang === 'ka' ? 'კვირის მისია' : 'Mission of the week'}
                 </div>
                 <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4 leading-tight">
@@ -169,7 +169,7 @@ export default function MissionsPage() {
               ))}
             </div>
             <div className="relative group">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">🔍</span>
+              <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
                 type="text"
                 value={search}
@@ -261,8 +261,8 @@ export default function MissionsPage() {
 
               {/* Suggest mission placeholder */}
               <div className="bg-white/5 border border-white/10 border-dashed rounded-[2rem] p-6 flex flex-col items-center justify-center text-center group cursor-pointer hover:bg-white/5 transition-all">
-                <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform text-3xl">
-                  +
+                <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform text-slate-400">
+                  <Plus size={28} />
                 </div>
                 <h3 className="text-lg font-bold text-slate-400 group-hover:text-white transition-colors">
                   {lang === 'ka' ? 'შემოგვთავაზე მისია' : 'Suggest a mission'}

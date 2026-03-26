@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import Link from 'next/link'
+import { Crown, Sparkles } from 'lucide-react'
 import { useLanguage } from '@/contexts/LanguageContext'
 
 type Period = 'all' | 'month' | 'week'
@@ -86,7 +87,7 @@ export default function LeaderboardPage() {
 
         {/* 1st place */}
         <div className="flex flex-col items-center">
-          <div className="text-3xl text-yellow-400 mb-2 drop-shadow-[0_0_10px_rgba(250,204,21,0.5)]">👑</div>
+          <div className="text-yellow-400 mb-2 drop-shadow-[0_0_10px_rgba(250,204,21,0.5)] flex justify-center"><Crown size={32} /></div>
           <div className="relative mb-4">
             <div className="w-28 h-28 rounded-full border-4 border-yellow-400 p-1 shadow-[0_0_30px_rgba(250,204,21,0.2)]">
               <div className="w-full h-full rounded-full bg-gradient-to-br from-space-accent to-space-glow flex items-center justify-center text-2xl font-bold text-white">
@@ -96,7 +97,7 @@ export default function LeaderboardPage() {
             <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-yellow-400 text-space-900 text-sm font-black px-4 py-1 rounded-full shadow-lg">1</div>
           </div>
           <div className="text-center bg-space-accent/10 border border-space-accent/30 rounded-2xl p-6 w-full h-40 flex flex-col justify-center relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-2 opacity-10 text-4xl">✨</div>
+            <div className="absolute top-0 right-0 p-2 opacity-10 text-space-accent"><Sparkles size={32} /></div>
             <span className="text-lg text-white font-bold block truncate">{top3[0].display_name}</span>
             <span className="text-xs text-space-accent font-bold block mb-2">{top3[0].title}</span>
             <span className="text-2xl font-black text-white">{top3[0].points.toLocaleString()} <span className="text-[10px] text-space-accent uppercase">XP</span></span>

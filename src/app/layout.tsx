@@ -20,9 +20,9 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  title: 'Sky Astroman — ცა ერთი შეხედვით',
+  title: 'Skywatcher — ცა ერთი შეხედვით',
   description: 'საქართველოს ასტრომანთა პლატფორმა. ჩაწერე დაკვირვებები, შეასრულე მისიები, გახდი ლიდერი.',
-  appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'Sky Astroman' },
+  appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'Skywatcher' },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
