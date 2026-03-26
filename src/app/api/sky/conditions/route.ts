@@ -13,12 +13,13 @@ export async function GET(req: NextRequest) {
 
     const url = `${OPEN_METEO_URL}?latitude=${lat}&longitude=${lng}&hourly=cloud_cover,visibility,temperature_2m&daily=sunrise,sunset,moon_phase&current=cloud_cover,temperature_2m&timezone=Asia%2FTbilisi&forecast_days=1`
 
-    const res = await fetch(url, { next: { revalidate: 600 } })
+    const res = await fetch(url, { cache: 'no-store' })
     if (!res.ok) throw new Error('Open-Meteo fetch failed')
 
     const data = await res.json()
 
-    const currentHour = new Date().getHours()
+    // Vercel servers run in UTC — Tbilisi is always UTC+4 (no DST)
+    const currentHour = (new Date().getUTCHours() + 4) % 24
     const cloudCover = data.current?.cloud_cover ?? data.hourly?.cloud_cover?.[currentHour] ?? 50
     const visibility = data.hourly?.visibility?.[currentHour] ?? 10000
     const temperature = data.current?.temperature_2m ?? data.hourly?.temperature_2m?.[currentHour] ?? 15
@@ -56,7 +57,7 @@ export async function GET(req: NextRequest) {
     try {
       const planets = getTonightsObjects()
       return NextResponse.json({
-        cloudCover: 0,
+        cloudCover: 50,
         visibility: 10,
         temperature: 15,
         moonPhase: 0.5,

@@ -83,13 +83,15 @@ export default function MissionsPage() {
         <ObservationModal
           mission={{
             id: activeMission.id,
-            name: activeMission.objectName,
+            name: lang === 'ka' ? activeMission.titleGe : activeMission.objectName,
             emoji: activeMission.objectEmoji,
             difficulty: DIFF_MAP[activeMission.difficulty] ?? 'Beginner',
             points: activeMission.points,
             type: activeMission.equipment === 'naked_eye' ? 'naked_eye' : 'telescope',
-            desc: activeMission.description,
-            hint: `Best viewing: ${activeMission.bestTime} · Peak altitude: ${activeMission.maxAltitude}°`,
+            desc: lang === 'ka' ? activeMission.descriptionGe : activeMission.description,
+            hint: lang === 'ka'
+              ? `საუკეთესო დრო: ${activeMission.bestTime} · მაქს. სიმაღლე: ${activeMission.maxAltitude}°`
+              : `Best viewing: ${activeMission.bestTime} · Peak altitude: ${activeMission.maxAltitude}°`,
           }}
           onClose={() => setActiveMission(null)}
           onSuccess={() => handleSuccess(activeMission.id)}
@@ -186,7 +188,7 @@ export default function MissionsPage() {
                         }} />
                       ))}
                     </div>
-                    <span className="text-[9px] text-slate-600 font-medium tracking-wide uppercase">{diffConfig.label}</span>
+                    <span className="text-[9px] text-slate-600 font-medium tracking-wide uppercase">{lang === 'ka' ? diffConfig.labelGe : diffConfig.label}</span>
                   </div>
 
                   {/* Best time + altitude */}

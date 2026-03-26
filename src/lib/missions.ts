@@ -55,8 +55,8 @@ export const MISSIONS: MissionDef[] = [
 ]
 
 export const DIFFICULTY_CONFIG = {
-  Beginner:     { dots: 1, color: 'rgba(255,209,102,0.55)',  label: 'Easy'   },
-  Intermediate: { dots: 2, color: 'rgba(255,209,102,0.55)',  label: 'Medium' },
-  Hard:         { dots: 4, color: 'rgba(251,113,133,0.7)',   label: 'Hard+'  },
-  Expert:       { dots: 5, color: 'rgba(239,68,68,0.8)',     label: 'Expert' },
+  Beginner:     { dots: 1, color: 'rgba(255,209,102,0.55)',  label: 'Easy',   labelGe: 'მარტივი'  },
+  Intermediate: { dots: 2, color: 'rgba(255,209,102,0.55)',  label: 'Medium', labelGe: 'საშუალო'  },
+  Hard:         { dots: 4, color: 'rgba(251,113,133,0.7)',   label: 'Hard+',  labelGe: 'რთული'    },
+  Expert:       { dots: 5, color: 'rgba(239,68,68,0.8)',     label: 'Expert', labelGe: 'ექსპერტი' },
 }

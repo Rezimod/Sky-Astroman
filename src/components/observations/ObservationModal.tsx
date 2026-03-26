@@ -2,6 +2,7 @@
 import { useState, useRef } from 'react'
 import { X, Upload, CheckCircle, Camera } from 'lucide-react'
 import { MissionIcon } from '@/components/shared/PlanetIcons'
+import { useLanguage } from '@/contexts/LanguageContext'
 import type { MissionDef } from '@/lib/missions'
 
 interface ObservationModalProps {
@@ -11,6 +12,7 @@ interface ObservationModalProps {
 }
 
 export default function ObservationModal({ mission, onClose, onSuccess }: ObservationModalProps) {
+  const { t } = useLanguage()
   const [step, setStep] = useState<'form' | 'uploading' | 'done'>('form')
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
   const [telescope, setTelescope] = useState('')
@@ -26,7 +28,6 @@ export default function ObservationModal({ mission, onClose, onSuccess }: Observ
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setStep('uploading')
-    // Simulate upload delay
     await new Promise(r => setTimeout(r, 1500))
     setStep('done')
     setTimeout(() => { onSuccess(); onClose() }, 2000)
@@ -38,8 +39,8 @@ export default function ObservationModal({ mission, onClose, onSuccess }: Observ
         {step === 'done' ? (
           <div className="flex flex-col items-center gap-4 py-8 text-center">
             <CheckCircle size={48} className="text-[#34d399]" />
-            <p className="text-xl font-bold text-white">Observation submitted!</p>
-            <p className="text-sm text-[var(--text-secondary)]">Awaiting admin review. Points added once verified.</p>
+            <p className="text-xl font-bold text-white">{t('modal.successTitle')}</p>
+            <p className="text-sm text-[var(--text-secondary)]">{t('modal.successDesc')}</p>
           </div>
         ) : (
           <>
@@ -48,7 +49,7 @@ export default function ObservationModal({ mission, onClose, onSuccess }: Observ
                 <MissionIcon id={mission.id} size={32} />
                 <div>
                   <p className="font-bold text-white">{mission.name}</p>
-                  <p className="text-xs text-[#FFD166]">+{mission.points} pts on approval</p>
+                  <p className="text-xs text-[#FFD166]">+{mission.points} {t('modal.ptsOnApproval')}</p>
                 </div>
               </div>
               <button onClick={onClose} className="text-[var(--text-dim)] hover:text-white transition-colors"><X size={20} /></button>
@@ -69,19 +70,31 @@ export default function ObservationModal({ mission, onClose, onSuccess }: Observ
               ) : (
                 <button type="button" onClick={() => fileRef.current?.click()} className="w-full h-32 rounded-xl border-2 border-dashed border-[var(--border-glass)] hover:border-[rgba(255,209,102,0.3)] flex flex-col items-center justify-center gap-2 text-[var(--text-dim)] hover:text-[var(--text-secondary)] transition-all">
                   <Camera size={24} />
-                  <span className="text-sm">Tap to attach photo</span>
+                  <span className="text-sm">{t('modal.attach')}</span>
                 </button>
               )}
 
-              <input type="text" value={telescope} onChange={e => setTelescope(e.target.value)} placeholder="Telescope used (optional)" className="w-full bg-[rgba(15,31,61,0.6)] border border-[var(--border-glass)] rounded-xl px-4 py-2.5 text-sm text-white placeholder-[var(--text-dim)] focus:outline-none focus:border-[rgba(255,209,102,0.4)]" />
+              <input
+                type="text"
+                value={telescope}
+                onChange={e => setTelescope(e.target.value)}
+                placeholder={t('modal.telescope')}
+                className="w-full bg-[rgba(15,31,61,0.6)] border border-[var(--border-glass)] rounded-xl px-4 py-2.5 text-sm text-white placeholder-[var(--text-dim)] focus:outline-none focus:border-[rgba(255,209,102,0.4)]"
+              />
 
-              <textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="What did you see? (optional)" rows={2} className="w-full bg-[rgba(15,31,61,0.6)] border border-[var(--border-glass)] rounded-xl px-4 py-2.5 text-sm text-white placeholder-[var(--text-dim)] focus:outline-none focus:border-[rgba(255,209,102,0.4)] resize-none" />
+              <textarea
+                value={description}
+                onChange={e => setDescription(e.target.value)}
+                placeholder={t('modal.whatSee')}
+                rows={2}
+                className="w-full bg-[rgba(15,31,61,0.6)] border border-[var(--border-glass)] rounded-xl px-4 py-2.5 text-sm text-white placeholder-[var(--text-dim)] focus:outline-none focus:border-[rgba(255,209,102,0.4)] resize-none"
+              />
 
               <button type="submit" disabled={step === 'uploading'} className="w-full py-3 rounded-xl font-bold text-sm btn-primary flex items-center justify-center gap-2 disabled:opacity-50">
                 {step === 'uploading' ? (
-                  <><span className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" /> Submitting...</>
+                  <><span className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" /> {t('modal.submitting')}</>
                 ) : (
-                  <><Upload size={16} /> Submit Observation</>
+                  <><Upload size={16} /> {t('modal.submit')}</>
                 )}
               </button>
             </form>
