@@ -1,7 +1,8 @@
 'use client'
 import { useState } from 'react'
 import Link from 'next/link'
-import { Crown, ArrowRight, User, Telescope } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { Crown, ArrowRight, User, Telescope, ChevronLeft } from 'lucide-react'
 import { useLanguage } from '@/contexts/LanguageContext'
 
 type Period = 'all' | 'month' | 'week'
@@ -22,6 +23,7 @@ const CURRENT_USER_ID = '8'
 export default function LeaderboardPage() {
   const { lang } = useLanguage()
   const [period, setPeriod] = useState<Period>('week')
+  const router = useRouter()
 
   const periodTabs: { key: Period; en: string; ka: string }[] = [
     { key: 'week',  en: 'WEEK',     ka: 'კვირა'  },
@@ -44,21 +46,26 @@ export default function LeaderboardPage() {
     <div className="max-w-4xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 pb-28 sm:pb-10 animate-page-enter">
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-        <div>
-          <span className="text-[10px] font-bold tracking-[0.15em] text-[#64748B] uppercase block mb-1">
-            {lang === 'ka' ? 'გლობალური რეიტინგი' : 'Global Rankings'}
-          </span>
-          <h1 className="text-xl sm:text-2xl font-bold text-white">
-            {lang === 'ka' ? 'ლიდერბორდი' : 'Leaderboard'}
-          </h1>
-        </div>
-        <div className="flex items-center gap-1 p-1 bg-white/[0.03] border border-white/[0.06] rounded-lg self-start sm:self-auto">
+      <div className="relative flex items-center justify-center mb-6">
+        <button
+          onClick={() => router.back()}
+          className="absolute left-0 w-9 h-9 rounded-full flex items-center justify-center transition-all hover:bg-white/[0.08]"
+          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+        >
+          <ChevronLeft size={16} className="text-[#94A3B8]" />
+        </button>
+        <h1
+          className="text-base sm:text-lg font-bold text-white px-6 py-2 rounded-full"
+          style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.18), rgba(168,85,247,0.12))', border: '1px solid rgba(99,102,241,0.28)' }}
+        >
+          {lang === 'ka' ? 'ლიდერბორდი' : 'Leaderboard'}
+        </h1>
+        <div className="absolute right-0 flex items-center gap-1 p-1 bg-white/[0.03] border border-white/[0.06] rounded-lg">
           {periodTabs.map(tab => (
             <button
               key={tab.key}
               onClick={() => setPeriod(tab.key)}
-              className={`px-3 sm:px-4 py-1.5 rounded text-[11px] font-bold tracking-wider transition-all ${
+              className={`px-2 sm:px-3 py-1 rounded text-[10px] font-bold tracking-wider transition-all ${
                 period === tab.key ? 'bg-[#6366F1] text-white' : 'text-[#64748B] hover:text-white'
               }`}
             >

@@ -1,7 +1,8 @@
 'use client'
 import { useEffect, useState, useCallback } from 'react'
-import { Cloud, Wind, Droplets, Eye, Thermometer, Moon, RefreshCw, ArrowRight, Circle } from 'lucide-react'
+import { Cloud, Wind, Droplets, Eye, Thermometer, Moon, RefreshCw, ArrowRight, Circle, ChevronLeft } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { computeSkyScore } from '@/lib/skyScore'
 import type { VisibleObject } from '@/lib/astronomy'
@@ -159,6 +160,7 @@ const DIFF_COLORS: Record<string, string> = {
 
 export default function SkyConditionsPage() {
   const { lang } = useLanguage()
+  const router = useRouter()
   const [weather, setWeather] = useState<WeatherData | null>(null)
   const [planets, setPlanets] = useState<VisibleObject[]>([])
   const [loading, setLoading] = useState(true)
@@ -219,31 +221,29 @@ export default function SkyConditionsPage() {
     <div className="max-w-5xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 pb-24 sm:pb-8 animate-page-enter">
 
       {/* Page header */}
-      <div className="flex items-start justify-between mb-5 sm:mb-6">
-        <div>
-          <span className="text-[10px] font-bold tracking-[0.15em] text-[#64748B] uppercase block mb-1">
-            {lang === 'ka' ? 'სადგური · თბილისი 41.7°N 44.8°E' : 'Observatory · Tbilisi 41.7°N 44.8°E'}
-          </span>
-          <h1 className="text-xl sm:text-2xl font-bold text-white">
-            {lang === 'ka' ? 'ცის პირობები' : 'Sky Conditions'}
-          </h1>
-        </div>
-        <div className="flex items-center gap-3 mt-1">
-          {lastUpdate && (
-            <span className="text-[10px] text-[#475569] font-mono hidden sm:block">
-              {lang === 'ka' ? 'განახლდა' : 'Updated'} {lastUpdate}
-            </span>
-          )}
-          <button
-            onClick={() => load(true)}
-            disabled={loading || refreshing}
-            className="flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded transition-all disabled:opacity-40"
-            style={{ background: 'rgba(99,102,241,0.1)', color: '#818CF8', border: '1px solid rgba(99,102,241,0.2)' }}
-          >
-            <RefreshCw size={12} className={refreshing ? 'animate-spin' : ''} />
-            {lang === 'ka' ? 'განახლება' : 'Refresh'}
-          </button>
-        </div>
+      <div className="relative flex items-center justify-center mb-5 sm:mb-6">
+        <button
+          onClick={() => router.back()}
+          className="absolute left-0 w-9 h-9 rounded-full flex items-center justify-center transition-all hover:bg-white/[0.08]"
+          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+        >
+          <ChevronLeft size={16} className="text-[#94A3B8]" />
+        </button>
+        <h1
+          className="text-base sm:text-lg font-bold text-white px-6 py-2 rounded-full"
+          style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.18), rgba(168,85,247,0.12))', border: '1px solid rgba(99,102,241,0.28)' }}
+        >
+          {lang === 'ka' ? 'ცის პირობები' : 'Sky Conditions'}
+        </h1>
+        <button
+          onClick={() => load(true)}
+          disabled={loading || refreshing}
+          className="absolute right-0 flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-full transition-all disabled:opacity-40"
+          style={{ background: 'rgba(99,102,241,0.1)', color: '#818CF8', border: '1px solid rgba(99,102,241,0.2)' }}
+        >
+          <RefreshCw size={12} className={refreshing ? 'animate-spin' : ''} />
+          <span className="hidden sm:inline">{lang === 'ka' ? 'განახლება' : 'Refresh'}</span>
+        </button>
       </div>
 
       {/* Loading skeleton */}

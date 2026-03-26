@@ -1,6 +1,6 @@
 'use client'
 import { useRouter } from 'next/navigation'
-import { Crown, MapPin, Wind, Thermometer, CheckCircle, Clock, Telescope, Camera, Satellite, Star, Flame, Award, LogOut } from 'lucide-react'
+import { Crown, MapPin, Wind, Thermometer, CheckCircle, Clock, Telescope, Camera, Satellite, Star, Flame, Award, LogOut, ChevronLeft } from 'lucide-react'
 import { getPointsToNextLevel } from '@/lib/constants'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { createClient } from '@/lib/supabase/client'
@@ -51,11 +51,18 @@ export default function ProfilePage() {
     <div className="max-w-6xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 animate-page-enter">
 
       {/* Header */}
-      <div className="mb-5">
-        <span className="text-[10px] font-bold tracking-[0.15em] text-[#64748B] uppercase block mb-1">
-          {lang === 'ka' ? 'პილოტის პროფილი' : 'Pilot Profile'}
-        </span>
-        <h1 className="text-xl sm:text-2xl font-bold text-white">
+      <div className="relative flex items-center justify-center mb-5">
+        <button
+          onClick={() => router.back()}
+          className="absolute left-0 w-9 h-9 rounded-full flex items-center justify-center transition-all hover:bg-white/[0.08]"
+          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+        >
+          <ChevronLeft size={16} className="text-[#94A3B8]" />
+        </button>
+        <h1
+          className="text-base sm:text-lg font-bold text-white px-6 py-2 rounded-full"
+          style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.18), rgba(168,85,247,0.12))', border: '1px solid rgba(99,102,241,0.28)' }}
+        >
           {lang === 'ka' ? 'ჩემი ანგარიში' : 'My Account'}
         </h1>
       </div>

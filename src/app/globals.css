@@ -109,16 +109,8 @@ body {
   color: var(--text-primary);
 }
 
-/* ── Orbital ring logo animation ── */
-@keyframes orbit {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
-}
-.orbit-ring {
-  animation: orbit 4s linear infinite;
-  transform-box: fill-box;
-  transform-origin: center;
-}
+/* ── Orbital ring logo (static) ── */
+.orbit-ring { /* animation removed */ }
 
 /* ── Progress bar ── */
 .progress-track {
