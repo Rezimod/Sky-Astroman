@@ -1,12 +1,12 @@
 'use client'
 import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, Telescope, User } from 'lucide-react'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { getPointsToNextLevel } from '@/lib/constants'
 import type { SkyConditions, GeneratedMission } from '@/lib/types'
 
-const OPEN_METEO = 'https://api.open-meteo.com/v1/forecast?latitude=41.7151&longitude=44.8271&hourly=cloud_cover,visibility,temperature_2m&daily=sunrise,sunset,moon_phase&current=cloud_cover,temperature_2m&timezone=Asia%2FTbilisi&forecast_days=1'
+const OPEN_METEO = 'https://api.open-meteo.com/v1/forecast?latitude=41.7151&longitude=44.8271&hourly=cloud_cover,visibility,temperature_2m&daily=sunrise,sunset&current=cloud_cover,temperature_2m&timezone=Asia%2FTbilisi&forecast_days=1'
 
 const mockProfile = {
   initials: 'SG',
@@ -182,8 +182,8 @@ export default function DashboardPage() {
                   <circle cx="40" cy="4" r="3.5" fill="#6366F1" />
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-14 h-14 rounded-full bg-[#1E2235] border border-white/10 flex items-center justify-center text-lg font-bold text-white">
-                    {mockProfile.initials}
+                  <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.25), rgba(168,85,247,0.15))', border: '1px solid rgba(99,102,241,0.3)' }}>
+                    <Telescope size={22} className="text-[#818CF8]" />
                   </div>
                 </div>
               </div>
@@ -225,36 +225,6 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Local cluster / leaderboard */}
-          <div className="card p-5">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-[10px] font-bold tracking-[0.15em] text-[#64748B] uppercase">
-                {lang === 'ka' ? 'ლოკალური ტოპი' : 'Local Cluster Top'}
-              </span>
-              <Link href="/leaderboard" className="text-[10px] text-[#6366F1] hover:text-[#818CF8] transition-colors font-bold tracking-wide">
-                {lang === 'ka' ? 'სრული →' : 'Full →'}
-              </Link>
-            </div>
-            <div className="space-y-2.5">
-              {mockLeaderboard.map(u => (
-                <div
-                  key={u.rank}
-                  className={`flex items-center gap-3 rounded-lg px-2 py-1.5 transition-colors ${u.isMe ? 'bg-[#6366F1]/10 border border-[#6366F1]/20' : 'hover:bg-white/[0.03]'}`}
-                >
-                  <span className={`text-[11px] font-bold w-5 text-center font-mono ${u.isMe ? 'text-[#6366F1]' : 'text-[#475569]'}`}>
-                    {String(u.rank).padStart(2, '0')}
-                  </span>
-                  <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white border flex-shrink-0 ${u.isMe ? 'bg-[#6366F1] border-[#6366F1]/50' : 'bg-[#1E2235] border-white/[0.08]'}`}>
-                    {u.initials.slice(0, 2)}
-                  </div>
-                  <span className={`flex-1 text-xs font-medium truncate ${u.isMe ? 'text-[#818CF8]' : 'text-[#94A3B8]'}`}>
-                    {u.name}
-                  </span>
-                  <span className="text-xs font-bold text-white">{u.points.toLocaleString()}</span>
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
 
         {/* ── CENTER COLUMN ── */}
@@ -432,6 +402,39 @@ export default function DashboardPage() {
               </Link>
             </div>
           )}
+        </div>
+      </div>
+
+      {/* Leaderboard — bottom strip */}
+      <div className="card p-5 mt-3 sm:mt-4">
+        <div className="flex items-center justify-between mb-4">
+          <span className="text-[10px] font-bold tracking-[0.15em] text-[#64748B] uppercase">
+            {lang === 'ka' ? 'ლოკალური ტოპი' : 'Local Cluster Top'}
+          </span>
+          <Link href="/leaderboard" className="text-[10px] text-[#6366F1] hover:text-[#818CF8] transition-colors font-bold tracking-wide">
+            {lang === 'ka' ? 'სრული →' : 'Full →'}
+          </Link>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+          {mockLeaderboard.map(u => (
+            <div
+              key={u.rank}
+              className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-colors ${u.isMe ? 'bg-[#6366F1]/10 border border-[#6366F1]/20' : 'bg-white/[0.02] border border-white/[0.04] hover:bg-white/[0.04]'}`}
+            >
+              <span className={`text-[11px] font-bold w-5 text-center font-mono flex-shrink-0 ${u.isMe ? 'text-[#6366F1]' : 'text-[#475569]'}`}>
+                {String(u.rank).padStart(2, '0')}
+              </span>
+              <div className={`w-7 h-7 rounded-full flex items-center justify-center border flex-shrink-0 ${u.isMe ? 'bg-[#6366F1] border-[#6366F1]/50' : 'bg-[#1E2235] border-white/[0.08]'}`}>
+                {u.isMe
+                  ? <Telescope size={12} className="text-white" />
+                  : <User size={11} className="text-[#64748B]" />}
+              </div>
+              <span className={`flex-1 text-xs font-medium truncate ${u.isMe ? 'text-[#818CF8]' : 'text-[#94A3B8]'}`}>
+                {u.name}
+              </span>
+              <span className="text-xs font-bold text-white flex-shrink-0">{u.points.toLocaleString()}</span>
+            </div>
+          ))}
         </div>
       </div>
     </div>

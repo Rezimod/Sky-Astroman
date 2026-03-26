@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import Link from 'next/link'
-import { Crown, ArrowRight } from 'lucide-react'
+import { Crown, ArrowRight, User, Telescope } from 'lucide-react'
 import { useLanguage } from '@/contexts/LanguageContext'
 
 type Period = 'all' | 'month' | 'week'
@@ -77,8 +77,8 @@ export default function LeaderboardPage() {
             return (
               <div key={user.id} className="flex flex-col items-center gap-2 sm:gap-3 flex-1 max-w-[140px]">
                 {isFirst && <Crown size={20} className="text-[#FFD166]" />}
-                <div className={`relative w-12 h-12 sm:w-16 sm:h-16 rounded-full border-2 ${podiumBorders[i]} flex items-center justify-center text-sm sm:text-base font-bold text-white ${isFirst ? 'bg-gradient-to-br from-[#6366F1] to-[#A855F7]' : 'bg-[#1E2235]'}`}>
-                  {user.initials.slice(0, 2)}
+                <div className={`relative w-12 h-12 sm:w-16 sm:h-16 rounded-full border-2 ${podiumBorders[i]} flex items-center justify-center ${isFirst ? 'bg-gradient-to-br from-[#6366F1] to-[#A855F7]' : 'bg-[#1E2235]'}`}>
+                  {isFirst ? <Telescope size={20} className="text-white" /> : <User size={16} className="text-[#64748B]" />}
                   <div className={`absolute -bottom-2 left-1/2 -translate-x-1/2 w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-black ${isFirst ? 'bg-[#FFD166] text-[#0D1117]' : 'bg-[#1E2235] border border-white/10 text-white'}`}>
                     {rank}
                   </div>
@@ -117,8 +117,8 @@ export default function LeaderboardPage() {
                   {String(rank).padStart(2,'0')}
                 </span>
                 <div className="sm:col-span-5 flex items-center gap-2.5 flex-1 min-w-0">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold text-white border flex-shrink-0 ${isMe ? 'bg-[#6366F1] border-[#6366F1]/40' : 'bg-[#1E2235] border-white/[0.08]'}`}>
-                    {user.initials.slice(0,2)}
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center border flex-shrink-0 ${isMe ? 'bg-[#6366F1] border-[#6366F1]/40' : 'bg-[#1E2235] border-white/[0.08]'}`}>
+                    {isMe ? <Telescope size={13} className="text-white" /> : <User size={12} className="text-[#64748B]" />}
                   </div>
                   <div className="min-w-0">
                     <span className={`text-sm font-bold block truncate ${isMe ? 'text-[#818CF8]' : 'text-white'}`}>{user.display_name}</span>
@@ -155,7 +155,7 @@ export default function LeaderboardPage() {
               </div>
               <div className="w-px h-8 bg-white/10" />
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-full bg-[#6366F1] flex items-center justify-center text-[11px] font-bold text-white">SG</div>
+                <div className="w-9 h-9 rounded-full bg-[#6366F1] flex items-center justify-center"><Telescope size={15} className="text-white" /></div>
                 <div>
                   <div className="text-sm font-bold text-white leading-none">{current.display_name}</div>
                   <div className="text-[10px] text-[#475569] mt-0.5">{current.points} XP</div>

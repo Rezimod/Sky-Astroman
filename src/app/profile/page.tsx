@@ -75,8 +75,8 @@ export default function ProfilePage() {
               <svg width="96" height="96" viewBox="0 0 96 96" className="absolute inset-0 orbit-ring">
                 <circle cx="48" cy="4" r="4" fill="#6366F1" />
               </svg>
-              <div className="w-16 h-16 rounded-full bg-[#1E2235] border border-white/10 flex items-center justify-center text-xl font-bold text-white relative z-10">
-                {mockProfile.initials}
+              <div className="w-16 h-16 rounded-full relative z-10 flex items-center justify-center" style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.3), rgba(168,85,247,0.2))', border: '1px solid rgba(99,102,241,0.35)' }}>
+                <Telescope size={26} className="text-[#818CF8]" />
               </div>
               <div className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-[#FFD166] border-2 border-[#0D1117] flex items-center justify-center z-20">
                 <Crown size={14} className="text-[#0D1117]" />

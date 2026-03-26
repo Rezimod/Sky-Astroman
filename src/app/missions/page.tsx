@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { CheckCircle2, Clock, Search, Plus, ArrowRight } from 'lucide-react'
+import { CheckCircle2, Clock, Search, Plus, ArrowRight, Moon, Star, Globe, Circle, Sparkles, Aperture, Hexagon, Gem, Telescope, Zap, RefreshCw } from 'lucide-react'
 import { DIFFICULTY_CONFIG } from '@/lib/missions'
 import ObservationModal from '@/components/observations/ObservationModal'
 import { useLanguage } from '@/contexts/LanguageContext'
@@ -15,6 +15,32 @@ const DIFF_STYLE: Record<string, { label: string; labelGe: string; bg: string; t
   medium: { label: 'MEDIUM', labelGe: 'საშუალო', bg: 'rgba(255,209,102,0.08)', text: '#FFD166',  border: 'rgba(255,209,102,0.25)' },
   hard:   { label: 'HARD',   labelGe: 'რთული',   bg: 'rgba(248,113,113,0.08)', text: '#F87171',  border: 'rgba(248,113,113,0.25)' },
   expert: { label: 'EXPERT', labelGe: 'ექსპერტი',bg: 'rgba(192,132,252,0.08)', text: '#C084FC',  border: 'rgba(192,132,252,0.25)' },
+}
+
+const EMOJI_ICON: Record<string, React.ElementType> = {
+  '🌕': Moon, '🌙': Moon,
+  '⭐': Star,
+  '🪐': Globe,
+  '🔴': Circle,
+  '⚫': Circle,
+  '🔵': Circle,
+  '💫': Sparkles,
+  '✨': Star,
+  '🌌': Aperture,
+  '🐝': Hexagon,
+  '🔮': Gem,
+  '🔭': Telescope,
+  '🦀': Zap,
+  '🌀': RefreshCw,
+}
+
+function MissionIcon({ emoji }: { emoji: string }) {
+  const Icon = EMOJI_ICON[emoji] ?? Star
+  return (
+    <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4 flex-shrink-0" style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.15)' }}>
+      <Icon size={18} className="text-[#818CF8]" />
+    </div>
+  )
 }
 
 type FilterKey = 'all' | 'easy' | 'medium' | 'hard'
@@ -211,8 +237,8 @@ export default function MissionsPage() {
                     </div>
                   )}
 
-                  {/* Emoji */}
-                  <div className="text-3xl mb-4">{mission.objectEmoji}</div>
+                  {/* Icon */}
+                  <MissionIcon emoji={mission.objectEmoji} />
 
                   {/* Badge + time */}
                   <div className="flex items-center gap-2 mb-2">

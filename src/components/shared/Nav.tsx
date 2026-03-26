@@ -55,7 +55,7 @@ export default function Nav() {
         {/* Logo */}
         <Link href="/dashboard" className="flex items-center gap-2.5 shrink-0">
           <OrbitLogo />
-          <span className="text-sm font-bold tracking-[0.15em] text-white uppercase hidden sm:block">
+          <span className="text-sm font-bold tracking-[0.15em] text-white uppercase">
             Sky<span className="text-[#6366F1]">watcher</span>
           </span>
         </Link>
