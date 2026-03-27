@@ -2,7 +2,8 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Telescope } from 'lucide-react'
+import { Lock } from 'lucide-react'
+import { SaturnLogo } from '@/components/shared/SaturnLogo'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { createClient } from '@/lib/supabase/client'
 
@@ -63,10 +64,10 @@ export default function LoginPage() {
       {/* Header */}
       <header className="relative z-50 border-b border-white/10 bg-space-900/50 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-10 h-20 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <Telescope size={20} className="text-space-accent" />
-            <span className="text-xl font-bold tracking-widest text-white uppercase">
-              Sky<span className="text-space-accent">watcher</span>
+          <Link href="/" className="flex items-center gap-2.5">
+            <SaturnLogo width={34} height={28} />
+            <span className="text-sm font-bold tracking-[0.15em] text-white uppercase">
+              Sky<span className="text-[#6366F1]">watcher</span>
             </span>
           </Link>
           <div className="flex items-center gap-4 text-sm">
@@ -89,10 +90,10 @@ export default function LoginPage() {
 
       {/* Main */}
       <main className="relative z-10 flex flex-col items-center justify-center flex-1 pt-12 pb-20 px-6">
-        <div className="w-full max-w-lg">
+        <div className="w-full max-w-md">
           {/* Title */}
-          <div className="text-center mb-10">
-            <h1 className="text-4xl font-bold text-white mb-2">
+          <div className="text-center mb-6">
+            <h1 className="text-2xl font-bold text-white mb-2">
               {mode === 'signin'
                 ? (lang === 'ka' ? 'კეთილი იყოს მობრძანება' : 'Welcome back')
                 : (lang === 'ka' ? 'შექმენი ანგარიში' : 'Create account')}
@@ -105,10 +106,9 @@ export default function LoginPage() {
           </div>
 
           {/* Form card */}
-          <div className="bg-[#12122b]/80 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] p-10 shadow-2xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-8 opacity-10 text-8xl pointer-events-none">✨</div>
+          <div className="bg-[#12122b]/80 backdrop-blur-2xl border border-white/10 rounded-2xl p-7 shadow-2xl relative overflow-hidden">
 
-            <div className="relative z-10 space-y-6">
+            <div className="relative z-10 space-y-5">
               {/* Google OAuth */}
               <button
                 onClick={handleGoogle}
@@ -148,7 +148,7 @@ export default function LoginPage() {
                 <div className="space-y-2">
                   <label className="text-xs font-bold uppercase tracking-widest text-slate-400 ml-1">{t('login.password')}</label>
                   <div className="relative group">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-space-accent transition-colors">🔒</span>
+                    <Lock size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-space-accent transition-colors" />
                     <input
                       type="password"
                       required

@@ -1,7 +1,8 @@
 'use client'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { Telescope, Cloud, Moon, MapPin, Target, Trophy, ArrowRight, Star } from 'lucide-react'
+import { Cloud, Moon, MapPin, Target, Trophy, ArrowRight, Star, Sparkles, Globe, Circle, User } from 'lucide-react'
+import { SaturnLogo } from '@/components/shared/SaturnLogo'
 import { useLanguage } from '@/contexts/LanguageContext'
 import type { SkyConditions, GeneratedMission } from '@/lib/types'
 
@@ -28,7 +29,18 @@ const mockLeaderboard = [
   { display_name: 'თორნიკე კაპანაძე',  title: 'დამწყები',           points: 4950, initials: 'თ.კ' },
 ]
 
-const OPEN_METEO = 'https://api.open-meteo.com/v1/forecast?latitude=41.7151&longitude=44.8271&hourly=cloud_cover,visibility,temperature_2m&daily=sunrise,sunset,moon_phase&current=cloud_cover,temperature_2m&timezone=Asia%2FTbilisi&forecast_days=1'
+const OPEN_METEO = 'https://api.open-meteo.com/v1/forecast?latitude=41.7151&longitude=44.8271&hourly=cloud_cover,visibility,temperature_2m&daily=sunrise,sunset&current=cloud_cover,temperature_2m&timezone=Asia%2FTbilisi&forecast_days=1'
+
+function getMoonPhase(): number {
+  const knownNew = new Date('2024-01-11').getTime()
+  const cycle = 29.53058867 * 24 * 60 * 60 * 1000
+  return ((Date.now() - knownNew) % cycle) / cycle
+}
+
+const EMOJI_ICON: Record<string, React.ElementType> = {
+  '🌕': Moon, '🌙': Moon, '⭐': Star, '🪐': Globe, '🔴': Circle, '⚫': Circle,
+  '🔵': Circle, '💫': Sparkles, '✨': Star, '🌌': Target, '🔮': Star, '🔭': Target,
+}
 
 interface ApodData {
   title: string
@@ -40,7 +52,7 @@ interface ApodData {
 }
 
 const howSteps = [
-  { Icon: Telescope, titleKey: 'landing.step1t', descKey: 'landing.step1d' },
+  { Icon: Star,      titleKey: 'landing.step1t', descKey: 'landing.step1d' },
   { Icon: Cloud,     titleKey: 'landing.step2t', descKey: 'landing.step2d' },
   { Icon: Target,    titleKey: 'landing.step3t', descKey: 'landing.step3d' },
   { Icon: Trophy,    titleKey: 'landing.step4t', descKey: 'landing.step4d' },
@@ -65,9 +77,10 @@ export default function LandingPage() {
           const hour = new Date().getHours()
           skyData.cloudCover  = meteo.current?.cloud_cover    ?? meteo.hourly?.cloud_cover?.[hour]    ?? skyData.cloudCover
           skyData.temperature = meteo.current?.temperature_2m ?? meteo.hourly?.temperature_2m?.[hour] ?? skyData.temperature
-          const mp = meteo.daily?.moon_phase?.[0]
-          if (mp !== undefined) { skyData.moonPhase = mp; skyData.moonIllumination = Math.sin(mp * Math.PI) }
         }
+        const phase = getMoonPhase()
+        skyData.moonPhase = phase
+        skyData.moonIllumination = Math.sin(phase * Math.PI)
         setSky(skyData)
       }
       if (Array.isArray(missionData)) setMissions(missionData)
@@ -87,10 +100,10 @@ export default function LandingPage() {
       {/* Top bar */}
       <header className="relative z-50 border-b border-white/10 bg-space-900/50 backdrop-blur-xl sticky top-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Telescope size={20} className="text-space-accent" />
-            <span className="text-base sm:text-xl font-bold tracking-widest text-white uppercase">
-              Sky<span className="text-space-accent">watcher</span>
+          <div className="flex items-center gap-2.5">
+            <SaturnLogo width={34} height={28} />
+            <span className="text-sm font-bold tracking-[0.15em] text-white uppercase">
+              Sky<span className="text-[#6366F1]">watcher</span>
             </span>
           </div>
           <nav className="hidden md:flex items-center gap-8">
@@ -120,7 +133,7 @@ export default function LandingPage() {
       <main className="relative z-10 w-full">
 
         {/* Hero */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 pt-16 sm:pt-24 pb-20 sm:pb-32">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 pt-10 sm:pt-16 pb-12 sm:pb-20">
           <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
 
             {/* Left */}
@@ -133,7 +146,7 @@ export default function LandingPage() {
                 {lang === 'ka' ? 'რეალურ დროში მონაცემები' : 'Real-time data'}
               </div>
 
-              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white leading-[1.1] tracking-tight">
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-[1.1] tracking-tight">
                 {lang === 'ka'
                   ? <><span className="text-transparent bg-clip-text bg-gradient-to-r from-space-accent to-space-glow">ღამის ცა</span><br />ახლა</>
                   : <>{t('landing.heroLine1')}<br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-space-accent to-space-glow">{t('landing.heroLine2')}</span></>
@@ -297,7 +310,7 @@ export default function LandingPage() {
         )}
 
         {/* How it works */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-24 border-t border-white/5 relative">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-16 border-t border-white/5 relative">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
           <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-16">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-4">{t('landing.howTitle')}</h2>
@@ -307,12 +320,12 @@ export default function LandingPage() {
             {howSteps.map((step, i) => (
               <div key={i} className="relative group">
                 <div className="absolute inset-0 bg-gradient-to-b from-space-accent/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-3xl -z-10 blur-xl" />
-                <div className="bg-white/5 border border-white/10 rounded-2xl sm:rounded-3xl p-6 sm:p-8 h-full hover:-translate-y-2 transition-transform duration-300">
-                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-space-800 border border-white/10 flex items-center justify-center text-space-accent mb-5 sm:mb-6 shadow-lg">
-                    <step.Icon size={22} />
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-5 h-full hover:-translate-y-1 transition-transform duration-300">
+                  <div className="w-10 h-10 rounded-xl bg-space-800 border border-white/10 flex items-center justify-center text-space-accent mb-4 shadow-lg">
+                    <step.Icon size={18} />
                   </div>
-                  <h3 className="text-lg sm:text-xl font-bold text-white mb-3">{i + 1}. {t(step.titleKey)}</h3>
-                  <p className="text-sm text-slate-400 leading-relaxed">{t(step.descKey)}</p>
+                  <h3 className="text-base font-bold text-white mb-2">{i + 1}. {t(step.titleKey)}</h3>
+                  <p className="text-xs text-slate-400 leading-relaxed">{t(step.descKey)}</p>
                 </div>
               </div>
             ))}
@@ -320,7 +333,7 @@ export default function LandingPage() {
         </section>
 
         {/* Missions + Leaderboard */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-24">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
           <div className="grid lg:grid-cols-3 gap-6 sm:gap-8">
 
             {/* Missions (2/3) */}
@@ -347,8 +360,8 @@ export default function LandingPage() {
                   const badge = DIFF_BADGE[m.difficulty]
                   return (
                     <div key={m.id} className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-6 flex flex-col sm:flex-row gap-4 sm:gap-6 items-start sm:items-center hover:bg-white/10 transition-colors group">
-                      <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-space-900 border border-white/5 flex items-center justify-center text-2xl sm:text-3xl shrink-0">
-                        {m.objectEmoji}
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-[#6366F1]/[0.08] border border-[#6366F1]/15 flex items-center justify-center shrink-0">
+                        {(() => { const Icon = EMOJI_ICON[m.objectEmoji] ?? Star; return <Icon size={16} className="text-[#818CF8]" /> })()}
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
@@ -397,8 +410,8 @@ export default function LandingPage() {
                     >
                       {idx === 0 && <div className="absolute left-0 top-0 bottom-0 w-1 bg-space-accent" />}
                       <div className={`w-7 sm:w-8 text-center font-bold text-sm ${idx === 0 ? 'text-space-accent' : 'text-slate-500'}`}>{idx + 1}</div>
-                      <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-white font-bold text-xs sm:text-sm shrink-0 ${idx === 0 ? 'bg-gradient-to-br from-space-accent to-space-glow border-2 border-space-800' : 'bg-slate-700'}`}>
-                        {user.initials}
+                      <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center shrink-0 ${idx === 0 ? 'bg-gradient-to-br from-space-accent to-space-glow border-2 border-space-800' : 'bg-slate-700/50 border border-white/10'}`}>
+                        <User size={14} className={idx === 0 ? 'text-white' : 'text-slate-400'} />
                       </div>
                       <div className="flex-1 min-w-0">
                         <h4 className={`text-sm font-bold truncate ${idx === 0 ? 'text-white' : 'text-slate-300'}`}>{user.display_name}</h4>

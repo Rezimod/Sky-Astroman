@@ -218,13 +218,13 @@ export default function MissionsPage() {
 
         {/* Mission grid */}
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-3">
             {[...Array(6)].map((_, i) => (
               <div key={i} className="card h-44 animate-pulse" />
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-3">
             {filtered.map(mission => {
               const done    = completedIds.has(mission.id)
               const pending = pendingIds.has(mission.id)
