@@ -107,7 +107,7 @@ export default function LoginPage() {
           {/* Title */}
           <div className="text-center mb-8 animate-auth-slide-up-1">
             <h1 className="text-4xl sm:text-5xl font-bold text-white mb-2 leading-tight">
-              {lang === 'ka' ? 'კეთილი იყოს\nმობრძანება' : 'Welcome\nback'}
+              {lang === 'ka' ? <>კეთილი იყოს<br />მობრძანება</> : <>Welcome<br />back</>}
             </h1>
             <p className="text-slate-500 text-sm">
               {lang === 'ka' ? 'გააგრძელე შენი კოსმოსური მოგზაურობა' : 'Continue your cosmic journey'}

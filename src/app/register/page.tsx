@@ -55,19 +55,17 @@ export default function RegisterPage() {
       }
 
       if (data.user) {
-        // Try to create profile (best-effort; RLS may block, trigger handles it too)
-        const username = email.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '') + '_' + data.user.id.slice(0, 4)
-        await supabase.from('profiles').upsert({
-          id: data.user.id,
-          username,
-          display_name: name.trim(),
-        }, { onConflict: 'id', ignoreDuplicates: true }).then(() => {})
-
         if (data.session) {
+          // Create profile via server route (bypasses RLS)
+          await fetch('/api/auth/profile', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ display_name: name.trim() }),
+          })
           router.push('/dashboard')
           router.refresh()
         } else {
-          // Email confirmation required
+          // Email confirmation required (fallback if re-enabled)
           setDone(true)
         }
       }

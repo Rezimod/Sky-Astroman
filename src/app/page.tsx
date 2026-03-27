@@ -158,10 +158,10 @@ export default function LandingPage() {
 
               <div className="flex flex-wrap items-center gap-3 pt-2">
                 <Link
-                  href="/login"
+                  href="/register"
                   className="bg-white hover:bg-slate-100 text-[#0B0B1A] text-sm font-bold px-6 py-3 rounded-full transition-all flex items-center gap-2"
                 >
-                  {lang === 'ka' ? 'დაწყება ახლავე' : 'Get started'}
+                  {lang === 'ka' ? 'რეგისტრაცია' : 'Get started'}
                   <ArrowRight size={15} />
                 </Link>
                 <Link
