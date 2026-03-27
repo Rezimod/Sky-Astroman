@@ -1,9 +1,13 @@
 'use client'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { useLanguage } from '@/contexts/LanguageContext'
 
 export default function Footer() {
   const { t } = useLanguage()
+  const pathname = usePathname()
+  const hide = pathname === '/login' || pathname === '/register' || pathname.startsWith('/admin')
+  if (hide) return null
   return (
     <footer className="hidden sm:block border-t border-white/[0.06] mt-auto relative z-10" style={{ background: 'rgba(9,12,20,0.6)' }}>
       <div className="max-w-7xl mx-auto px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-4">

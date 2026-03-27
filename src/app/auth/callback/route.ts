@@ -9,19 +9,30 @@ export async function GET(req: NextRequest) {
   if (code) {
     const supabase = await createClient()
     const { error } = await supabase.auth.exchangeCodeForSession(code)
+
     if (!error) {
-      // Ensure profile row exists
       const { data: { user } } = await supabase.auth.getUser()
+
       if (user) {
+        // Build a guaranteed-unique username from email prefix + short uid
+        const emailPrefix = (user.email?.split('@')[0] ?? 'user')
+          .replace(/[^a-zA-Z0-9_]/g, '')
+          .slice(0, 20)
+        const username = `${emailPrefix}_${user.id.slice(0, 4)}`
+
         await supabase.from('profiles').upsert({
           id: user.id,
-          username: user.email?.split('@')[0] ?? `user_${user.id.slice(0, 6)}`,
-          display_name: user.user_metadata?.full_name ?? null,
+          username,
+          display_name: user.user_metadata?.display_name
+            ?? user.user_metadata?.full_name
+            ?? emailPrefix,
           avatar_url: user.user_metadata?.avatar_url ?? null,
-        }, { onConflict: 'id', ignoreDuplicates: true })
+        }, { onConflict: 'id', ignoreDuplicates: false })
       }
+
       return NextResponse.redirect(`${origin}${next}`)
     }
   }
+
   return NextResponse.redirect(`${origin}/login?error=auth_failed`)
 }

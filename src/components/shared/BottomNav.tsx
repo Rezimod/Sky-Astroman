@@ -7,7 +7,7 @@ import { useLanguage } from '@/contexts/LanguageContext'
 export default function BottomNav() {
   const pathname = usePathname()
   const { t } = useLanguage()
-  const isLanding = pathname === '/' || pathname === '/login'
+  const isLanding = pathname === '/' || pathname === '/login' || pathname === '/register' || pathname.startsWith('/admin')
   if (isLanding) return null
 
   const tabs = [

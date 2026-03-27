@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Lock, User } from 'lucide-react'
+import { Lock, User, Mail, CheckCircle } from 'lucide-react'
 import { SaturnLogo } from '@/components/shared/SaturnLogo'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { createClient } from '@/lib/supabase/client'
@@ -26,6 +26,10 @@ export default function RegisterPage() {
       setError(lang === 'ka' ? 'პაროლები არ ემთხვევა' : 'Passwords do not match')
       return
     }
+    if (password.length < 6) {
+      setError(lang === 'ka' ? 'პაროლი მინიმუმ 6 სიმბოლო უნდა იყოს' : 'Password must be at least 6 characters')
+      return
+    }
 
     setLoading(true)
 
@@ -33,25 +37,34 @@ export default function RegisterPage() {
       const supabase = createClient()
 
       const { data, error: signUpError } = await supabase.auth.signUp({
-        email,
+        email: email.trim().toLowerCase(),
         password,
         options: {
-          data: { display_name: name, full_name: name },
+          data: { full_name: name.trim(), display_name: name.trim() },
           emailRedirectTo: `${window.location.origin}/auth/callback`,
         },
       })
 
       if (signUpError) {
-        setError(signUpError.message)
+        if (signUpError.message.includes('already registered') || signUpError.message.includes('already been registered')) {
+          setError(lang === 'ka' ? 'ეს ელ-ფოსტა უკვე რეგისტრირებულია' : 'This email is already registered')
+        } else {
+          setError(signUpError.message)
+        }
         return
       }
 
-      if (data.session) {
-        // Signed in immediately (email confirm disabled) — create profile
-        await supabase.from('profiles').upsert(
-          { id: data.user!.id, username: email.split('@')[0], display_name: name },
-          { onConflict: 'id', ignoreDuplicates: true }
-        ).throwOnError()
+      if (data.session && data.user) {
+        // Email confirmation disabled — user is immediately signed in
+        // Profile is created via auth callback trigger, but also try client-side
+        try {
+          await supabase.from('profiles').upsert({
+            id: data.user.id,
+            username: email.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '') + '_' + data.user.id.slice(0, 4),
+            display_name: name.trim(),
+          }, { onConflict: 'id', ignoreDuplicates: false })
+        } catch { /* profile RLS may block this — auth callback handles it */ }
+
         router.push('/dashboard')
         router.refresh()
       } else {
@@ -60,11 +73,7 @@ export default function RegisterPage() {
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err)
-      // Profile insert RLS errors are non-fatal — user still registered
-      if (msg.includes('profiles') || msg.includes('violates')) {
-        router.push('/dashboard')
-        router.refresh()
-      } else {
+      if (!msg.includes('profiles') && !msg.includes('duplicate')) {
         setError(lang === 'ka' ? 'შეცდომა. სცადეთ ხელახლა.' : 'Something went wrong. Please try again.')
       }
     } finally {
@@ -72,29 +81,37 @@ export default function RegisterPage() {
     }
   }
 
+  // ── Email confirmation sent screen ──
   if (done) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden px-4">
-        <div className="fixed top-[-20%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-[#6366F1]/20 blur-[120px] mix-blend-screen z-0 pointer-events-none" />
-        <div className="fixed bottom-[-20%] right-[-10%] w-[60vw] h-[60vw] rounded-full bg-[#A855F7]/10 blur-[150px] mix-blend-screen z-0 pointer-events-none" />
-        <div className="relative z-10 text-center max-w-sm">
-          <div className="w-16 h-16 rounded-full bg-[#6366F1]/20 border border-[#6366F1]/30 flex items-center justify-center mx-auto mb-6">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#818CF8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M22 13V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h8" />
-              <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-              <path d="m16 19 2 2 4-4" />
-            </svg>
+        <div className="fixed top-[-20%] left-[-10%] w-[55vw] h-[55vw] rounded-full bg-[#6366F1]/15 blur-[130px] pointer-events-none z-0" />
+        <div className="fixed bottom-[-20%] right-[-10%] w-[60vw] h-[60vw] rounded-full bg-[#A855F7]/10 blur-[150px] pointer-events-none z-0" />
+        <div className="relative z-10 text-center max-w-sm animate-auth-slide-up">
+          <div className="flex justify-center mb-6">
+            <div className="w-20 h-20 rounded-full bg-[#6366F1]/10 border border-[#6366F1]/20 flex items-center justify-center">
+              <CheckCircle size={36} className="text-[#6366F1]" strokeWidth={1.5} />
+            </div>
           </div>
-          <h2 className="text-2xl font-bold text-white mb-3">
+          <h2 className="text-3xl font-bold text-white mb-3">
             {lang === 'ka' ? 'შეამოწმე ელ-ფოსტა' : 'Check your email'}
           </h2>
-          <p className="text-slate-400 text-sm mb-8">
+          <p className="text-slate-400 text-sm mb-2">
             {lang === 'ka'
-              ? `${email}-ზე გამოგიგზავნეთ დადასტურების ბმული.`
-              : `We sent a confirmation link to ${email}.`}
+              ? `დადასტურების ბმული გაიგზავნა:`
+              : 'A confirmation link was sent to:'}
           </p>
-          <Link href="/login" className="text-[#6366F1] hover:text-[#818CF8] text-sm font-medium transition-colors">
-            {lang === 'ka' ? '← შესვლის გვერდზე დაბრუნება' : '← Back to sign in'}
+          <p className="text-white font-semibold text-sm mb-8 bg-white/5 border border-white/10 rounded-xl px-4 py-2 inline-block">{email}</p>
+          <p className="text-slate-500 text-xs mb-8">
+            {lang === 'ka'
+              ? 'ბმულს ვადა 24 საათი აქვს. შეამოწმე spam/junk საქაღალდეც.'
+              : 'The link expires in 24 hours. Check your spam folder if you don\'t see it.'}
+          </p>
+          <Link
+            href="/login"
+            className="inline-flex items-center gap-2 text-[#6366F1] hover:text-[#818CF8] text-sm font-semibold transition-colors"
+          >
+            ← {lang === 'ka' ? 'შესვლის გვერდი' : 'Back to sign in'}
           </Link>
         </div>
       </div>
@@ -104,15 +121,32 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden">
 
-      {/* Background glow blobs */}
-      <div className="fixed top-[-20%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-[#6366F1]/20 blur-[120px] mix-blend-screen z-0 pointer-events-none" />
-      <div className="fixed bottom-[-20%] right-[-10%] w-[60vw] h-[60vw] rounded-full bg-[#A855F7]/10 blur-[150px] mix-blend-screen z-0 pointer-events-none" />
+      {/* Animated background particles */}
+      {[...Array(14)].map((_, i) => (
+        <span
+          key={i}
+          className="auth-particle"
+          style={{
+            left: `${5 + i * 7}%`,
+            width: i % 4 === 0 ? '2px' : '1px',
+            height: i % 4 === 0 ? '2px' : '1px',
+            '--dur': `${11 + i * 2.2}s`,
+            '--delay': `${i * 0.7}s`,
+            '--drift': `${(i % 2 === 0 ? 1 : -1) * (8 + i * 4)}px`,
+          } as React.CSSProperties}
+        />
+      ))}
+
+      {/* Glow blobs */}
+      <div className="fixed top-[-20%] left-[-10%] w-[55vw] h-[55vw] rounded-full bg-[#6366F1]/15 blur-[130px] pointer-events-none z-0" />
+      <div className="fixed bottom-[-20%] right-[-10%] w-[60vw] h-[60vw] rounded-full bg-[#A855F7]/10 blur-[150px] pointer-events-none z-0" />
+      <div className="fixed top-[30%] left-[15%] w-[18vw] h-[18vw] rounded-full bg-[#38F0FF]/4 blur-[70px] pointer-events-none z-0" />
 
       {/* Header */}
-      <header className="relative z-50 border-b border-white/10 bg-[#0B0B1A]/60 backdrop-blur-xl">
+      <header className="relative z-50 border-b border-white/[0.07] bg-[#090C14]/70 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
           <Link href="/" className="flex items-center gap-2 shrink-0">
-            <SaturnLogo width={34} height={26} />
+            <SaturnLogo width={32} height={24} />
             <span className="text-xs font-bold tracking-[0.18em] text-white uppercase">
               Sky<span className="text-[#6366F1]">watcher</span>
             </span>
@@ -123,7 +157,7 @@ export default function RegisterPage() {
             </span>
             <Link
               href="/login"
-              className="text-xs font-bold tracking-widest text-white hover:text-[#6366F1] transition-colors uppercase"
+              className="text-[11px] font-bold tracking-widest text-white hover:text-[#6366F1] transition-colors uppercase"
             >
               {lang === 'ka' ? 'შესვლა' : 'Sign in'}
             </Link>
@@ -132,115 +166,132 @@ export default function RegisterPage() {
       </header>
 
       {/* Main */}
-      <main className="relative z-10 flex flex-col items-center justify-center flex-1 py-12 px-4">
+      <main className="relative z-10 flex flex-col items-center justify-center flex-1 py-8 px-4">
         <div className="w-full max-w-md">
 
-          <div className="text-center mb-8">
-            <h1 className="text-4xl sm:text-5xl font-bold text-white mb-3 leading-tight">
-              {lang === 'ka' ? 'შექმენი\nანგარიში' : 'Create\naccount'}
+          {/* Floating planet */}
+          <div className="flex justify-center mb-6 animate-auth-float">
+            <div className="relative">
+              <div className="absolute inset-0 rounded-full bg-[#A855F7]/20 blur-2xl scale-150" />
+              <SaturnLogo width={64} height={48} />
+            </div>
+          </div>
+
+          {/* Title */}
+          <div className="text-center mb-6 animate-auth-slide-up-1">
+            <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2 leading-tight">
+              {lang === 'ka' ? 'შექმენი ანგარიში' : 'Create account'}
             </h1>
-            <p className="text-slate-400 text-sm">
-              {lang === 'ka' ? 'დაიწყე შენი კოსმოსური მოგზაურობა' : 'Start your cosmic journey'}
+            <p className="text-slate-500 text-sm">
+              {lang === 'ka' ? 'დაიწყე კოსმოსური მოგზაურობა' : 'Start your cosmic journey'}
             </p>
           </div>
 
-          <div className="bg-[#12122b]/80 backdrop-blur-2xl border border-white/10 rounded-[2rem] p-8 shadow-2xl">
-            <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Card */}
+          <div className="animate-auth-slide-up-2 animate-auth-glow bg-[#0D1117]/90 backdrop-blur-2xl border border-white/[0.08] rounded-[1.75rem] p-7 shadow-2xl">
 
+            <form onSubmit={handleSubmit} className="space-y-3.5">
               {/* Name */}
-              <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-widest text-slate-400 ml-1">
+              <div className="space-y-1.5 animate-auth-slide-up-2">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 ml-1">
                   {lang === 'ka' ? 'სახელი' : 'Name'}
                 </label>
                 <div className="relative group">
-                  <User size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-[#6366F1] transition-colors" />
+                  <User size={13} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-[#6366F1] transition-colors" />
                   <input
                     type="text"
                     required
+                    autoComplete="name"
                     placeholder={lang === 'ka' ? 'შენი სახელი' : 'Your name'}
                     value={name}
                     onChange={e => setName(e.target.value)}
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-10 pr-4 text-white placeholder:text-slate-600 focus:outline-none focus:border-[#6366F1] focus:ring-1 focus:ring-[#6366F1] transition-all"
+                    className="w-full bg-white/[0.04] border border-white/[0.08] rounded-2xl py-3.5 pl-10 pr-4 text-white placeholder:text-slate-700 focus:outline-none focus:border-[#6366F1]/60 focus:bg-white/[0.06] transition-all"
                   />
                 </div>
               </div>
 
               {/* Email */}
-              <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-widest text-slate-400 ml-1">
+              <div className="space-y-1.5 animate-auth-slide-up-3">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 ml-1">
                   {lang === 'ka' ? 'ელ-ფოსტა' : 'Email'}
                 </label>
                 <div className="relative group">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-[#6366F1] transition-colors text-sm font-medium">@</span>
+                  <Mail size={13} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-[#6366F1] transition-colors" />
                   <input
                     type="email"
                     required
+                    autoComplete="email"
                     placeholder="example@mail.com"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-10 pr-4 text-white placeholder:text-slate-600 focus:outline-none focus:border-[#6366F1] focus:ring-1 focus:ring-[#6366F1] transition-all"
+                    className="w-full bg-white/[0.04] border border-white/[0.08] rounded-2xl py-3.5 pl-10 pr-4 text-white placeholder:text-slate-700 focus:outline-none focus:border-[#6366F1]/60 focus:bg-white/[0.06] transition-all"
                   />
                 </div>
               </div>
 
               {/* Password */}
-              <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-widest text-slate-400 ml-1">
+              <div className="space-y-1.5 animate-auth-slide-up-4">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 ml-1">
                   {lang === 'ka' ? 'პაროლი (მინ. 6 სიმბოლო)' : 'Password (min. 6 chars)'}
                 </label>
                 <div className="relative group">
-                  <Lock size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-[#6366F1] transition-colors" />
+                  <Lock size={13} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-[#6366F1] transition-colors" />
                   <input
                     type="password"
                     required
                     minLength={6}
+                    autoComplete="new-password"
                     placeholder="••••••••"
                     value={password}
                     onChange={e => setPassword(e.target.value)}
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-10 pr-4 text-white placeholder:text-slate-600 focus:outline-none focus:border-[#6366F1] focus:ring-1 focus:ring-[#6366F1] transition-all"
+                    className="w-full bg-white/[0.04] border border-white/[0.08] rounded-2xl py-3.5 pl-10 pr-4 text-white placeholder:text-slate-700 focus:outline-none focus:border-[#6366F1]/60 focus:bg-white/[0.06] transition-all"
                   />
                 </div>
               </div>
 
               {/* Confirm Password */}
-              <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-widest text-slate-400 ml-1">
+              <div className="space-y-1.5 animate-auth-slide-up-5">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 ml-1">
                   {lang === 'ka' ? 'გაიმეორე პაროლი' : 'Confirm password'}
                 </label>
                 <div className="relative group">
-                  <Lock size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-[#6366F1] transition-colors" />
+                  <Lock size={13} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-[#6366F1] transition-colors" />
                   <input
                     type="password"
                     required
                     minLength={6}
+                    autoComplete="new-password"
                     placeholder="••••••••"
                     value={confirmPassword}
                     onChange={e => setConfirmPassword(e.target.value)}
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-10 pr-4 text-white placeholder:text-slate-600 focus:outline-none focus:border-[#6366F1] focus:ring-1 focus:ring-[#6366F1] transition-all"
+                    className="w-full bg-white/[0.04] border border-white/[0.08] rounded-2xl py-3.5 pl-10 pr-4 text-white placeholder:text-slate-700 focus:outline-none focus:border-[#6366F1]/60 focus:bg-white/[0.06] transition-all"
                   />
                 </div>
               </div>
 
               {error && (
-                <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
+                <div className="animate-auth-slide-up bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
                   <p className="text-red-400 text-sm text-center">{error}</p>
                 </div>
               )}
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-4 bg-white hover:bg-slate-100 disabled:opacity-60 disabled:cursor-not-allowed text-[#0B0B1A] font-bold rounded-2xl transition-all mt-2"
-              >
-                {loading
-                  ? (lang === 'ka' ? 'იტვირთება...' : 'Creating account...')
-                  : (lang === 'ka' ? 'რეგისტრაცია' : 'Create account')}
-              </button>
+              <div className="pt-1">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="relative w-full py-3.5 bg-white hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed text-[#090C14] font-bold rounded-2xl transition-all overflow-hidden group"
+                >
+                  <span className="absolute inset-0 bg-gradient-to-r from-[#6366F1]/0 via-white/10 to-[#6366F1]/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+                  {loading
+                    ? (lang === 'ka' ? 'იქმნება ანგარიში...' : 'Creating account...')
+                    : (lang === 'ka' ? 'ანგარიშის შექმნა' : 'Create account')}
+                </button>
+              </div>
             </form>
 
-            <p className="text-center text-xs text-slate-600 mt-6">
+            <p className="text-center text-xs text-slate-600 mt-5">
               {lang === 'ka' ? 'უკვე გაქვს ანგარიში? ' : 'Already have an account? '}
-              <Link href="/login" className="text-[#6366F1] hover:text-[#818CF8] transition-colors">
+              <Link href="/login" className="text-[#6366F1] hover:text-[#818CF8] font-semibold transition-colors">
                 {lang === 'ka' ? 'შესვლა' : 'Sign in'}
               </Link>
             </p>
