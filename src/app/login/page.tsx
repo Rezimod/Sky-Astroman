@@ -57,16 +57,17 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden">
-      {/* Glow blobs */}
-      <div className="fixed top-[-10%] left-[-5%] w-[40vw] h-[40vw] rounded-full bg-space-accent/15 blur-[120px] mix-blend-screen pointer-events-none" />
-      <div className="fixed bottom-[-10%] right-[-5%] w-[40vw] h-[40vw] rounded-full bg-space-glow/10 blur-[150px] mix-blend-screen pointer-events-none" />
+
+      {/* Background glow blobs */}
+      <div className="fixed top-[-20%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-[#6366F1]/20 blur-[120px] mix-blend-screen z-0 pointer-events-none" />
+      <div className="fixed bottom-[-20%] right-[-10%] w-[60vw] h-[60vw] rounded-full bg-[#A855F7]/10 blur-[150px] mix-blend-screen z-0 pointer-events-none" />
 
       {/* Header */}
       <header className="relative z-50 border-b border-white/10 bg-space-900/50 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-10 h-20 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
             <SaturnLogo width={34} height={28} />
-            <span className="text-sm font-bold tracking-[0.15em] text-white uppercase">
+            <span className="text-xl font-bold tracking-widest text-white uppercase">
               Sky<span className="text-[#6366F1]">watcher</span>
             </span>
           </Link>
@@ -78,7 +79,7 @@ export default function LoginPage() {
             </span>
             <button
               onClick={toggleMode}
-              className="text-white font-semibold hover:text-space-accent transition-colors"
+              className="text-white font-semibold hover:text-[#6366F1] transition-colors"
             >
               {mode === 'signin'
                 ? (lang === 'ka' ? 'რეგისტრაცია' : 'Register')
@@ -90,10 +91,11 @@ export default function LoginPage() {
 
       {/* Main */}
       <main className="relative z-10 flex flex-col items-center justify-center flex-1 pt-12 pb-20 px-6">
-        <div className="w-full max-w-md">
+        <div className="w-full max-w-lg">
+
           {/* Title */}
-          <div className="text-center mb-6">
-            <h1 className="text-2xl font-bold text-white mb-2">
+          <div className="text-center mb-10">
+            <h1 className="text-4xl font-bold text-white mb-3">
               {mode === 'signin'
                 ? (lang === 'ka' ? 'კეთილი იყოს მობრძანება' : 'Welcome back')
                 : (lang === 'ka' ? 'შექმენი ანგარიში' : 'Create account')}
@@ -106,9 +108,9 @@ export default function LoginPage() {
           </div>
 
           {/* Form card */}
-          <div className="bg-[#12122b]/80 backdrop-blur-2xl border border-white/10 rounded-2xl p-7 shadow-2xl relative overflow-hidden">
+          <div className="bg-[#12122b]/80 backdrop-blur-2xl border border-white/10 rounded-[2rem] p-10 shadow-2xl shadow-space-accent/10">
 
-            <div className="relative z-10 space-y-5">
+            <div className="space-y-6">
               {/* Google OAuth */}
               <button
                 onClick={handleGoogle}
@@ -133,7 +135,7 @@ export default function LoginPage() {
                 <div className="space-y-2">
                   <label className="text-xs font-bold uppercase tracking-widest text-slate-400 ml-1">{t('login.email')}</label>
                   <div className="relative group">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-space-accent transition-colors">@</span>
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-space-accent transition-colors text-sm font-medium">@</span>
                     <input
                       type="email"
                       required
@@ -167,7 +169,7 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-4 bg-space-accent hover:bg-indigo-500 disabled:opacity-50 text-white font-bold rounded-2xl transition-all shadow-[0_0_20px_rgba(99,102,241,0.3)] hover:shadow-[0_0_30px_rgba(99,102,241,0.5)]"
+                  className="w-full py-4 bg-white hover:bg-slate-100 disabled:opacity-50 text-[#0B0B1A] font-bold rounded-2xl transition-all"
                 >
                   {loading ? t('login.loading') : mode === 'signin' ? t('login.signIn') : t('login.register')}
                 </button>

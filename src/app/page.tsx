@@ -22,11 +22,11 @@ const DIFF_BADGE: Record<string, { label: string; labelGe: string; classes: stri
 }
 
 const mockLeaderboard = [
-  { display_name: 'გიორგი მაისურაძე', title: 'ვარსკვლავთმრიცხველი', points: 8450, initials: 'გ.მ' },
-  { display_name: 'ნინო დოლიძე',       title: 'ასტროფოტოგრაფი',    points: 7200, initials: 'ნ.დ' },
-  { display_name: 'ლევან ჭანტურია',    title: 'დამწყები',           points: 6800, initials: 'ლ.ჭ' },
-  { display_name: 'ანა გიორგაძე',      title: 'დამწყები',           points: 5100, initials: 'ა.გ' },
-  { display_name: 'თორნიკე კაპანაძე',  title: 'დამწყები',           points: 4950, initials: 'თ.კ' },
+  { display_name: 'გიორგი მაისურაძე', title: 'ვარსკვლავთმრიცხველი', points: 8450 },
+  { display_name: 'ნინო დოლიძე',       title: 'ასტროფოტოგრაფი',    points: 7200 },
+  { display_name: 'ლევან ჭანტურია',    title: 'დამწყები',           points: 6800 },
+  { display_name: 'ანა გიორგაძე',      title: 'დამწყები',           points: 5100 },
+  { display_name: 'თორნიკე კაპანაძე',  title: 'დამწყები',           points: 4950 },
 ]
 
 const OPEN_METEO = 'https://api.open-meteo.com/v1/forecast?latitude=41.7151&longitude=44.8271&hourly=cloud_cover,visibility,temperature_2m&daily=sunrise,sunset&current=cloud_cover,temperature_2m&timezone=Asia%2FTbilisi&forecast_days=1'
@@ -52,10 +52,10 @@ interface ApodData {
 }
 
 const howSteps = [
-  { Icon: Star,      titleKey: 'landing.step1t', descKey: 'landing.step1d' },
-  { Icon: Cloud,     titleKey: 'landing.step2t', descKey: 'landing.step2d' },
-  { Icon: Target,    titleKey: 'landing.step3t', descKey: 'landing.step3d' },
-  { Icon: Trophy,    titleKey: 'landing.step4t', descKey: 'landing.step4d' },
+  { Icon: Star,   titleKey: 'landing.step1t', descKey: 'landing.step1d' },
+  { Icon: Cloud,  titleKey: 'landing.step2t', descKey: 'landing.step2d' },
+  { Icon: Target, titleKey: 'landing.step3t', descKey: 'landing.step3d' },
+  { Icon: Trophy, titleKey: 'landing.step4t', descKey: 'landing.step4d' },
 ]
 
 export default function LandingPage() {
@@ -92,23 +92,31 @@ export default function LandingPage() {
   const moonLabel = sky ? MOON_PHASE_LABEL(sky.moonPhase) : null
   const skyScore = sky ? Math.max(0, Math.round(100 - (sky.cloudCover ?? 50) * 0.6 - (sky.moonIllumination ?? 0) * 15)) : null
   const visibleCount = sky?.planets?.filter(p => p.isVisible).length ?? 0
-  const topMissions = missions.slice(0, 4)
+  const topMissions = missions.slice(0, 3)
 
   return (
-    <div className="min-h-screen flex flex-col overflow-x-hidden">
+    <div className="min-h-screen flex flex-col overflow-x-hidden relative">
 
-      {/* Top bar */}
+      {/* Fixed background glow blobs */}
+      <div className="fixed top-[-20%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-[#6366F1]/20 blur-[120px] mix-blend-screen z-0 pointer-events-none" />
+      <div className="fixed bottom-[-20%] right-[-10%] w-[60vw] h-[60vw] rounded-full bg-[#A855F7]/10 blur-[150px] mix-blend-screen z-0 pointer-events-none" />
+
+      {/* Header */}
       <header className="relative z-50 border-b border-white/10 bg-space-900/50 backdrop-blur-xl sticky top-0">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2.5 shrink-0">
             <SaturnLogo width={34} height={28} />
-            <span className="text-sm font-bold tracking-[0.15em] text-white uppercase">
+            <span className="text-xl font-bold tracking-widest text-white uppercase">
               Sky<span className="text-[#6366F1]">watcher</span>
             </span>
-          </div>
+          </Link>
           <nav className="hidden md:flex items-center gap-8">
-            <Link href="/missions" className="text-sm font-medium text-slate-400 hover:text-white transition-colors">{t('nav.missions')}</Link>
-            <Link href="/leaderboard" className="text-sm font-medium text-slate-400 hover:text-white transition-colors">{t('nav.ranks')}</Link>
+            <Link href="/missions" className="text-sm font-medium text-slate-400 hover:text-white transition-colors">
+              {lang === 'ka' ? 'მისიები' : 'Missions'}
+            </Link>
+            <Link href="/leaderboard" className="text-sm font-medium text-slate-400 hover:text-white transition-colors">
+              {lang === 'ka' ? 'რეიტინგი' : 'Ranks'}
+            </Link>
           </nav>
           <div className="flex items-center gap-2 sm:gap-3">
             <button
@@ -122,9 +130,9 @@ export default function LandingPage() {
             </Link>
             <Link
               href="/login"
-              className="bg-space-accent hover:bg-indigo-500 text-white text-sm font-semibold px-4 sm:px-6 py-2 sm:py-2.5 rounded-full transition-all shadow-[0_0_20px_rgba(99,102,241,0.4)]"
+              className="bg-space-accent hover:bg-indigo-500 text-white text-sm font-semibold px-4 sm:px-6 py-2.5 rounded-full transition-all shadow-[0_0_20px_rgba(99,102,241,0.4)]"
             >
-              {t('landing.startBtn')}
+              {lang === 'ka' ? 'დაწყება' : 'Get started'}
             </Link>
           </div>
         </div>
@@ -133,11 +141,11 @@ export default function LandingPage() {
       <main className="relative z-10 w-full">
 
         {/* Hero */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 pt-10 sm:pt-16 pb-12 sm:pb-20">
-          <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 pt-24 pb-32">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
 
             {/* Left */}
-            <div className="space-y-6 sm:space-y-8">
+            <div className="space-y-8">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-medium text-space-accent">
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-space-accent opacity-75" />
@@ -146,42 +154,42 @@ export default function LandingPage() {
                 {lang === 'ka' ? 'რეალურ დროში მონაცემები' : 'Real-time data'}
               </div>
 
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-[1.1] tracking-tight">
+              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white leading-[1.1] tracking-tight">
                 {lang === 'ka'
                   ? <><span className="text-transparent bg-clip-text bg-gradient-to-r from-space-accent to-space-glow">ღამის ცა</span><br />ახლა</>
                   : <>{t('landing.heroLine1')}<br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-space-accent to-space-glow">{t('landing.heroLine2')}</span></>
                 }
               </h1>
 
-              <p className="text-base sm:text-lg text-slate-400 max-w-lg leading-relaxed">
+              <p className="text-lg text-slate-400 max-w-lg leading-relaxed">
                 {t('landing.heroSub')}
               </p>
 
-              <div className="flex flex-wrap items-center gap-3 sm:gap-4 pt-2 sm:pt-4">
+              <div className="flex flex-wrap items-center gap-4 pt-4">
                 <Link
                   href="/login"
-                  className="bg-space-accent hover:bg-indigo-500 text-white text-base font-bold px-7 sm:px-8 py-3.5 sm:py-4 rounded-full transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(99,102,241,0.4)] hover:shadow-[0_0_30px_rgba(99,102,241,0.6)]"
+                  className="bg-white hover:bg-slate-100 text-[#0B0B1A] text-base font-bold px-8 py-4 rounded-full transition-all flex items-center gap-2"
                 >
                   {lang === 'ka' ? 'დაწყება ახლავე' : 'Get started'}
                   <ArrowRight size={18} />
                 </Link>
                 <Link
                   href="/leaderboard"
-                  className="bg-white/5 hover:bg-white/10 text-white border border-white/20 text-base font-medium px-7 sm:px-8 py-3.5 sm:py-4 rounded-full transition-all flex items-center gap-2"
+                  className="bg-white/5 hover:bg-white/10 text-white border border-white/10 text-base font-medium px-8 py-4 rounded-full transition-all flex items-center gap-2"
                 >
                   <Trophy size={16} className="text-space-accent" />
-                  {t('nav.ranks')}
+                  {lang === 'ka' ? 'რეიტინგი' : t('nav.ranks')}
                 </Link>
               </div>
             </div>
 
             {/* Right — sky conditions card */}
             <div className="relative mt-4 lg:mt-0">
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[110%] h-[110%] rounded-full border border-white/5 pointer-events-none" />
-              <div className="relative z-10 bg-[#12122b]/80 backdrop-blur-2xl border border-white/10 rounded-[2rem] p-6 sm:p-8 shadow-2xl shadow-space-accent/10">
-                <div className="flex items-center justify-between mb-6 sm:mb-8">
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] rounded-full border border-white/5 pointer-events-none" />
+              <div className="relative z-10 bg-[#12122b]/80 backdrop-blur-2xl border border-white/10 rounded-[2rem] p-8 shadow-2xl shadow-space-accent/10">
+                <div className="flex items-center justify-between mb-8">
                   <div>
-                    <h3 className="text-white font-semibold text-base sm:text-lg">{lang === 'ka' ? 'ცის მდგომარეობა' : 'Sky conditions'}</h3>
+                    <h3 className="text-white font-semibold text-lg">{lang === 'ka' ? 'ცის მდგომარეობა' : 'Sky conditions'}</h3>
                     <p className="text-sm text-slate-400 flex items-center gap-1 mt-1">
                       <MapPin size={12} className="text-space-accent" /> {lang === 'ka' ? 'თბილისი, საქართველო' : 'Tbilisi, Georgia'}
                     </p>
@@ -195,8 +203,8 @@ export default function LandingPage() {
                 </div>
 
                 {/* Gauge */}
-                <div className="flex flex-col items-center mb-6 sm:mb-8">
-                  <div className="relative w-36 sm:w-44 h-36 sm:h-44 flex items-center justify-center">
+                <div className="flex flex-col items-center mb-8">
+                  <div className="relative w-48 h-48 flex items-center justify-center">
                     <svg className="w-full h-full transform -rotate-90 absolute" viewBox="0 0 100 100">
                       <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="6" strokeLinecap="round" />
                       <circle
@@ -214,7 +222,7 @@ export default function LandingPage() {
                       </defs>
                     </svg>
                     <div className="text-center">
-                      <span className="text-4xl sm:text-5xl font-bold text-white block">{loading ? '—' : (skyScore ?? '—')}</span>
+                      <span className="text-5xl font-bold text-white block">{loading ? '—' : (skyScore ?? '—')}</span>
                       <span className="text-xs uppercase tracking-widest text-slate-400 mt-1 block">{lang === 'ka' ? 'ცის შეფასება' : 'Sky score'}</span>
                     </div>
                   </div>
@@ -233,24 +241,24 @@ export default function LandingPage() {
                   )}
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                  <div className="bg-white/5 rounded-2xl p-3 sm:p-4 border border-white/5 flex items-start gap-3">
-                    <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-blue-500/10 text-blue-400 flex items-center justify-center shrink-0">
-                      <Cloud size={16} />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-white/5 rounded-2xl p-4 border border-white/5 flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-full bg-blue-500/10 text-blue-400 flex items-center justify-center shrink-0">
+                      <Cloud size={18} />
                     </div>
                     <div>
-                      <span className="text-xl sm:text-2xl font-bold text-white block">
+                      <span className="text-2xl font-bold text-white block">
                         {loading ? '—' : `${sky?.cloudCover ?? '—'}%`}
                       </span>
                       <span className="text-xs text-slate-400">{lang === 'ka' ? 'ღრუბლიანობა' : 'Cloud cover'}</span>
                     </div>
                   </div>
-                  <div className="bg-white/5 rounded-2xl p-3 sm:p-4 border border-white/5 flex items-start gap-3">
-                    <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-yellow-500/10 text-yellow-400 flex items-center justify-center shrink-0">
-                      <Moon size={16} />
+                  <div className="bg-white/5 rounded-2xl p-4 border border-white/5 flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-full bg-yellow-500/10 text-yellow-400 flex items-center justify-center shrink-0">
+                      <Moon size={18} />
                     </div>
                     <div>
-                      <span className="text-base sm:text-lg font-bold text-white block leading-tight pt-1">
+                      <span className="text-lg font-bold text-white block leading-tight pt-1">
                         {loading ? '—' : (moonLabel?.[lang] ?? '—')}
                       </span>
                       <span className="text-xs text-slate-400">{lang === 'ka' ? 'მთვარის ფაზა' : 'Moon phase'}</span>
@@ -264,7 +272,7 @@ export default function LandingPage() {
 
         {/* NASA APOD */}
         {apod && (
-          <section className="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-20 border-t border-white/5">
+          <section className="max-w-7xl mx-auto px-4 sm:px-6 py-20 border-t border-white/5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
               <div>
                 <div className="flex items-center gap-2 mb-2">
@@ -310,22 +318,22 @@ export default function LandingPage() {
         )}
 
         {/* How it works */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-16 border-t border-white/5 relative">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 py-24 border-t border-white/5 relative">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-          <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-16">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-4">{t('landing.howTitle')}</h2>
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">{t('landing.howTitle')}</h2>
             <p className="text-slate-400">{lang === 'ka' ? 'დაიწყე ვარსკვლავებზე დაკვირვება ოთხი მარტივი ნაბიჯით.' : 'Start observing the stars in four simple steps.'}</p>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-8">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {howSteps.map((step, i) => (
               <div key={i} className="relative group">
                 <div className="absolute inset-0 bg-gradient-to-b from-space-accent/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-3xl -z-10 blur-xl" />
-                <div className="bg-white/5 border border-white/10 rounded-2xl p-5 h-full hover:-translate-y-1 transition-transform duration-300">
-                  <div className="w-10 h-10 rounded-xl bg-space-800 border border-white/10 flex items-center justify-center text-space-accent mb-4 shadow-lg">
-                    <step.Icon size={18} />
+                <div className="bg-white/5 border border-white/10 rounded-3xl p-8 h-full hover:-translate-y-2 transition-transform duration-300">
+                  <div className="w-14 h-14 rounded-2xl bg-space-800 border border-white/10 flex items-center justify-center text-space-accent mb-6 shadow-lg">
+                    <step.Icon size={24} />
                   </div>
-                  <h3 className="text-base font-bold text-white mb-2">{i + 1}. {t(step.titleKey)}</h3>
-                  <p className="text-xs text-slate-400 leading-relaxed">{t(step.descKey)}</p>
+                  <h3 className="text-xl font-bold text-white mb-3">{i + 1}. {t(step.titleKey)}</h3>
+                  <p className="text-sm text-slate-400 leading-relaxed">{t(step.descKey)}</p>
                 </div>
               </div>
             ))}
@@ -333,14 +341,14 @@ export default function LandingPage() {
         </section>
 
         {/* Missions + Leaderboard */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
-          <div className="grid lg:grid-cols-3 gap-6 sm:gap-8">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 py-24">
+          <div className="grid lg:grid-cols-3 gap-8">
 
             {/* Missions (2/3) */}
             <div className="lg:col-span-2 space-y-6">
-              <div className="flex items-center justify-between mb-6 sm:mb-8">
+              <div className="flex items-center justify-between mb-8">
                 <div>
-                  <h2 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
+                  <h2 className="text-2xl font-bold text-white flex items-center gap-2">
                     <Target size={20} className="text-space-accent" />
                     {t('landing.missionsTitle')}
                   </h2>
@@ -351,17 +359,18 @@ export default function LandingPage() {
                 </Link>
               </div>
 
-              <div className="space-y-3 sm:space-y-4">
+              <div className="space-y-4">
                 {loading ? (
                   [...Array(3)].map((_, i) => (
                     <div key={i} className="bg-white/5 border border-white/10 rounded-2xl h-24 animate-pulse" />
                   ))
                 ) : topMissions.map(m => {
                   const badge = DIFF_BADGE[m.difficulty]
+                  const Icon = EMOJI_ICON[m.objectEmoji] ?? Star
                   return (
-                    <div key={m.id} className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-6 flex flex-col sm:flex-row gap-4 sm:gap-6 items-start sm:items-center hover:bg-white/10 transition-colors group">
-                      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-[#6366F1]/[0.08] border border-[#6366F1]/15 flex items-center justify-center shrink-0">
-                        {(() => { const Icon = EMOJI_ICON[m.objectEmoji] ?? Star; return <Icon size={16} className="text-[#818CF8]" /> })()}
+                    <div key={m.id} className="bg-white/5 border border-white/10 rounded-2xl p-6 flex flex-col sm:flex-row gap-6 items-start sm:items-center hover:bg-white/10 transition-colors group">
+                      <div className="w-16 h-16 rounded-2xl bg-space-900 border border-white/5 flex items-center justify-center shrink-0">
+                        <Icon size={24} className="text-[#818CF8]" />
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
@@ -370,7 +379,7 @@ export default function LandingPage() {
                           </span>
                           <span className="text-sm text-slate-400">+{m.points} XP</span>
                         </div>
-                        <h3 className="text-base sm:text-lg font-bold text-white group-hover:text-space-accent transition-colors">
+                        <h3 className="text-lg font-bold text-white group-hover:text-space-accent transition-colors">
                           {lang === 'ka' ? m.titleGe : m.title}
                         </h3>
                         <p className="text-sm text-slate-400 mt-1 line-clamp-1">
@@ -379,7 +388,7 @@ export default function LandingPage() {
                       </div>
                       <Link
                         href="/missions"
-                        className="w-full sm:w-auto px-5 sm:px-6 py-2.5 bg-space-accent/20 hover:bg-space-accent border border-space-accent/30 hover:border-space-accent text-white rounded-xl text-sm font-semibold transition-all text-center"
+                        className="w-full sm:w-auto px-6 py-2.5 bg-white/10 hover:bg-space-accent border border-white/10 hover:border-space-accent text-white rounded-xl text-sm font-semibold transition-all text-center"
                       >
                         {lang === 'ka' ? 'მიღება' : 'Accept'}
                       </Link>
@@ -391,9 +400,9 @@ export default function LandingPage() {
 
             {/* Leaderboard top 5 (1/3) */}
             <div className="relative">
-              <div className="bg-[#15152F]/60 backdrop-blur-md border border-white/10 rounded-[2rem] p-5 sm:p-6 h-full flex flex-col">
-                <div className="flex items-center justify-between mb-5 sm:mb-6 pb-5 sm:pb-6 border-b border-white/5">
-                  <h2 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+              <div className="bg-[#15152F]/60 backdrop-blur-md border border-white/10 rounded-[2rem] p-6 h-full flex flex-col">
+                <div className="flex items-center justify-between mb-6 pb-6 border-b border-white/5">
+                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
                     <Trophy size={18} className="text-space-accent" />
                     {lang === 'ka' ? 'ტოპ 5' : 'Top 5'}
                   </h2>
@@ -406,11 +415,11 @@ export default function LandingPage() {
                   {mockLeaderboard.map((user, idx) => (
                     <div
                       key={idx}
-                      className={`flex items-center gap-3 sm:gap-4 p-3 rounded-xl transition-colors ${idx === 0 ? 'bg-space-accent/10 border border-space-accent/20 relative overflow-hidden' : 'hover:bg-white/5'}`}
+                      className={`flex items-center gap-4 p-3 rounded-xl transition-colors ${idx === 0 ? 'bg-space-accent/10 border border-space-accent/20 relative overflow-hidden' : 'hover:bg-white/5'}`}
                     >
                       {idx === 0 && <div className="absolute left-0 top-0 bottom-0 w-1 bg-space-accent" />}
-                      <div className={`w-7 sm:w-8 text-center font-bold text-sm ${idx === 0 ? 'text-space-accent' : 'text-slate-500'}`}>{idx + 1}</div>
-                      <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center shrink-0 ${idx === 0 ? 'bg-gradient-to-br from-space-accent to-space-glow border-2 border-space-800' : 'bg-slate-700/50 border border-white/10'}`}>
+                      <div className={`w-8 text-center font-bold text-sm ${idx === 0 ? 'text-space-accent' : 'text-slate-500'}`}>{idx + 1}</div>
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${idx === 0 ? 'bg-gradient-to-br from-space-accent to-space-glow border-2 border-space-800' : 'bg-slate-700/50 border border-white/10'}`}>
                         <User size={14} className={idx === 0 ? 'text-white' : 'text-slate-400'} />
                       </div>
                       <div className="flex-1 min-w-0">
@@ -425,7 +434,7 @@ export default function LandingPage() {
                   ))}
                 </div>
 
-                <div className="mt-5 sm:mt-6 pt-5 sm:pt-6 border-t border-white/5 text-center">
+                <div className="mt-6 pt-6 border-t border-white/5 text-center">
                   <p className="text-sm text-slate-400">
                     {lang === 'ka' ? 'შენი პოზიცია: ' : 'Your position: '}
                     <Link href="/login" className="font-bold text-white hover:text-space-accent transition-colors">
@@ -438,6 +447,19 @@ export default function LandingPage() {
           </div>
         </section>
       </main>
+
+      {/* Footer */}
+      <footer className="border-t border-white/10 bg-space-900 mt-12 relative z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-2.5">
+            <SaturnLogo width={28} height={22} />
+            <span className="text-lg font-bold tracking-widest text-white/50 uppercase">Skywatcher</span>
+          </div>
+          <p className="text-sm text-slate-500">
+            © {new Date().getFullYear()} Skywatcher. {lang === 'ka' ? 'ყველა უფლება დაცულია.' : 'All rights reserved.'}
+          </p>
+        </div>
+      </footer>
     </div>
   )
 }
