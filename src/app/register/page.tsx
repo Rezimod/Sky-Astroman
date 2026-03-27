@@ -46,7 +46,7 @@ export default function RegisterPage() {
       })
 
       if (signUpError) {
-        if (signUpError.message.includes('already registered') || signUpError.message.includes('already been registered')) {
+        if (signUpError.message.toLowerCase().includes('already registered') || signUpError.message.toLowerCase().includes('already been registered') || signUpError.message.toLowerCase().includes('user already registered')) {
           setError(lang === 'ka' ? 'ეს ელ-ფოსტა უკვე რეგისტრირებულია' : 'This email is already registered')
         } else {
           setError(signUpError.message)
@@ -54,28 +54,26 @@ export default function RegisterPage() {
         return
       }
 
-      if (data.session && data.user) {
-        // Email confirmation disabled — user is immediately signed in
-        // Profile is created via auth callback trigger, but also try client-side
-        try {
-          await supabase.from('profiles').upsert({
-            id: data.user.id,
-            username: email.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '') + '_' + data.user.id.slice(0, 4),
-            display_name: name.trim(),
-          }, { onConflict: 'id', ignoreDuplicates: false })
-        } catch { /* profile RLS may block this — auth callback handles it */ }
+      if (data.user) {
+        // Try to create profile (best-effort; RLS may block, trigger handles it too)
+        const username = email.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '') + '_' + data.user.id.slice(0, 4)
+        await supabase.from('profiles').upsert({
+          id: data.user.id,
+          username,
+          display_name: name.trim(),
+        }, { onConflict: 'id', ignoreDuplicates: true }).then(() => {})
 
-        router.push('/dashboard')
-        router.refresh()
-      } else {
-        // Email confirmation required
-        setDone(true)
+        if (data.session) {
+          router.push('/dashboard')
+          router.refresh()
+        } else {
+          // Email confirmation required
+          setDone(true)
+        }
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err)
-      if (!msg.includes('profiles') && !msg.includes('duplicate')) {
-        setError(lang === 'ka' ? 'შეცდომა. სცადეთ ხელახლა.' : 'Something went wrong. Please try again.')
-      }
+      setError(msg || (lang === 'ka' ? 'შეცდომა. სცადეთ ხელახლა.' : 'Something went wrong. Please try again.'))
     } finally {
       setLoading(false)
     }
