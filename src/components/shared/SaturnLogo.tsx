@@ -1,29 +1,29 @@
-// Shared Saturn planet logo — indigo/purple color scheme
-export function SaturnLogo({ width = 34, height = 28 }: { width?: number; height?: number }) {
+// Saturn planet logo — bold filled planet with rings and sparkle stars
+export function SaturnLogo({ width = 40, height = 30 }: { width?: number; height?: number }) {
   return (
-    <svg width={width} height={height} viewBox="0 0 36 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-      {/* Ring — back arc (top half, drawn behind planet) */}
-      <ellipse cx="18" cy="18" rx="17" ry="5"
-        stroke="#6366F1" strokeWidth="1.6" fill="none" opacity="0.45"
-        strokeDasharray="37.2 37.2" strokeDashoffset="-37.2"
+    <svg width={width} height={height} viewBox="0 0 48 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+      {/* Ring — back arc (behind planet) */}
+      <ellipse cx="24" cy="24" rx="22" ry="6"
+        stroke="#818CF8" strokeWidth="2" fill="none" opacity="0.38"
+        strokeDasharray="50.7 50.7" strokeDashoffset="-50.7"
       />
       {/* Planet body */}
-      <circle cx="18" cy="13" r="9" fill="#0D1117" stroke="#6366F1" strokeWidth="1.4"/>
-      <circle cx="18" cy="13" r="9" fill="url(#satGradShared)"/>
-      {/* Ring — front arc (bottom half, over planet) */}
-      <ellipse cx="18" cy="18" rx="17" ry="5"
-        stroke="#6366F1" strokeWidth="1.6" fill="none"
-        strokeDasharray="37.2 37.2" strokeDashoffset="0"
+      <circle cx="24" cy="17" r="13" fill="#0D1117" stroke="#6366F1" strokeWidth="1.4"/>
+      <circle cx="24" cy="17" r="13" fill="url(#satGradShared)"/>
+      {/* Ring — front arc (over planet) */}
+      <ellipse cx="24" cy="24" rx="22" ry="6"
+        stroke="#818CF8" strokeWidth="2" fill="none"
+        strokeDasharray="50.7 50.7" strokeDashoffset="0"
       />
       {/* 4-pointed sparkle stars */}
-      <path d="M4,2 L4.5,3.5 L6,4 L4.5,4.5 L4,6 L3.5,4.5 L2,4 L3.5,3.5Z" fill="#818CF8"/>
-      <path d="M32,2 L32.4,3.1 L33.5,3.5 L32.4,3.9 L32,5 L31.6,3.9 L30.5,3.5 L31.6,3.1Z" fill="#A855F7" opacity="0.9"/>
-      <path d="M33,23 L33.3,23.9 L34.2,24.2 L33.3,24.5 L33,25.4 L32.7,24.5 L31.8,24.2 L32.7,23.9Z" fill="#818CF8" opacity="0.75"/>
-      <path d="M2,22.5 L2.25,23.25 L3,23.5 L2.25,23.75 L2,24.5 L1.75,23.75 L1,23.5 L1.75,23.25Z" fill="#A855F7" opacity="0.6"/>
+      <path d="M4,1 L5.2,4.8 L9,6 L5.2,7.2 L4,11 L2.8,7.2 L-1,6 L2.8,4.8Z" fill="#818CF8"/>
+      <path d="M43,1 L44,3.8 L46.8,4.8 L44,5.8 L43,8.6 L42,5.8 L39.2,4.8 L42,3.8Z" fill="#A855F7" opacity="0.9"/>
+      <path d="M44,28 L44.7,30.3 L47,31 L44.7,31.7 L44,34 L43.3,31.7 L41,31 L43.3,30.3Z" fill="#818CF8" opacity="0.72"/>
+      <path d="M3,28 L3.6,29.9 L5.5,30.5 L3.6,31.1 L3,33 L2.4,31.1 L0.5,30.5 L2.4,29.9Z" fill="#A855F7" opacity="0.55"/>
       <defs>
         <radialGradient id="satGradShared" cx="38%" cy="32%" r="65%">
-          <stop offset="0%" stopColor="#818CF8" stopOpacity="0.7"/>
-          <stop offset="100%" stopColor="#4338CA" stopOpacity="0.4"/>
+          <stop offset="0%" stopColor="#818CF8" stopOpacity="0.88"/>
+          <stop offset="100%" stopColor="#4338CA" stopOpacity="0.62"/>
         </radialGradient>
       </defs>
     </svg>
