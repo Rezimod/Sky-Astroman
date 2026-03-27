@@ -14,6 +14,7 @@ export default async function AdminDashboard() {
     { count: pendingCount },
     { data: recentUsers },
     { data: recentObs },
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   ] = await Promise.all([
     adminSupabase.from('profiles').select('*', { count: 'exact', head: true }),
     adminSupabase.from('observations').select('*', { count: 'exact', head: true }),
@@ -89,12 +90,13 @@ export default async function AdminDashboard() {
             <p className="text-xs text-[#475569] text-center py-4">No observations yet</p>
           ) : (
             <div className="space-y-2">
-              {recentObs.map((o: any) => (
+              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+            {(recentObs as any[]).map((o) => (
                 <div key={o.id} className="flex items-center gap-3 py-2 border-b border-white/[0.04] last:border-0">
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-semibold text-white truncate">{o.object_name}</p>
                     <p className="text-[10px] text-[#475569]">
-                      @{o.profiles?.username ?? '?'} · {new Date(o.created_at).toLocaleDateString()}
+                      @{(Array.isArray(o.profiles) ? o.profiles[0] : o.profiles)?.username ?? '?'} · {new Date(o.created_at).toLocaleDateString()}
                     </p>
                   </div>
                   <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${

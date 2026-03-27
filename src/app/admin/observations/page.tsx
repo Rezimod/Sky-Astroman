@@ -12,5 +12,6 @@ export default async function AdminObservationsPage() {
     .order('created_at', { ascending: false })
     .limit(50)
 
-  return <AdminObsClient observations={observations ?? []} error={error?.message} />
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return <AdminObsClient observations={(observations ?? []) as any[]} error={error?.message} />
 }

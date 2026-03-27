@@ -12,7 +12,13 @@ interface Obs {
   created_at: string
   status: 'pending' | 'approved' | 'rejected'
   points_awarded: number
-  profiles: { username: string; display_name: string | null } | null
+  // Supabase returns joined rows as array
+  profiles: { username: string; display_name: string | null } | { username: string; display_name: string | null }[] | null
+}
+
+function getProfile(p: Obs['profiles']) {
+  if (!p) return null
+  return Array.isArray(p) ? p[0] : p
 }
 
 export default function AdminObsClient({ observations: initial, error }: { observations: Obs[]; error?: string }) {
@@ -120,7 +126,7 @@ export default function AdminObsClient({ observations: initial, error }: { obser
                     <div>
                       <p className="text-sm font-bold text-white">{o.object_name}</p>
                       <p className="text-[10px] text-[#475569]">
-                        by @{o.profiles?.username ?? '?'} · {new Date(o.created_at).toLocaleDateString()}
+                        by @{getProfile(o.profiles)?.username ?? '?'} · {new Date(o.created_at).toLocaleDateString()}
                       </p>
                     </div>
                     <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full flex-shrink-0 ${
