@@ -16,12 +16,11 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [message, setMessage] = useState('')
+  const [done, setDone] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError('')
-    setMessage('')
 
     if (password !== confirmPassword) {
       setError(lang === 'ka' ? 'პაროლები არ ემთხვევა' : 'Passwords do not match')
@@ -29,39 +28,77 @@ export default function RegisterPage() {
     }
 
     setLoading(true)
-    const supabase = createClient()
 
-    const { data, error: signUpError } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
-    })
+    try {
+      const supabase = createClient()
 
-    if (signUpError) {
-      setError(signUpError.message)
-      setLoading(false)
-      return
-    }
-
-    const userId = data.user?.id
-    if (userId) {
-      await supabase.from('profiles').upsert({
-        id: userId,
-        username: email.split('@')[0],
-        display_name: name,
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { display_name: name, full_name: name },
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        },
       })
-    }
 
-    if (data.session) {
-      router.push('/dashboard')
-      router.refresh()
-    } else {
-      setMessage(lang === 'ka'
-        ? 'გამოგიგზავნეთ დადასტურების ბმული ელ-ფოსტაზე'
-        : 'Check your email for a confirmation link')
-    }
+      if (signUpError) {
+        setError(signUpError.message)
+        return
+      }
 
-    setLoading(false)
+      if (data.session) {
+        // Signed in immediately (email confirm disabled) — create profile
+        await supabase.from('profiles').upsert(
+          { id: data.user!.id, username: email.split('@')[0], display_name: name },
+          { onConflict: 'id', ignoreDuplicates: true }
+        ).throwOnError()
+        router.push('/dashboard')
+        router.refresh()
+      } else {
+        // Email confirmation required
+        setDone(true)
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err)
+      // Profile insert RLS errors are non-fatal — user still registered
+      if (msg.includes('profiles') || msg.includes('violates')) {
+        router.push('/dashboard')
+        router.refresh()
+      } else {
+        setError(lang === 'ka' ? 'შეცდომა. სცადეთ ხელახლა.' : 'Something went wrong. Please try again.')
+      }
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (done) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden px-4">
+        <div className="fixed top-[-20%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-[#6366F1]/20 blur-[120px] mix-blend-screen z-0 pointer-events-none" />
+        <div className="fixed bottom-[-20%] right-[-10%] w-[60vw] h-[60vw] rounded-full bg-[#A855F7]/10 blur-[150px] mix-blend-screen z-0 pointer-events-none" />
+        <div className="relative z-10 text-center max-w-sm">
+          <div className="w-16 h-16 rounded-full bg-[#6366F1]/20 border border-[#6366F1]/30 flex items-center justify-center mx-auto mb-6">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#818CF8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M22 13V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h8" />
+              <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+              <path d="m16 19 2 2 4-4" />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-3">
+            {lang === 'ka' ? 'შეამოწმე ელ-ფოსტა' : 'Check your email'}
+          </h2>
+          <p className="text-slate-400 text-sm mb-8">
+            {lang === 'ka'
+              ? `${email}-ზე გამოგიგზავნეთ დადასტურების ბმული.`
+              : `We sent a confirmation link to ${email}.`}
+          </p>
+          <Link href="/login" className="text-[#6366F1] hover:text-[#818CF8] text-sm font-medium transition-colors">
+            {lang === 'ka' ? '← შესვლის გვერდზე დაბრუნება' : '← Back to sign in'}
+          </Link>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -80,7 +117,7 @@ export default function RegisterPage() {
               Sky<span className="text-[#6366F1]">watcher</span>
             </span>
           </Link>
-          <div className="flex items-center gap-3 text-sm">
+          <div className="flex items-center gap-3">
             <span className="text-slate-500 text-xs hidden sm:block">
               {lang === 'ka' ? 'უკვე გაქვს ანგარიში?' : 'Already have an account?'}
             </span>
@@ -98,7 +135,6 @@ export default function RegisterPage() {
       <main className="relative z-10 flex flex-col items-center justify-center flex-1 py-12 px-4">
         <div className="w-full max-w-md">
 
-          {/* Title */}
           <div className="text-center mb-8">
             <h1 className="text-4xl sm:text-5xl font-bold text-white mb-3 leading-tight">
               {lang === 'ka' ? 'შექმენი\nანგარიში' : 'Create\naccount'}
@@ -108,7 +144,6 @@ export default function RegisterPage() {
             </p>
           </div>
 
-          {/* Form card */}
           <div className="bg-[#12122b]/80 backdrop-blur-2xl border border-white/10 rounded-[2rem] p-8 shadow-2xl">
             <form onSubmit={handleSubmit} className="space-y-4">
 
@@ -133,7 +168,7 @@ export default function RegisterPage() {
               {/* Email */}
               <div className="space-y-2">
                 <label className="text-xs font-bold uppercase tracking-widest text-slate-400 ml-1">
-                  {lang === 'ka' ? 'ელ-ფოსტის მისამართი' : 'Email address'}
+                  {lang === 'ka' ? 'ელ-ფოსტა' : 'Email'}
                 </label>
                 <div className="relative group">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-[#6366F1] transition-colors text-sm font-medium">@</span>
@@ -186,17 +221,20 @@ export default function RegisterPage() {
                 </div>
               </div>
 
-              {error && <p className="text-red-400 text-sm text-center">{error}</p>}
-              {message && <p className="text-green-400 text-sm text-center">{message}</p>}
+              {error && (
+                <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
+                  <p className="text-red-400 text-sm text-center">{error}</p>
+                </div>
+              )}
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-4 bg-white hover:bg-slate-100 disabled:opacity-50 text-[#0B0B1A] font-bold rounded-2xl transition-all mt-2"
+                className="w-full py-4 bg-white hover:bg-slate-100 disabled:opacity-60 disabled:cursor-not-allowed text-[#0B0B1A] font-bold rounded-2xl transition-all mt-2"
               >
                 {loading
-                  ? (lang === 'ka' ? 'იტვირთება...' : 'Loading...')
-                  : (lang === 'ka' ? 'რეგისტრაცია' : 'Register')}
+                  ? (lang === 'ka' ? 'იტვირთება...' : 'Creating account...')
+                  : (lang === 'ka' ? 'რეგისტრაცია' : 'Create account')}
               </button>
             </form>
 

@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
     const lat = parseFloat(searchParams.get('lat') ?? String(DEFAULT_LOCATION.lat))
     const lng = parseFloat(searchParams.get('lng') ?? String(DEFAULT_LOCATION.lng))
 
-    const url = `${OPEN_METEO_URL}?latitude=${lat}&longitude=${lng}&hourly=cloud_cover,visibility,temperature_2m&daily=sunrise,sunset,moon_phase&current=cloud_cover,temperature_2m&timezone=Asia%2FTbilisi&forecast_days=1`
+    const url = `${OPEN_METEO_URL}?latitude=${lat}&longitude=${lng}&hourly=cloud_cover,visibility,temperature_2m&daily=sunrise,sunset&current=cloud_cover,temperature_2m&timezone=Asia%2FTbilisi&forecast_days=1`
 
     const res = await fetch(url, { cache: 'no-store' })
     if (!res.ok) throw new Error('Open-Meteo fetch failed')
@@ -23,7 +23,11 @@ export async function GET(req: NextRequest) {
     const cloudCover = data.current?.cloud_cover ?? data.hourly?.cloud_cover?.[currentHour] ?? 50
     const visibility = data.hourly?.visibility?.[currentHour] ?? 10000
     const temperature = data.current?.temperature_2m ?? data.hourly?.temperature_2m?.[currentHour] ?? 15
-    const moonPhase = data.daily?.moon_phase?.[0] ?? 0.5
+
+    // moon_phase is not a valid Open-Meteo param — calculate via astronomy-engine
+    const { MoonPhase } = await import('astronomy-engine')
+    const moonPhaseAngle = MoonPhase(new Date()) // 0–360 degrees
+    const moonPhase = moonPhaseAngle / 360
 
     const nightHours = [21, 22, 23, 0, 1, 2, 3, 4]
     let bestStart = '21:00'
@@ -43,7 +47,7 @@ export async function GET(req: NextRequest) {
       visibility: Math.round(visibility / 1000),
       temperature,
       moonPhase,
-      moonIllumination: Math.sin(moonPhase * Math.PI),
+      moonIllumination: Math.abs(Math.sin(moonPhaseAngle * Math.PI / 180)),
       sunrise: data.daily?.sunrise?.[0]?.slice(11, 16) ?? '06:30',
       sunset: data.daily?.sunset?.[0]?.slice(11, 16) ?? '19:45',
       bestViewingStart: bestStart,
