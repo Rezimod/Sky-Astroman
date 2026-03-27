@@ -10,7 +10,7 @@ export default function Nav() {
   const pathname = usePathname()
   const router = useRouter()
   const { lang, setLang } = useLanguage()
-  const isLanding = pathname === '/' || pathname === '/login'
+  const isLanding = pathname === '/' || pathname === '/login' || pathname === '/register'
   if (isLanding) return null
 
   const tabs = [
