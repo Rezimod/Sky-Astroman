@@ -5,22 +5,38 @@ import { User, LogOut } from 'lucide-react'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { createClient } from '@/lib/supabase/client'
 
-function OrbitLogo() {
+function SaturnLogo() {
+  // Planet with rings + sparkle stars — matches the Saturn icon reference
   return (
-    <div className="relative flex items-center justify-center" style={{ width: 32, height: 32 }}>
-      <svg width="32" height="32" viewBox="0 0 32 32" className="absolute inset-0">
-        <circle cx="16" cy="16" r="12" fill="none" stroke="rgba(99,102,241,0.2)" strokeWidth="1" />
-      </svg>
-      {/* Orbiting dot */}
-      <svg width="32" height="32" viewBox="0 0 32 32" className="absolute inset-0 orbit-ring">
-        <circle cx="16" cy="4" r="2.5" fill="#6366F1" />
-      </svg>
-      {/* Center icon */}
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366F1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="relative z-10">
-        <circle cx="12" cy="12" r="3"/>
-        <path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
-      </svg>
-    </div>
+    <svg width="34" height="28" viewBox="0 0 36 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+      {/* Ring — back arc (top half, hidden behind planet) */}
+      <ellipse cx="18" cy="18" rx="17" ry="5"
+        stroke="#6366F1" strokeWidth="1.6" fill="none" opacity="0.45"
+        strokeDasharray="37.2 37.2" strokeDashoffset="-37.2"
+      />
+      {/* Planet body */}
+      <circle cx="18" cy="13" r="9" fill="#0D1117" stroke="#6366F1" strokeWidth="1.4"/>
+      <circle cx="18" cy="13" r="9" fill="url(#satGrad)" />
+      {/* Ring — front arc (bottom half, over planet) */}
+      <ellipse cx="18" cy="18" rx="17" ry="5"
+        stroke="#6366F1" strokeWidth="1.6" fill="none"
+        strokeDasharray="37.2 37.2" strokeDashoffset="0"
+      />
+      {/* Sparkle top-left */}
+      <path d="M4,2 L4.5,3.5 L6,4 L4.5,4.5 L4,6 L3.5,4.5 L2,4 L3.5,3.5Z" fill="#818CF8"/>
+      {/* Sparkle top-right */}
+      <path d="M32,2 L32.4,3.1 L33.5,3.5 L32.4,3.9 L32,5 L31.6,3.9 L30.5,3.5 L31.6,3.1Z" fill="#A855F7" opacity="0.9"/>
+      {/* Sparkle bottom-right */}
+      <path d="M33,23 L33.3,23.9 L34.2,24.2 L33.3,24.5 L33,25.4 L32.7,24.5 L31.8,24.2 L32.7,23.9Z" fill="#818CF8" opacity="0.75"/>
+      {/* Sparkle bottom-left tiny */}
+      <path d="M2,22.5 L2.25,23.25 L3,23.5 L2.25,23.75 L2,24.5 L1.75,23.75 L1,23.5 L1.75,23.25Z" fill="#A855F7" opacity="0.6"/>
+      <defs>
+        <radialGradient id="satGrad" cx="38%" cy="32%" r="65%">
+          <stop offset="0%" stopColor="#818CF8" stopOpacity="0.7"/>
+          <stop offset="100%" stopColor="#4338CA" stopOpacity="0.4"/>
+        </radialGradient>
+      </defs>
+    </svg>
   )
 }
 
@@ -54,7 +70,7 @@ export default function Nav() {
 
         {/* Logo */}
         <Link href="/dashboard" className="flex items-center gap-2.5 shrink-0">
-          <OrbitLogo />
+          <SaturnLogo />
           <span className="text-sm font-bold tracking-[0.15em] text-white uppercase">
             Sky<span className="text-[#6366F1]">watcher</span>
           </span>
