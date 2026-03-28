@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { ChevronLeft, LayoutDashboard, Clock, CheckCircle2 } from 'lucide-react'
 import { DIFFICULTY_CONFIG } from '@/lib/missions'
-import ObservationModal from '@/components/observations/ObservationModal'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { useRouter } from 'next/navigation'
 import { getPointsToNextLevel } from '@/lib/constants'
@@ -122,7 +121,6 @@ export default function MissionsPage() {
   const router = useRouter()
   const [missions, setMissions] = useState<Mission[]>([])
   const [loading, setLoading] = useState(true)
-  const [activeMission, setActiveMission] = useState<Mission | null>(null)
   const [progress, setProgress] = useState<MissionProgress[]>([])
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set())
 
@@ -146,15 +144,6 @@ export default function MissionsPage() {
       .then(data => { if (Array.isArray(data)) setProgress(data) })
       .catch(() => {})
   }, [])
-
-  function handleSuccess(missionId: string) {
-    setPendingIds(prev => {
-      const next = new Set(prev).add(missionId)
-      localStorage.setItem('sky_pending_missions', JSON.stringify([...next]))
-      return next
-    })
-    setActiveMission(null)
-  }
 
   const completedIds = new Set(
     progress.filter(p => p.status === 'completed').map(p => p.mission_id)
@@ -228,7 +217,7 @@ export default function MissionsPage() {
           </span>
         ) : (
           <button
-            onClick={() => setActiveMission(mission)}
+            onClick={() => router.push(`/observations/new?object=${encodeURIComponent(mission.object_name ?? mission.title)}&points=${mission.reward_points}`)}
             className="w-full py-2.5 rounded-xl text-sm font-bold tracking-wide transition-all hover:brightness-110 active:scale-95"
             style={{ background: 'linear-gradient(135deg, #F59E0B, #FFD166)', color: '#0A0A0A' }}
           >
@@ -241,23 +230,6 @@ export default function MissionsPage() {
 
   return (
     <>
-      {activeMission && (
-        <ObservationModal
-          mission={{
-            id: activeMission.id,
-            name: activeMission.title,
-            emoji: getEmoji(activeMission.object_name),
-            difficulty: DIFF_MAP[activeMission.difficulty] ?? 'Beginner',
-            points: activeMission.reward_points,
-            type: TELESCOPE_OBJECTS.has(activeMission.object_name ?? '') ? 'telescope' : 'naked_eye',
-            desc: activeMission.description ?? '',
-            hint: '',
-          }}
-          onClose={() => setActiveMission(null)}
-          onSuccess={() => handleSuccess(activeMission.id)}
-        />
-      )}
-
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-5 animate-page-enter">
 
         {/* Header */}

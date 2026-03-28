@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { ChevronLeft, LayoutDashboard, Camera, CheckCircle2, Clock, XCircle, Image as ImageIcon } from 'lucide-react'
+import { ChevronLeft, LayoutDashboard, Camera, CheckCircle2, Clock, XCircle, Image as ImageIcon, Plus } from 'lucide-react'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { useRouter } from 'next/navigation'
 
@@ -82,9 +82,17 @@ export default function GalleryPage() {
         </Link>
       </div>
 
-      <p className="text-center text-xs text-[#475569] mb-5">
+      <p className="text-center text-xs text-[#475569] mb-4">
         {lang === 'ka' ? 'საზოგადოების ცის დაკვირვებები' : 'Community sky observations from Tbilisi'}
       </p>
+
+      <Link
+        href="/observations/new"
+        className="flex items-center justify-center gap-2 w-full py-3 rounded-2xl font-bold text-sm mb-5 transition-all active:scale-[0.98]"
+        style={{ background: 'linear-gradient(135deg, #6366F1, #818CF8)', color: 'white', minHeight: 48 }}
+      >
+        <Plus size={16} /> {lang === 'ka' ? 'ახალი დაკვირვება' : 'New Observation'}
+      </Link>
 
       {/* Filter tabs */}
       <div className="flex justify-center mb-6">

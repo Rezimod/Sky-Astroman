@@ -1,6 +1,7 @@
 'use client'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Crown, MapPin, Wind, Thermometer, CheckCircle, Telescope, Camera, Satellite, Star, Flame, Award, LogOut, ChevronLeft, LayoutDashboard } from 'lucide-react'
+import { Crown, MapPin, Wind, Thermometer, CheckCircle, Telescope, Camera, Satellite, Star, Flame, Award, LogOut, ChevronLeft, LayoutDashboard, Shield } from 'lucide-react'
 import Link from 'next/link'
 import { getPointsToNextLevel } from '@/lib/constants'
 import { useLanguage } from '@/contexts/LanguageContext'
@@ -36,6 +37,13 @@ export default function ProfilePage() {
   const router = useRouter()
   const { lang } = useLanguage()
   const levelProgress = getPointsToNextLevel(mockProfile.points)
+  const [isAdmin, setIsAdmin] = useState(false)
+
+  useEffect(() => {
+    createClient().auth.getUser().then(({ data: { user } }) => {
+      if (user?.app_metadata?.is_admin === true) setIsAdmin(true)
+    })
+  }, [])
 
   async function handleSignOut() {
     const supabase = createClient()
@@ -238,6 +246,19 @@ export default function ProfilePage() {
               </Link>
             </div>
           </div>
+
+          {/* Admin link (admin users only) */}
+          {isAdmin && (
+            <div className="text-center py-1">
+              <Link
+                href="/admin"
+                className="inline-flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-xl transition-all"
+                style={{ background: 'rgba(99,102,241,0.10)', color: '#818CF8', border: '1px solid rgba(99,102,241,0.25)' }}
+              >
+                <Shield size={13} /> Admin Panel
+              </Link>
+            </div>
+          )}
 
           {/* Sign out */}
           <div className="text-center py-2">
