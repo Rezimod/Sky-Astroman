@@ -1,14 +1,37 @@
 'use client'
 import { useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { Lock, User, Mail, CheckCircle } from 'lucide-react'
 import { SaturnLogo } from '@/components/shared/SaturnLogo'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { createClient } from '@/lib/supabase/client'
 
+function AuthInput({
+  type, value, onChange, placeholder, icon: Icon, label,
+}: {
+  type: string; value: string; onChange: (v: string) => void
+  placeholder: string; icon: React.ElementType; label: string
+}) {
+  return (
+    <div className="space-y-1.5">
+      <label className="text-[10px] font-bold uppercase tracking-widest text-[#64748B] ml-1">{label}</label>
+      <div className="relative group">
+        <Icon size={13} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#475569] group-focus-within:text-[#6366F1] transition-colors pointer-events-none" />
+        <input
+          type={type}
+          required
+          autoComplete={type === 'password' ? 'new-password' : type === 'email' ? 'email' : 'name'}
+          placeholder={placeholder}
+          value={value}
+          onChange={e => onChange(e.target.value)}
+          className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl py-3 pl-10 pr-4 text-sm text-white placeholder:text-[#334155] focus:outline-none focus:border-[#6366F1]/55 focus:bg-white/[0.06] transition-all"
+        />
+      </div>
+    </div>
+  )
+}
+
 export default function RegisterPage() {
-  const router = useRouter()
   const { lang } = useLanguage()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -27,12 +50,11 @@ export default function RegisterPage() {
       return
     }
     if (password.length < 6) {
-      setError(lang === 'ka' ? 'პაროლი მინიმუმ 6 სიმბოლო უნდა იყოს' : 'Password must be at least 6 characters')
+      setError(lang === 'ka' ? 'პაროლი მინიმუმ 6 სიმბოლო' : 'Password must be at least 6 characters')
       return
     }
 
     setLoading(true)
-
     try {
       const supabase = createClient()
 
@@ -46,7 +68,8 @@ export default function RegisterPage() {
       })
 
       if (signUpError) {
-        if (signUpError.message.toLowerCase().includes('already registered') || signUpError.message.toLowerCase().includes('already been registered') || signUpError.message.toLowerCase().includes('user already registered')) {
+        const msg = signUpError.message.toLowerCase()
+        if (msg.includes('already registered') || msg.includes('already been registered') || msg.includes('user already registered')) {
           setError(lang === 'ka' ? 'ეს ელ-ფოსტა უკვე რეგისტრირებულია' : 'This email is already registered')
         } else {
           setError(signUpError.message)
@@ -56,16 +79,20 @@ export default function RegisterPage() {
 
       if (data.user) {
         if (data.session) {
-          // Create profile via server route (bypasses RLS)
-          await fetch('/api/auth/profile', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ display_name: name.trim() }),
-          })
-          router.push('/dashboard')
-          router.refresh()
+          // Auto-confirmed — create profile and go to dashboard
+          try {
+            await fetch('/api/auth/profile', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ display_name: name.trim() }),
+            })
+          } catch {
+            // Profile will be created on next load; don't block the user
+          }
+          // Hard redirect ensures fresh session cookies are picked up
+          window.location.href = '/dashboard'
         } else {
-          // Email confirmation required (fallback if re-enabled)
+          // Email confirmation required — profile will be created in auth/callback
           setDone(true)
         }
       }
@@ -77,37 +104,29 @@ export default function RegisterPage() {
     }
   }
 
-  // ── Email confirmation sent screen ──
+  // ── Email confirmation screen ──
   if (done) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden px-4">
-        <div className="fixed top-[-20%] left-[-10%] w-[55vw] h-[55vw] rounded-full bg-[#6366F1]/15 blur-[130px] pointer-events-none z-0" />
-        <div className="fixed bottom-[-20%] right-[-10%] w-[60vw] h-[60vw] rounded-full bg-[#A855F7]/10 blur-[150px] pointer-events-none z-0" />
+      <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden">
+        <div className="fixed top-[-20%] left-[-10%] w-[55vw] h-[55vw] rounded-full bg-[#6366F1]/12 blur-[140px] pointer-events-none z-0" />
         <div className="relative z-10 text-center max-w-sm animate-auth-slide-up">
           <div className="flex justify-center mb-6">
-            <div className="w-20 h-20 rounded-full bg-[#6366F1]/10 border border-[#6366F1]/20 flex items-center justify-center">
-              <CheckCircle size={36} className="text-[#6366F1]" strokeWidth={1.5} />
+            <div className="w-18 h-18 rounded-full bg-[#6366F1]/10 border border-[#6366F1]/20 flex items-center justify-center p-5">
+              <CheckCircle size={32} className="text-[#6366F1]" strokeWidth={1.5} />
             </div>
           </div>
-          <h2 className="text-3xl font-bold text-white mb-3">
+          <h2 className="text-2xl font-bold text-white mb-2">
             {lang === 'ka' ? 'შეამოწმე ელ-ფოსტა' : 'Check your email'}
           </h2>
-          <p className="text-slate-400 text-sm mb-2">
-            {lang === 'ka'
-              ? `დადასტურების ბმული გაიგზავნა:`
-              : 'A confirmation link was sent to:'}
+          <p className="text-[#64748B] text-sm mb-2">
+            {lang === 'ka' ? 'დადასტურების ბმული გაიგზავნა:' : 'A confirmation link was sent to:'}
           </p>
-          <p className="text-white font-semibold text-sm mb-8 bg-white/5 border border-white/10 rounded-xl px-4 py-2 inline-block">{email}</p>
-          <p className="text-slate-500 text-xs mb-8">
-            {lang === 'ka'
-              ? 'ბმულს ვადა 24 საათი აქვს. შეამოწმე spam/junk საქაღალდეც.'
-              : 'The link expires in 24 hours. Check your spam folder if you don\'t see it.'}
+          <p className="text-white font-semibold text-sm mb-6 bg-white/[0.05] border border-white/[0.08] rounded-lg px-4 py-2 inline-block">{email}</p>
+          <p className="text-[#475569] text-xs mb-8">
+            {lang === 'ka' ? 'ვადა: 24 სთ. spam/junk საქაღალდეც შეამოწმე.' : 'Link expires in 24h. Check your spam folder too.'}
           </p>
-          <Link
-            href="/login"
-            className="inline-flex items-center gap-2 text-[#6366F1] hover:text-[#818CF8] text-sm font-semibold transition-colors"
-          >
-            ← {lang === 'ka' ? 'შესვლის გვერდი' : 'Back to sign in'}
+          <Link href="/login" className="text-[#6366F1] hover:text-[#818CF8] text-sm font-semibold transition-colors">
+            ← {lang === 'ka' ? 'შესვლა' : 'Back to sign in'}
           </Link>
         </div>
       </div>
@@ -117,44 +136,36 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden">
 
-      {/* Animated background particles */}
-      {[...Array(14)].map((_, i) => (
-        <span
-          key={i}
-          className="auth-particle"
-          style={{
-            left: `${5 + i * 7}%`,
-            width: i % 4 === 0 ? '2px' : '1px',
-            height: i % 4 === 0 ? '2px' : '1px',
-            '--dur': `${11 + i * 2.2}s`,
-            '--delay': `${i * 0.7}s`,
-            '--drift': `${(i % 2 === 0 ? 1 : -1) * (8 + i * 4)}px`,
-          } as React.CSSProperties}
-        />
+      {/* Particles */}
+      {[...Array(12)].map((_, i) => (
+        <span key={i} className="auth-particle" style={{
+          left: `${6 + i * 8}%`,
+          width: i % 4 === 0 ? '2px' : '1px',
+          height: i % 4 === 0 ? '2px' : '1px',
+          '--dur': `${12 + i * 2}s`,
+          '--delay': `${i * 0.6}s`,
+          '--drift': `${(i % 2 === 0 ? 1 : -1) * (8 + i * 4)}px`,
+        } as React.CSSProperties} />
       ))}
 
-      {/* Glow blobs */}
-      <div className="fixed top-[-20%] left-[-10%] w-[55vw] h-[55vw] rounded-full bg-[#6366F1]/15 blur-[130px] pointer-events-none z-0" />
-      <div className="fixed bottom-[-20%] right-[-10%] w-[60vw] h-[60vw] rounded-full bg-[#A855F7]/10 blur-[150px] pointer-events-none z-0" />
-      <div className="fixed top-[30%] left-[15%] w-[18vw] h-[18vw] rounded-full bg-[#38F0FF]/4 blur-[70px] pointer-events-none z-0" />
+      {/* Background glows */}
+      <div className="fixed top-[-18%] left-[-8%] w-[55vw] h-[55vw] rounded-full bg-[#6366F1]/12 blur-[140px] pointer-events-none z-0" />
+      <div className="fixed bottom-[-18%] right-[-8%] w-[55vw] h-[55vw] rounded-full bg-[#8B5CF6]/8 blur-[150px] pointer-events-none z-0" />
 
       {/* Header */}
-      <header className="relative z-50 border-b border-white/[0.07] bg-[#090C14]/70 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
+      <header className="relative z-50 border-b border-white/[0.06] bg-[#06080F]/75 backdrop-blur-xl">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 shrink-0">
-            <SaturnLogo width={32} height={24} />
-            <span className="text-xs font-bold tracking-[0.18em] text-white uppercase">
-              Sky<span className="text-[#6366F1]">watcher</span>
+            <SaturnLogo width={22} height={22} />
+            <span className="text-sm font-bold tracking-[0.14em] text-white uppercase">
+              Ste<span className="text-[#6366F1]">llar</span>
             </span>
           </Link>
           <div className="flex items-center gap-3">
-            <span className="text-slate-500 text-xs hidden sm:block">
+            <span className="text-[#475569] text-xs hidden sm:block">
               {lang === 'ka' ? 'უკვე გაქვს ანგარიში?' : 'Already have an account?'}
             </span>
-            <Link
-              href="/login"
-              className="text-[11px] font-bold tracking-widest text-white hover:text-[#6366F1] transition-colors uppercase"
-            >
+            <Link href="/login" className="text-[11px] font-bold tracking-widest text-[#6366F1] hover:text-[#818CF8] transition-colors uppercase">
               {lang === 'ka' ? 'შესვლა' : 'Sign in'}
             </Link>
           </div>
@@ -162,112 +173,58 @@ export default function RegisterPage() {
       </header>
 
       {/* Main */}
-      <main className="relative z-10 flex flex-col items-center justify-center flex-1 py-8 px-4">
-        <div className="w-full max-w-md">
+      <main className="relative z-10 flex flex-col items-center justify-center flex-1 py-6 px-4">
+        <div className="w-full max-w-sm">
 
-          {/* Floating planet */}
-          <div className="flex justify-center mb-6 animate-auth-float">
+          {/* Logo */}
+          <div className="flex justify-center mb-5 animate-auth-float">
             <div className="relative">
-              <div className="absolute inset-0 rounded-full bg-[#A855F7]/20 blur-2xl scale-150" />
-              <SaturnLogo width={64} height={48} />
+              <div className="absolute inset-0 rounded-full bg-[#6366F1]/20 blur-2xl scale-150" />
+              <SaturnLogo width={52} height={52} />
             </div>
           </div>
 
           {/* Title */}
-          <div className="text-center mb-6 animate-auth-slide-up-1">
-            <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2 leading-tight">
+          <div className="text-center mb-5 animate-auth-slide-up-1">
+            <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1 leading-tight">
               {lang === 'ka' ? 'შექმენი ანგარიში' : 'Create account'}
             </h1>
-            <p className="text-slate-500 text-sm">
+            <p className="text-[#64748B] text-sm">
               {lang === 'ka' ? 'დაიწყე კოსმოსური მოგზაურობა' : 'Start your cosmic journey'}
             </p>
           </div>
 
-          {/* Card */}
-          <div className="animate-auth-slide-up-2 animate-auth-glow bg-[#0D1117]/90 backdrop-blur-2xl border border-white/[0.08] rounded-[1.75rem] p-7 shadow-2xl">
+          {/* Form card */}
+          <div className="animate-auth-slide-up-2 animate-auth-glow bg-[#0A0E1A]/90 backdrop-blur-2xl border border-white/[0.08] rounded-2xl p-6 shadow-2xl">
+            <form onSubmit={handleSubmit} className="space-y-3">
 
-            <form onSubmit={handleSubmit} className="space-y-3.5">
-              {/* Name */}
-              <div className="space-y-1.5 animate-auth-slide-up-2">
-                <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 ml-1">
-                  {lang === 'ka' ? 'სახელი' : 'Name'}
-                </label>
-                <div className="relative group">
-                  <User size={13} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-[#6366F1] transition-colors" />
-                  <input
-                    type="text"
-                    required
-                    autoComplete="name"
-                    placeholder={lang === 'ka' ? 'შენი სახელი' : 'Your name'}
-                    value={name}
-                    onChange={e => setName(e.target.value)}
-                    className="w-full bg-white/[0.04] border border-white/[0.08] rounded-2xl py-3.5 pl-10 pr-4 text-white placeholder:text-slate-700 focus:outline-none focus:border-[#6366F1]/60 focus:bg-white/[0.06] transition-all"
-                  />
-                </div>
+              <div className="animate-auth-slide-up-2">
+                <AuthInput type="text" value={name} onChange={setName}
+                  placeholder={lang === 'ka' ? 'შენი სახელი' : 'Your name'}
+                  icon={User} label={lang === 'ka' ? 'სახელი' : 'Name'} />
               </div>
 
-              {/* Email */}
-              <div className="space-y-1.5 animate-auth-slide-up-3">
-                <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 ml-1">
-                  {lang === 'ka' ? 'ელ-ფოსტა' : 'Email'}
-                </label>
-                <div className="relative group">
-                  <Mail size={13} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-[#6366F1] transition-colors" />
-                  <input
-                    type="email"
-                    required
-                    autoComplete="email"
-                    placeholder="example@mail.com"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    className="w-full bg-white/[0.04] border border-white/[0.08] rounded-2xl py-3.5 pl-10 pr-4 text-white placeholder:text-slate-700 focus:outline-none focus:border-[#6366F1]/60 focus:bg-white/[0.06] transition-all"
-                  />
-                </div>
+              <div className="animate-auth-slide-up-3">
+                <AuthInput type="email" value={email} onChange={setEmail}
+                  placeholder="example@mail.com"
+                  icon={Mail} label={lang === 'ka' ? 'ელ-ფოსტა' : 'Email'} />
               </div>
 
-              {/* Password */}
-              <div className="space-y-1.5 animate-auth-slide-up-4">
-                <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 ml-1">
-                  {lang === 'ka' ? 'პაროლი (მინ. 6 სიმბოლო)' : 'Password (min. 6 chars)'}
-                </label>
-                <div className="relative group">
-                  <Lock size={13} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-[#6366F1] transition-colors" />
-                  <input
-                    type="password"
-                    required
-                    minLength={6}
-                    autoComplete="new-password"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                    className="w-full bg-white/[0.04] border border-white/[0.08] rounded-2xl py-3.5 pl-10 pr-4 text-white placeholder:text-slate-700 focus:outline-none focus:border-[#6366F1]/60 focus:bg-white/[0.06] transition-all"
-                  />
-                </div>
+              <div className="animate-auth-slide-up-4">
+                <AuthInput type="password" value={password} onChange={setPassword}
+                  placeholder="••••••••"
+                  icon={Lock} label={lang === 'ka' ? 'პაროლი (მინ. 6 სიმბ.)' : 'Password (min. 6 chars)'} />
               </div>
 
-              {/* Confirm Password */}
-              <div className="space-y-1.5 animate-auth-slide-up-5">
-                <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 ml-1">
-                  {lang === 'ka' ? 'გაიმეორე პაროლი' : 'Confirm password'}
-                </label>
-                <div className="relative group">
-                  <Lock size={13} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-[#6366F1] transition-colors" />
-                  <input
-                    type="password"
-                    required
-                    minLength={6}
-                    autoComplete="new-password"
-                    placeholder="••••••••"
-                    value={confirmPassword}
-                    onChange={e => setConfirmPassword(e.target.value)}
-                    className="w-full bg-white/[0.04] border border-white/[0.08] rounded-2xl py-3.5 pl-10 pr-4 text-white placeholder:text-slate-700 focus:outline-none focus:border-[#6366F1]/60 focus:bg-white/[0.06] transition-all"
-                  />
-                </div>
+              <div className="animate-auth-slide-up-5">
+                <AuthInput type="password" value={confirmPassword} onChange={setConfirmPassword}
+                  placeholder="••••••••"
+                  icon={Lock} label={lang === 'ka' ? 'გაიმეორე პაროლი' : 'Confirm password'} />
               </div>
 
               {error && (
-                <div className="animate-auth-slide-up bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
-                  <p className="text-red-400 text-sm text-center">{error}</p>
+                <div className="bg-rose-500/10 border border-rose-500/20 rounded-xl px-4 py-2.5">
+                  <p className="text-rose-400 text-sm text-center">{error}</p>
                 </div>
               )}
 
@@ -275,9 +232,8 @@ export default function RegisterPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="relative w-full py-3.5 bg-white hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed text-[#090C14] font-bold rounded-2xl transition-all overflow-hidden group"
+                  className="w-full py-3 bg-[#6366F1] hover:bg-[#4F46E5] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-all text-sm tracking-wide shadow-lg shadow-indigo-500/20"
                 >
-                  <span className="absolute inset-0 bg-gradient-to-r from-[#6366F1]/0 via-white/10 to-[#6366F1]/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
                   {loading
                     ? (lang === 'ka' ? 'იქმნება ანგარიში...' : 'Creating account...')
                     : (lang === 'ka' ? 'ანგარიშის შექმნა' : 'Create account')}
@@ -285,7 +241,7 @@ export default function RegisterPage() {
               </div>
             </form>
 
-            <p className="text-center text-xs text-slate-600 mt-5">
+            <p className="text-center text-xs text-[#475569] mt-4">
               {lang === 'ka' ? 'უკვე გაქვს ანგარიში? ' : 'Already have an account? '}
               <Link href="/login" className="text-[#6366F1] hover:text-[#818CF8] font-semibold transition-colors">
                 {lang === 'ka' ? 'შესვლა' : 'Sign in'}

@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { CheckCircle2, Clock, Search, Plus, ArrowRight, ChevronLeft } from 'lucide-react'
+import { CheckCircle2, Clock, Search, Plus, ArrowRight, ChevronLeft, LayoutDashboard } from 'lucide-react'
+import Link from 'next/link'
 import { DIFFICULTY_CONFIG } from '@/lib/missions'
 import ObservationModal from '@/components/observations/ObservationModal'
 import { useLanguage } from '@/contexts/LanguageContext'
@@ -134,6 +135,13 @@ export default function MissionsPage() {
           >
             {lang === 'ka' ? 'აქტიური მისიები' : 'Active Missions'}
           </h1>
+          <Link
+            href="/dashboard"
+            className="absolute right-0 w-9 h-9 rounded-full flex items-center justify-center transition-all hover:bg-white/[0.08]"
+            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+          >
+            <LayoutDashboard size={15} className="text-[#94A3B8]" />
+          </Link>
         </div>
 
         {/* Featured banner */}

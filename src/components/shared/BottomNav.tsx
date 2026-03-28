@@ -6,22 +6,22 @@ import { useLanguage } from '@/contexts/LanguageContext'
 
 export default function BottomNav() {
   const pathname = usePathname()
-  const { t } = useLanguage()
+  const { lang } = useLanguage()
   const isLanding = pathname === '/' || pathname === '/login' || pathname === '/register' || pathname.startsWith('/admin')
   if (isLanding) return null
 
   const tabs = [
-    { href: '/dashboard',            labelKey: 'nav.home',     icon: LayoutDashboard },
-    { href: '/missions',             labelKey: 'nav.missions', icon: Satellite       },
-    { href: '/leaderboard',          labelKey: 'nav.ranks',    icon: Trophy          },
-    { href: '/sky-tools/conditions', labelKey: 'nav.sky',      icon: Cloud           },
-    { href: '/profile',              labelKey: 'nav.profile',  icon: User            },
+    { href: '/dashboard',            label: { en: 'HOME',     ka: 'მთავ.' }, icon: LayoutDashboard },
+    { href: '/missions',             label: { en: 'MISSIONS', ka: 'მისია' }, icon: Satellite       },
+    { href: '/leaderboard',          label: { en: 'RANKS',    ka: 'ტოპი'  }, icon: Trophy          },
+    { href: '/sky-tools/conditions', label: { en: 'SKY',      ka: 'ცა'    }, icon: Cloud           },
+    { href: '/profile',              label: { en: 'PROFILE',  ka: 'ანგარ.' }, icon: User           },
   ]
 
   return (
     <nav
       className="sm:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-white/[0.06]"
-      style={{ background: 'rgba(9,12,20,0.95)', backdropFilter: 'blur(20px)', paddingBottom: 'env(safe-area-inset-bottom)' }}
+      style={{ background: 'rgba(6,8,15,0.96)', backdropFilter: 'blur(20px)', paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       <div className="flex items-stretch">
         {tabs.map(tab => {
@@ -32,11 +32,13 @@ export default function BottomNav() {
               key={tab.href}
               href={tab.href}
               className={`flex-1 flex flex-col items-center justify-center gap-1 py-2.5 transition-colors ${
-                active ? 'text-[#6366F1]' : 'text-[#475569] active:text-[#94A3B8]'
+                active ? 'text-[#6366F1]' : 'text-[#475569]'
               }`}
             >
-              <Icon size={18} />
-              <span className="text-[9px] font-bold tracking-wider uppercase">{t(tab.labelKey)}</span>
+              <Icon size={17} />
+              <span className="text-[9px] font-bold tracking-wide uppercase">
+                {lang === 'ka' ? tab.label.ka : tab.label.en}
+              </span>
             </Link>
           )
         })}

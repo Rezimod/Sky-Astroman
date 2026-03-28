@@ -34,7 +34,7 @@ export default async function AdminDashboard() {
     <div className="max-w-5xl animate-page-enter">
       <div className="mb-6">
         <h1 className="text-xl font-bold text-white">Admin Dashboard</h1>
-        <p className="text-xs text-[#475569] mt-0.5">Real-time overview · Skywatcher</p>
+        <p className="text-xs text-[#475569] mt-0.5">Real-time overview · Stellar</p>
       </div>
 
       {/* Stats */}

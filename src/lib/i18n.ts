@@ -50,7 +50,7 @@ export const translations = {
     step4d:        { en: 'Admin verifies your photo — points land in your account and your rank climbs', ka: 'ადმინი ამოწმებს ფოტოს, ქულები ემატება ანგარიშს და რეიტინგი იმატებს' },
     // CTA
     ctaTitle:      { en: 'Ready?',                          ka: 'მზად ხარ?' },
-    ctaBtn:        { en: 'Join Sky Astroman →',             ka: 'შემოგვიერთდი →' },
+    ctaBtn:        { en: 'Join Stellar →',                   ka: 'შემოგვიერთდი →' },
     // Equipment labels
     naked_eye:     { en: 'Naked Eye',                            ka: 'შეუიარაღებელი თვალი' },
     binoculars:    { en: 'Binoculars',                           ka: 'ბინოკლი' },
@@ -69,7 +69,7 @@ export const translations = {
     missionsTitle2:{ en: 'Available Missions',          ka: 'ხელმისაწვდომი მისიები' },
     howTitle2:     { en: 'How It Works',                ka: 'როგორ მუშაობს' },
     ctaText:      { en: 'Ready to explore the Georgian sky?', ka: 'მზახარ საქართველოს ცის სასწაულებისთვის?' },
-    joinBtn:      { en: 'Join Sky Astroman →',         ka: 'შემოუერთდი →' },
+    joinBtn:      { en: 'Join Stellar →',               ka: 'შემოუერთდი →' },
     feat1t:       { en: 'Log Observations',            ka: 'ჩაწერე დაკვირვება' },
     feat1d:       { en: 'Photograph celestial objects and submit for verification', ka: 'გადაიღე ციური სხეული და გაგზავნე დასადასტურებლად' },
     feat2t:       { en: 'Admin Verified',              ka: 'ადმინი ამოწმებს' },
@@ -85,7 +85,7 @@ export const translations = {
   },
   // Login / Auth
   login: {
-    title:        { en: 'Sign in to Sky Astroman',    ka: 'Sky Astroman-ში შესვლა' },
+    title:        { en: 'Sign in to Stellar',          ka: 'Stellar-ში შესვლა' },
     subtitle:     { en: 'Log observations, earn points, climb the leaderboard', ka: 'ჩაწერე დაკვირვებები, დააგროვე ქულები' },
     emailBtn:     { en: 'Enter with Email →',          ka: 'შესვლა ელ-ფოსტით →' },
     noCrypto:     { en: 'Free forever. No hidden fees.',           ka: 'სრულიად უფასო. დამატებითი გადასახადი არ არის.' },
@@ -209,7 +209,7 @@ export const translations = {
   },
   // Footer
   footer: {
-    tagline:      { en: 'Sky Astroman — Sky at a Glance',       ka: 'Sky Astroman — ცა ერთი შეხედვით' },
+    tagline:      { en: 'Stellar — Sky at a Glance',            ka: 'Stellar — ცა ერთი შეხედვით' },
     location:     { en: 'Tbilisi, Georgia',                    ka: 'თბილისი, საქართველო' },
   },
   // Profile

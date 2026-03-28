@@ -16,13 +16,13 @@ const notoSans = Noto_Sans_Georgian({
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#0B0B1A',
+  themeColor: '#06080F',
 }
 
 export const metadata: Metadata = {
-  title: 'Skywatcher — ცა ერთი შეხედვით',
-  description: 'საქართველოს ასტრომანთა პლატფორმა. ჩაწერე დაკვირვებები, შეასრულე მისიები, გახდი ლიდერი.',
-  appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'Skywatcher' },
+  title: 'Stellar — ცა ერთი შეხედვით',
+  description: 'საქართველოს ვარსკვლავმოყვარეთა პლატფორმა. ჩაწერე დაკვირვებები, შეასრულე მისიები, გახდი ლიდერი.',
+  appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'Stellar' },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -30,10 +30,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="ka" className={notoSans.className}>
       <body className="min-h-screen flex flex-col" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
         <LanguageProvider>
-          {/* Background layers */}
+          {/* Cosmic background layers */}
           <StarField />
-          <div className="fixed top-[-10%] right-[-10%] w-[40vw] h-[40vw] rounded-full bg-purple-500/10 blur-[120px] mix-blend-screen z-0 pointer-events-none" />
-          <div className="fixed bottom-[-10%] left-[-10%] w-[40vw] h-[40vw] rounded-full bg-indigo-500/10 blur-[120px] mix-blend-screen z-0 pointer-events-none" />
+          <div className="fixed top-[-15%] right-[-8%] w-[45vw] h-[45vw] rounded-full bg-violet-600/8 blur-[140px] pointer-events-none z-0" />
+          <div className="fixed bottom-[-15%] left-[-8%] w-[45vw] h-[45vw] rounded-full bg-indigo-600/8 blur-[140px] pointer-events-none z-0" />
+          <div className="fixed top-[40%] left-[30%] w-[30vw] h-[30vw] rounded-full bg-cyan-500/3 blur-[160px] pointer-events-none z-0" />
 
           <Nav />
           <main className="relative z-10 flex-1 pb-20 sm:pb-0">{children}</main>

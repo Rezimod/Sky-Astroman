@@ -1,6 +1,7 @@
 'use client'
 import { useRouter } from 'next/navigation'
-import { Crown, MapPin, Wind, Thermometer, CheckCircle, Clock, Telescope, Camera, Satellite, Star, Flame, Award, LogOut, ChevronLeft } from 'lucide-react'
+import { Crown, MapPin, Wind, Thermometer, CheckCircle, Clock, Telescope, Camera, Satellite, Star, Flame, Award, LogOut, ChevronLeft, LayoutDashboard } from 'lucide-react'
+import Link from 'next/link'
 import { getPointsToNextLevel } from '@/lib/constants'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { createClient } from '@/lib/supabase/client'
@@ -65,6 +66,13 @@ export default function ProfilePage() {
         >
           {lang === 'ka' ? 'ჩემი ანგარიში' : 'My Account'}
         </h1>
+        <Link
+          href="/dashboard"
+          className="absolute right-0 w-9 h-9 rounded-full flex items-center justify-center transition-all hover:bg-white/[0.08]"
+          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+        >
+          <LayoutDashboard size={15} className="text-[#94A3B8]" />
+        </Link>
       </div>
 
       <div className="grid lg:grid-cols-12 gap-3 sm:gap-4">

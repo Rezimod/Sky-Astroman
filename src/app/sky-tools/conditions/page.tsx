@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState, useCallback } from 'react'
-import { Cloud, Wind, Droplets, Eye, Thermometer, Moon, RefreshCw, ArrowRight, Circle, ChevronLeft } from 'lucide-react'
+import { Cloud, Wind, Droplets, Eye, Thermometer, Moon, RefreshCw, ArrowRight, Circle, ChevronLeft, LayoutDashboard } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useLanguage } from '@/contexts/LanguageContext'
@@ -235,15 +235,24 @@ export default function SkyConditionsPage() {
         >
           {lang === 'ka' ? 'ცის პირობები' : 'Sky Conditions'}
         </h1>
-        <button
-          onClick={() => load(true)}
-          disabled={loading || refreshing}
-          className="absolute right-0 flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-full transition-all disabled:opacity-40"
-          style={{ background: 'rgba(99,102,241,0.1)', color: '#818CF8', border: '1px solid rgba(99,102,241,0.2)' }}
-        >
-          <RefreshCw size={12} className={refreshing ? 'animate-spin' : ''} />
-          <span className="hidden sm:inline">{lang === 'ka' ? 'განახლება' : 'Refresh'}</span>
-        </button>
+        <div className="absolute right-0 flex items-center gap-2">
+          <button
+            onClick={() => load(true)}
+            disabled={loading || refreshing}
+            className="flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-full transition-all disabled:opacity-40"
+            style={{ background: 'rgba(99,102,241,0.1)', color: '#818CF8', border: '1px solid rgba(99,102,241,0.2)' }}
+          >
+            <RefreshCw size={12} className={refreshing ? 'animate-spin' : ''} />
+            <span className="hidden sm:inline">{lang === 'ka' ? 'განახლება' : 'Refresh'}</span>
+          </button>
+          <Link
+            href="/dashboard"
+            className="w-9 h-9 rounded-full flex items-center justify-center transition-all hover:bg-white/[0.08]"
+            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+          >
+            <LayoutDashboard size={15} className="text-[#94A3B8]" />
+          </Link>
+        </div>
       </div>
 
       {/* Loading skeleton */}

@@ -22,7 +22,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <SaturnLogo width={28} height={21} />
           <div>
             <div className="text-[10px] font-bold tracking-[0.18em] text-white uppercase">
-              Sky<span className="text-[#6366F1]">watcher</span>
+              Ste<span className="text-[#6366F1]">llar</span>
             </div>
             <div className="text-[8px] text-[#6366F1] font-bold tracking-widest uppercase flex items-center gap-1">
               <Shield size={8} /> Admin

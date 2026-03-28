@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Crown, ArrowRight, User, Telescope, ChevronLeft } from 'lucide-react'
+import { Crown, ArrowRight, User, Telescope, ChevronLeft, LayoutDashboard } from 'lucide-react'
 import { useLanguage } from '@/contexts/LanguageContext'
 
 type Period = 'all' | 'month' | 'week'
@@ -62,6 +62,13 @@ export default function LeaderboardPage() {
           >
             {lang === 'ka' ? 'ლიდერბორდი' : 'Leaderboard'}
           </h1>
+          <Link
+            href="/dashboard"
+            className="absolute right-0 w-9 h-9 rounded-full flex items-center justify-center transition-all hover:bg-white/[0.08]"
+            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+          >
+            <LayoutDashboard size={15} className="text-[#94A3B8]" />
+          </Link>
         </div>
         {/* Period tabs row */}
         <div className="flex justify-center">
