@@ -1,17 +1,25 @@
 import { NextResponse } from 'next/server'
-import { getTonightsObjects, generateMissions } from '@/lib/astronomy'
+import { createServiceClient } from '@/lib/supabase/service'
 
-// Cache missions for 10 minutes — astronomy positions don't change meaningfully faster
-export const revalidate = 600
+export const revalidate = 60
 
 export async function GET() {
   try {
-    const objects = getTonightsObjects()
-    const missions = generateMissions(objects)
-    return NextResponse.json(missions, {
-      headers: { 'Cache-Control': 's-maxage=600, stale-while-revalidate=120' },
-    })
+    const supabase = createServiceClient()
+    const { data, error } = await supabase
+      .from('missions')
+      .select('*')
+      .eq('active', true)
+
+    if (error) throw error
+
+    const order = { easy: 0, medium: 1, hard: 2 } as Record<string, number>
+    const sorted = (data ?? []).sort(
+      (a, b) => (order[a.difficulty] ?? 0) - (order[b.difficulty] ?? 0)
+    )
+
+    return NextResponse.json(sorted)
   } catch {
-    return NextResponse.json({ error: 'Failed to generate missions' }, { status: 500 })
+    return NextResponse.json([], { status: 200 })
   }
 }

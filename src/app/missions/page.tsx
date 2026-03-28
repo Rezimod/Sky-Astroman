@@ -7,7 +7,7 @@ import ObservationModal from '@/components/observations/ObservationModal'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { useRouter } from 'next/navigation'
 import { getPointsToNextLevel } from '@/lib/constants'
-import type { GeneratedMission } from '@/lib/types'
+import type { Mission, MissionProgress } from '@/lib/types'
 
 const DIFF_MAP: Record<string, keyof typeof DIFFICULTY_CONFIG> = {
   easy: 'Beginner', medium: 'Intermediate', hard: 'Hard', expert: 'Expert',
@@ -17,6 +17,38 @@ const DIFF_DOTS: Record<string, number> = { easy: 2, medium: 3, hard: 4, expert:
 
 const DIFF_COLOR: Record<string, string> = {
   easy: '#34D399', medium: '#FFD166', hard: '#F87171', expert: '#C084FC',
+}
+
+const DIFF_LABEL_KA: Record<string, string> = {
+  easy: 'მარტივი', medium: 'საშუალო', hard: 'რთული', expert: 'ექსპერტი',
+}
+
+const DIFF_LABEL_EN: Record<string, string> = {
+  easy: 'EASY', medium: 'MEDIUM', hard: 'HARD', expert: 'EXPERT',
+}
+
+// Map object_name → visual sphere id
+const VISUAL_ID: Record<string, string> = {
+  'Moon': 'moon', 'Jupiter': 'jupiter', 'Venus': 'venus', 'Mars': 'mars',
+  'Saturn': 'saturn', 'Mercury': 'mercury', 'Uranus': 'uranus', 'Neptune': 'neptune',
+  'Orion Nebula': 'orion_nebula', 'Andromeda': 'andromeda', 'Pleiades': 'pleiades',
+  'Milky Way': 'andromeda',
+}
+
+const EMOJI: Record<string, string> = {
+  'Moon': '🌕', 'Jupiter': '🪐', 'Venus': '⭐', 'Mars': '🔴', 'Saturn': '🪐',
+  'Orion Nebula': '✨', 'Orion': '✨', 'ISS': '🛸', 'Milky Way': '🌌',
+  'Meteor': '☄️', 'Sunset': '🌅',
+}
+
+const TELESCOPE_OBJECTS = new Set(['Saturn', 'Orion Nebula', 'Milky Way', 'Andromeda'])
+
+function getVisualId(objectName: string | null): string {
+  return VISUAL_ID[objectName ?? ''] ?? 'star'
+}
+
+function getEmoji(objectName: string | null): string {
+  return EMOJI[objectName ?? ''] ?? '⭐'
 }
 
 const MOCK_PROFILE = { level: 3, points: 720, missions_completed: 5 }
@@ -52,7 +84,6 @@ function PlanetVisual({ id, emoji }: { id: string; emoji: string }) {
     )
   }
 
-  // Nebulae, clusters, galaxies — glowing emoji container
   const GLOW: Record<string, string> = {
     orion_nebula: 'rgba(168,85,247,0.35)', andromeda: 'rgba(245,158,11,0.35)',
     pleiades: 'rgba(99,102,241,0.30)', double_cluster: 'rgba(99,102,241,0.25)',
@@ -89,10 +120,10 @@ function DifficultyDots({ difficulty }: { difficulty: string }) {
 export default function MissionsPage() {
   const { lang } = useLanguage()
   const router = useRouter()
-  const [missions, setMissions] = useState<GeneratedMission[]>([])
+  const [missions, setMissions] = useState<Mission[]>([])
   const [loading, setLoading] = useState(true)
-  const [activeMission, setActiveMission] = useState<GeneratedMission | null>(null)
-  const [completedIds, setCompletedIds] = useState<Set<string>>(new Set())
+  const [activeMission, setActiveMission] = useState<Mission | null>(null)
+  const [progress, setProgress] = useState<MissionProgress[]>([])
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set())
 
   const levelProgress = getPointsToNextLevel(MOCK_PROFILE.points)
@@ -101,8 +132,6 @@ export default function MissionsPage() {
     try {
       const saved = localStorage.getItem('sky_pending_missions')
       if (saved) setPendingIds(new Set(JSON.parse(saved)))
-      const done = localStorage.getItem('sky_completed_missions')
-      if (done) setCompletedIds(new Set(JSON.parse(done)))
     } catch {}
   }, [])
 
@@ -111,6 +140,11 @@ export default function MissionsPage() {
       .then(r => r.json())
       .then(data => { if (Array.isArray(data)) setMissions(data); setLoading(false) })
       .catch(() => setLoading(false))
+
+    fetch('/api/missions/progress')
+      .then(r => r.ok ? r.json() : [])
+      .then(data => { if (Array.isArray(data)) setProgress(data) })
+      .catch(() => {})
   }, [])
 
   function handleSuccess(missionId: string) {
@@ -122,14 +156,88 @@ export default function MissionsPage() {
     setActiveMission(null)
   }
 
+  const completedIds = new Set(
+    progress.filter(p => p.status === 'completed').map(p => p.mission_id)
+  )
+
   const completedCount = completedIds.size + pendingIds.size
-  const totalCount = missions.length || 5
+  const regular = missions.filter(m => !m.is_daily)
+  const daily   = missions.filter(m => m.is_daily)
+  const totalCount = regular.length || 5
   const toNextRank = Math.max(0, 5 - completedCount)
   const progressPct = Math.min(100, (completedCount / 5) * 100)
+  const nakedEyeCount = regular.filter(m => !TELESCOPE_OBJECTS.has(m.object_name ?? '')).length
+  const telescopeCount = regular.filter(m => TELESCOPE_OBJECTS.has(m.object_name ?? '')).length
 
   const isDay = (() => {
     const h = new Date().getHours(); return h >= 7 && h < 20
   })()
+
+  function MissionCard({ mission }: { mission: Mission }) {
+    const done    = completedIds.has(mission.id)
+    const pending = pendingIds.has(mission.id)
+    const visualId  = getVisualId(mission.object_name)
+    const emoji     = getEmoji(mission.object_name)
+    const diffColor = DIFF_COLOR[mission.difficulty] ?? '#34D399'
+
+    return (
+      <div
+        className="rounded-2xl flex flex-col items-center p-4 sm:p-5 transition-all relative overflow-hidden"
+        style={{
+          background: done ? 'rgba(255,255,255,0.02)' : 'rgba(10,14,26,0.95)',
+          border: `1px solid ${pending ? 'rgba(245,158,11,0.25)' : done ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.08)'}`,
+          opacity: done ? 0.6 : 1,
+        }}
+      >
+        <div className="absolute top-3 right-3">
+          {done && <CheckCircle2 size={14} className="text-[#34D399]" />}
+          {pending && <Clock size={14} className="text-[#F59E0B]" />}
+        </div>
+
+        <div className="mb-4 mt-2 flex items-center justify-center" style={{ height: 88 }}>
+          <PlanetVisual id={visualId} emoji={emoji} />
+        </div>
+
+        <h3 className="text-sm sm:text-base font-bold text-white text-center leading-snug mb-1 line-clamp-2">
+          {mission.title}
+        </h3>
+
+        <DifficultyDots difficulty={mission.difficulty} />
+
+        <span className="text-[9px] font-bold tracking-[0.15em] uppercase mb-2" style={{ color: diffColor }}>
+          {lang === 'ka' ? DIFF_LABEL_KA[mission.difficulty] : DIFF_LABEL_EN[mission.difficulty]}
+        </span>
+
+        {mission.description && (
+          <p className="text-[10px] text-[#475569] text-center leading-relaxed mb-2 line-clamp-2 px-1">
+            {mission.description}
+          </p>
+        )}
+
+        <div className="text-base font-bold mb-4" style={{ color: '#F59E0B' }}>
+          +{mission.reward_points} <span className="text-sm">✦</span>
+        </div>
+
+        {done ? (
+          <span className="text-xs font-bold text-[#475569] pb-1">
+            {lang === 'ka' ? 'შესრულდა' : 'Complete'}
+          </span>
+        ) : pending ? (
+          <span className="text-xs font-bold pb-1" style={{ color: '#F59E0B' }}>
+            {lang === 'ka' ? 'განხილვაში' : 'Pending'}
+          </span>
+        ) : (
+          <button
+            onClick={() => setActiveMission(mission)}
+            className="w-full py-2.5 rounded-xl text-sm font-bold tracking-wide transition-all hover:brightness-110 active:scale-95"
+            style={{ background: 'linear-gradient(135deg, #F59E0B, #FFD166)', color: '#0A0A0A' }}
+          >
+            {lang === 'ka' ? 'დაწყება →' : 'Begin →'}
+          </button>
+        )}
+      </div>
+    )
+  }
 
   return (
     <>
@@ -137,15 +245,13 @@ export default function MissionsPage() {
         <ObservationModal
           mission={{
             id: activeMission.id,
-            name: lang === 'ka' ? activeMission.titleGe : activeMission.objectName,
-            emoji: activeMission.objectEmoji,
+            name: activeMission.title,
+            emoji: getEmoji(activeMission.object_name),
             difficulty: DIFF_MAP[activeMission.difficulty] ?? 'Beginner',
-            points: activeMission.points,
-            type: activeMission.equipment === 'naked_eye' ? 'naked_eye' : 'telescope',
-            desc: lang === 'ka' ? activeMission.descriptionGe : activeMission.description,
-            hint: lang === 'ka'
-              ? `საუკეთესო დრო: ${activeMission.bestTime} · მაქს. სიმაღლე: ${activeMission.maxAltitude}°`
-              : `Best viewing: ${activeMission.bestTime} · Peak altitude: ${activeMission.maxAltitude}°`,
+            points: activeMission.reward_points,
+            type: TELESCOPE_OBJECTS.has(activeMission.object_name ?? '') ? 'telescope' : 'naked_eye',
+            desc: activeMission.description ?? '',
+            hint: '',
           }}
           onClose={() => setActiveMission(null)}
           onSuccess={() => handleSuccess(activeMission.id)}
@@ -175,25 +281,31 @@ export default function MissionsPage() {
           </Link>
         </div>
 
-        {/* Sky status */}
-        <div className="flex items-center gap-2 mb-5">
-          <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: isDay ? '#FFD166' : '#34D399' }} />
-          <span className="text-xs text-[#64748B]">
-            {isDay
-              ? (lang === 'ka' ? 'დღეა — მისიები ღამეს' : 'Daytime — missions available tonight')
-              : (lang === 'ka' ? 'ღამის ცა ხელმისაწვდომია' : 'Night sky available now')}
-          </span>
+        {/* Sky status + counts */}
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: isDay ? '#FFD166' : '#34D399' }} />
+            <span className="text-xs text-[#64748B]">
+              {isDay
+                ? (lang === 'ka' ? 'დღეა — მისიები ღამეს' : 'Daytime — missions available tonight')
+                : (lang === 'ka' ? 'ღამის ცა ხელმისაწვდომია' : 'Night sky available now')}
+            </span>
+          </div>
+          {!loading && (
+            <div className="flex items-center gap-3 text-[10px] text-[#475569]">
+              <span>👁 {nakedEyeCount}</span>
+              <span>🔭 {telescopeCount}</span>
+            </div>
+          )}
         </div>
 
         {/* Observer rank card */}
         <div className="rounded-2xl p-5 mb-6"
           style={{ background: 'rgba(245,158,11,0.04)', border: '1px solid rgba(245,158,11,0.20)' }}>
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-bold tracking-[0.15em] text-[#64748B] uppercase">
-                {lang === 'ka' ? 'ობზერვატორის რანგი' : 'Observer Rank'}
-              </span>
-            </div>
+            <span className="text-[10px] font-bold tracking-[0.15em] text-[#64748B] uppercase">
+              {lang === 'ka' ? 'ობზერვატორის რანგი' : 'Observer Rank'}
+            </span>
             <span className="text-xs font-bold px-3 py-1 rounded-full"
               style={{ background: 'rgba(245,158,11,0.12)', color: '#F59E0B', border: '1px solid rgba(245,158,11,0.30)' }}>
               {lang === 'ka' ? 'ობზერვატორი' : 'Observer'}
@@ -246,78 +358,26 @@ export default function MissionsPage() {
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3">
-            {missions.map(mission => {
-              const done    = completedIds.has(mission.id)
-              const pending = pendingIds.has(mission.id)
-              const name    = lang === 'ka'
-                ? (mission.titleGe?.replace(/^[^ ]+ /, '') ?? mission.objectName)
-                : mission.objectName
-              const diffColor = DIFF_COLOR[mission.difficulty] ?? '#34D399'
-              const diffLabel_en = { easy: 'EASY', medium: 'MEDIUM', hard: 'HARD', expert: 'EXPERT' }[mission.difficulty] ?? 'EASY'
-              const diffLabel_ka = { easy: 'მარტივი', medium: 'საშუალო', hard: 'რთული', expert: 'ექსპერტი' }[mission.difficulty] ?? 'მარტივი'
+          <>
+            <div className="grid grid-cols-2 gap-3 mb-8">
+              {regular.map(mission => <MissionCard key={mission.id} mission={mission} />)}
+            </div>
 
-              return (
-                <div
-                  key={mission.id}
-                  className="rounded-2xl flex flex-col items-center p-4 sm:p-5 transition-all relative overflow-hidden"
-                  style={{
-                    background: done ? 'rgba(255,255,255,0.02)' : 'rgba(10,14,26,0.95)',
-                    border: `1px solid ${pending ? 'rgba(245,158,11,0.25)' : done ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.08)'}`,
-                    opacity: done ? 0.6 : 1,
-                  }}
-                >
-                  {/* Status icon top-right */}
-                  <div className="absolute top-3 right-3">
-                    {done && <CheckCircle2 size={14} className="text-[#34D399]" />}
-                    {pending && <Clock size={14} className="text-[#F59E0B]" />}
-                  </div>
-
-                  {/* Planet visual */}
-                  <div className="mb-4 mt-2 flex items-center justify-center" style={{ height: 88 }}>
-                    <PlanetVisual id={mission.id} emoji={mission.objectEmoji} />
-                  </div>
-
-                  {/* Name */}
-                  <h3 className="text-sm sm:text-base font-bold text-white text-center leading-snug mb-1 line-clamp-1">
-                    {name}
-                  </h3>
-
-                  {/* Difficulty dots */}
-                  <DifficultyDots difficulty={mission.difficulty} />
-
-                  {/* Difficulty label */}
-                  <span className="text-[9px] font-bold tracking-[0.15em] uppercase mb-3" style={{ color: diffColor }}>
-                    {lang === 'ka' ? diffLabel_ka : diffLabel_en}
+            {daily.length > 0 && (
+              <>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="h-px flex-1" style={{ background: 'rgba(255,255,255,0.06)' }} />
+                  <span className="text-[10px] font-bold tracking-[0.18em] text-[#64748B] uppercase">
+                    {lang === 'ka' ? 'ყოველდღიური გამოწვევა' : 'Daily Challenges'}
                   </span>
-
-                  {/* XP */}
-                  <div className="text-base font-bold mb-4" style={{ color: '#F59E0B' }}>
-                    +{mission.points} <span className="text-sm">✦</span>
-                  </div>
-
-                  {/* CTA */}
-                  {done ? (
-                    <span className="text-xs font-bold text-[#475569] pb-1">
-                      {lang === 'ka' ? 'შესრულდა' : 'Complete'}
-                    </span>
-                  ) : pending ? (
-                    <span className="text-xs font-bold pb-1" style={{ color: '#F59E0B' }}>
-                      {lang === 'ka' ? 'განხილვაში' : 'Pending'}
-                    </span>
-                  ) : (
-                    <button
-                      onClick={() => setActiveMission(mission)}
-                      className="w-full py-2.5 rounded-xl text-sm font-bold tracking-wide transition-all hover:brightness-110 active:scale-95"
-                      style={{ background: 'linear-gradient(135deg, #F59E0B, #FFD166)', color: '#0A0A0A' }}
-                    >
-                      {lang === 'ka' ? 'დაწყება →' : 'Begin →'}
-                    </button>
-                  )}
+                  <div className="h-px flex-1" style={{ background: 'rgba(255,255,255,0.06)' }} />
                 </div>
-              )
-            })}
-          </div>
+                <div className="grid grid-cols-2 gap-3">
+                  {daily.map(mission => <MissionCard key={mission.id} mission={mission} />)}
+                </div>
+              </>
+            )}
+          </>
         )}
       </div>
     </>
