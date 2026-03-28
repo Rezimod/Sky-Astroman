@@ -6,19 +6,27 @@ export async function GET(req: NextRequest) {
     const supabase = await createClient()
     const { searchParams } = new URL(req.url)
     const status = searchParams.get('status') ?? 'approved'
-    const limit = parseInt(searchParams.get('limit') ?? '20')
+    const limit = parseInt(searchParams.get('limit') ?? '50')
     const offset = parseInt(searchParams.get('offset') ?? '0')
 
-    const { data, error } = await supabase
+    let query = supabase
       .from('observations')
-      .select('*')
-      .eq('status', status)
+      .select('id, user_id, object_name, description, photo_url, telescope_used, location_lat, location_lng, observed_at, created_at, status, points_awarded, profiles(username, display_name)')
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1)
 
+    if (status === 'approved') {
+      query = query.eq('status', 'approved')
+    } else if (status === 'pending' || status === 'rejected') {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return NextResponse.json([])
+      query = query.eq('status', status).eq('user_id', user.id)
+    }
+
+    const { data, error } = await query
     if (error) throw error
-    return NextResponse.json(data)
-  } catch (err) {
+    return NextResponse.json(data ?? [])
+  } catch {
     return NextResponse.json({ error: 'Failed to fetch observations' }, { status: 500 })
   }
 }
