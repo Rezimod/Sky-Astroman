@@ -199,7 +199,7 @@ export default function SkyConditionsPage() {
 
   useEffect(() => {
     load()
-    const iv = setInterval(() => load(), 10 * 60 * 1000)
+    const iv = setInterval(() => load(), 30 * 60 * 1000)
     return () => clearInterval(iv)
   }, [load])
 

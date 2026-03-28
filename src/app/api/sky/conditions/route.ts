@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
     const lat = parseFloat(searchParams.get('lat') ?? String(DEFAULT_LOCATION.lat))
     const lng = parseFloat(searchParams.get('lng') ?? String(DEFAULT_LOCATION.lng))
 
-    const url = `${OPEN_METEO_URL}?latitude=${lat}&longitude=${lng}&hourly=cloud_cover,visibility,temperature_2m&daily=sunrise,sunset&current=cloud_cover,temperature_2m&timezone=Asia%2FTbilisi&forecast_days=1`
+    const url = `${OPEN_METEO_URL}?latitude=${lat}&longitude=${lng}&hourly=cloud_cover,visibility,temperature_2m,relative_humidity_2m,wind_speed_10m&daily=sunrise,sunset&current=cloud_cover,temperature_2m,relative_humidity_2m,wind_speed_10m&timezone=Asia%2FTbilisi&forecast_days=2`
 
     const res = await fetch(url, { next: { revalidate: 600 } })
     if (!res.ok) throw new Error('Open-Meteo fetch failed')
