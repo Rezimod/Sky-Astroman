@@ -1,53 +1,37 @@
 'use client'
-import { useMemo, useEffect, useState } from 'react'
+import { useMemo } from 'react'
 
+// Static stars only — no JS animation loop, no shooting stars
+// Opacity flicker handled by pure CSS on a tiny subset
 export default function StarField() {
-  const [isMobile, setIsMobile] = useState(false)
-
-  useEffect(() => {
-    setIsMobile(window.innerWidth < 640)
-    const handler = () => setIsMobile(window.innerWidth < 640)
-    window.addEventListener('resize', handler)
-    return () => window.removeEventListener('resize', handler)
-  }, [])
-
-  const starCount = isMobile ? 50 : 180
-
-  const stars = useMemo(() => Array.from({ length: starCount }, (_, i) => ({
+  const stars = useMemo(() => Array.from({ length: 60 }, (_, i) => ({
     id: i,
-    top: Math.random() * 100,
-    left: Math.random() * 100,
-    size: Math.random() * 1.8 + 0.2,
-    duration: Math.random() * 6 + 3,
-    delay: Math.random() * 10,
-  })), [starCount])
-
-  const shootingStars = useMemo(() => [
-    { top: 10, left: 5,  cometDur: 14, cometDelay: 0  },
-    { top: 28, left: 55, cometDur: 18, cometDelay: 6  },
-    { top: 60, left: 25, cometDur: 22, cometDelay: 12 },
-    { top: 15, left: 75, cometDur: 16, cometDelay: 20 },
-  ], [])
+    top: (i * 37.3 + 11) % 100,
+    left: (i * 61.7 + 7) % 100,
+    size: i % 5 === 0 ? 1.5 : 1,
+    opacity: 0.08 + (i % 7) * 0.04,
+    twinkle: i % 8 === 0, // only 7-8 stars twinkle
+    duration: 4 + (i % 4),
+    delay: (i % 6) * 1.2,
+  })), [])
 
   return (
-    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0" aria-hidden>
       {stars.map(s => (
-        <div key={s.id} className="star" style={{
+        <div key={s.id} className={s.twinkle ? 'star' : undefined} style={{
+          position: 'absolute',
           top: `${s.top}%`,
           left: `${s.left}%`,
           width: s.size,
           height: s.size,
-          '--duration': `${s.duration}s`,
-          '--delay': `${s.delay}s`,
-        } as React.CSSProperties} />
-      ))}
-      {!isMobile && shootingStars.map((ss, i) => (
-        <div key={`comet-${i}`} className="shooting-star" style={{
-          top: `${ss.top}%`,
-          left: `${ss.left}%`,
-          '--comet-dur': `${ss.cometDur}s`,
-          '--comet-delay': `${ss.cometDelay}s`,
-        } as React.CSSProperties} />
+          borderRadius: '50%',
+          background: 'white',
+          opacity: s.twinkle ? undefined : s.opacity,
+          ...(s.twinkle ? {
+            '--duration': `${s.duration}s`,
+            '--delay': `${s.delay}s`,
+          } as React.CSSProperties : {}),
+        }} />
       ))}
     </div>
   )

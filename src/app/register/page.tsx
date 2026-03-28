@@ -100,22 +100,6 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden">
 
-      {/* Particles */}
-      {[...Array(12)].map((_, i) => (
-        <span key={i} className="auth-particle" style={{
-          left: `${6 + i * 8}%`,
-          width: i % 4 === 0 ? '2px' : '1px',
-          height: i % 4 === 0 ? '2px' : '1px',
-          '--dur': `${12 + i * 2}s`,
-          '--delay': `${i * 0.6}s`,
-          '--drift': `${(i % 2 === 0 ? 1 : -1) * (8 + i * 4)}px`,
-        } as React.CSSProperties} />
-      ))}
-
-      {/* Background glows */}
-      <div className="fixed top-[-18%] left-[-8%] w-[55vw] h-[55vw] rounded-full bg-[#6366F1]/12 blur-[140px] pointer-events-none z-0" />
-      <div className="fixed bottom-[-18%] right-[-8%] w-[55vw] h-[55vw] rounded-full bg-[#8B5CF6]/8 blur-[150px] pointer-events-none z-0" />
-
       {/* Header */}
       <header className="relative z-50 border-b border-white/[0.06] bg-[#06080F]/75 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
@@ -141,7 +125,7 @@ export default function RegisterPage() {
         <div className="w-full max-w-sm">
 
           {/* Logo */}
-          <div className="flex justify-center mb-5 animate-auth-float">
+          <div className="flex justify-center mb-5">
             <div className="relative">
               <div className="absolute inset-0 rounded-full bg-[#6366F1]/20 blur-2xl scale-150" />
               <SaturnLogo width={52} height={52} />
@@ -149,7 +133,7 @@ export default function RegisterPage() {
           </div>
 
           {/* Title */}
-          <div className="text-center mb-5 animate-auth-slide-up-1">
+          <div className="text-center mb-5">
             <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1 leading-tight">
               {lang === 'ka' ? 'შექმენი ანგარიში' : 'Create account'}
             </h1>
@@ -159,32 +143,24 @@ export default function RegisterPage() {
           </div>
 
           {/* Form card */}
-          <div className="animate-auth-slide-up-2 animate-auth-glow bg-[#0A0E1A]/90 backdrop-blur-2xl border border-white/[0.08] rounded-2xl p-6 shadow-2xl">
+          <div className="bg-[#0A0E1A]/90 backdrop-blur-2xl border border-white/[0.08] rounded-2xl p-6 shadow-2xl">
             <form onSubmit={handleSubmit} className="space-y-3">
 
-              <div className="animate-auth-slide-up-2">
-                <AuthInput type="text" value={name} onChange={setName}
-                  placeholder={lang === 'ka' ? 'შენი სახელი' : 'Your name'}
-                  icon={User} label={lang === 'ka' ? 'სახელი' : 'Name'} />
-              </div>
+              <AuthInput type="text" value={name} onChange={setName}
+                placeholder={lang === 'ka' ? 'შენი სახელი' : 'Your name'}
+                icon={User} label={lang === 'ka' ? 'სახელი' : 'Name'} />
 
-              <div className="animate-auth-slide-up-3">
-                <AuthInput type="email" value={email} onChange={setEmail}
-                  placeholder="example@mail.com"
-                  icon={Mail} label={lang === 'ka' ? 'ელ-ფოსტა' : 'Email'} />
-              </div>
+              <AuthInput type="email" value={email} onChange={setEmail}
+                placeholder="example@mail.com"
+                icon={Mail} label={lang === 'ka' ? 'ელ-ფოსტა' : 'Email'} />
 
-              <div className="animate-auth-slide-up-4">
-                <AuthInput type="password" value={password} onChange={setPassword}
-                  placeholder="••••••••"
-                  icon={Lock} label={lang === 'ka' ? 'პაროლი (მინ. 6 სიმბ.)' : 'Password (min. 6 chars)'} />
-              </div>
+              <AuthInput type="password" value={password} onChange={setPassword}
+                placeholder="••••••••"
+                icon={Lock} label={lang === 'ka' ? 'პაროლი (მინ. 6 სიმბ.)' : 'Password (min. 6 chars)'} />
 
-              <div className="animate-auth-slide-up-5">
-                <AuthInput type="password" value={confirmPassword} onChange={setConfirmPassword}
-                  placeholder="••••••••"
-                  icon={Lock} label={lang === 'ka' ? 'გაიმეორე პაროლი' : 'Confirm password'} />
-              </div>
+              <AuthInput type="password" value={confirmPassword} onChange={setConfirmPassword}
+                placeholder="••••••••"
+                icon={Lock} label={lang === 'ka' ? 'გაიმეორე პაროლი' : 'Confirm password'} />
 
               {error && (
                 <div className="bg-rose-500/10 border border-rose-500/20 rounded-xl px-4 py-2.5">

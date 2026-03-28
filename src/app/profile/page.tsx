@@ -1,6 +1,6 @@
 'use client'
 import { useRouter } from 'next/navigation'
-import { Crown, MapPin, Wind, Thermometer, CheckCircle, Clock, Telescope, Camera, Satellite, Star, Flame, Award, LogOut, ChevronLeft, LayoutDashboard } from 'lucide-react'
+import { Crown, MapPin, Wind, Thermometer, CheckCircle, Telescope, Camera, Satellite, Star, Flame, Award, LogOut, ChevronLeft, LayoutDashboard } from 'lucide-react'
 import Link from 'next/link'
 import { getPointsToNextLevel } from '@/lib/constants'
 import { useLanguage } from '@/contexts/LanguageContext'
@@ -17,11 +17,6 @@ const mockProfile = {
   observations_count: 12,
   missions_completed: 5,
 }
-
-const mockObservations = [
-  { id: '1', object_name: 'Moon',    object_name_ka: 'მთვარე',   status: 'approved', points_awarded: 50,  created_at: new Date(Date.now() - 86400000 * 2).toISOString() },
-  { id: '2', object_name: 'Jupiter', object_name_ka: 'იუპიტერი', status: 'pending',  points_awarded: 0,   created_at: new Date(Date.now() - 86400000).toISOString() },
-]
 
 const STATUS_COLOR: Record<string, string> = {
   approved: '#34d399',
@@ -45,7 +40,7 @@ export default function ProfilePage() {
   async function handleSignOut() {
     const supabase = createClient()
     await supabase.auth.signOut()
-    router.push('/')
+    window.location.href = '/'
   }
 
   return (
@@ -87,7 +82,7 @@ export default function ProfilePage() {
               <svg width="96" height="96" viewBox="0 0 96 96" className="absolute inset-0">
                 <circle cx="48" cy="48" r="44" fill="none" stroke="rgba(99,102,241,0.2)" strokeWidth="1.5" strokeDasharray="5 4" />
               </svg>
-              <svg width="96" height="96" viewBox="0 0 96 96" className="absolute inset-0 orbit-ring">
+              <svg width="96" height="96" viewBox="0 0 96 96" className="absolute inset-0">
                 <circle cx="48" cy="4" r="4" fill="#6366F1" />
               </svg>
               <div className="w-16 h-16 rounded-full relative z-10 flex items-center justify-center" style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.3), rgba(168,85,247,0.2))', border: '1px solid rgba(99,102,241,0.35)' }}>
@@ -226,35 +221,21 @@ export default function ProfilePage() {
             <span className="text-[10px] font-bold tracking-[0.15em] text-[#64748B] uppercase block mb-4">
               {lang === 'ka' ? 'ბოლო დაკვირვებები' : 'Recent Observations'}
             </span>
-            <div className="space-y-4">
-              {mockObservations.map((obs, idx) => (
-                <div key={obs.id} className="flex gap-3 relative">
-                  {idx < mockObservations.length - 1 && (
-                    <div className="absolute left-4 top-9 bottom-[-16px] w-px bg-white/[0.06]" />
-                  )}
-                  <div
-                    className="w-8 h-8 rounded-full border flex items-center justify-center flex-shrink-0 z-10"
-                    style={{ background: `${STATUS_COLOR[obs.status]}15`, borderColor: `${STATUS_COLOR[obs.status]}30`, color: STATUS_COLOR[obs.status] }}
-                  >
-                    {obs.status === 'approved' ? <CheckCircle size={14} /> : <Clock size={14} />}
-                  </div>
-                  <div className="flex-1 pb-4">
-                    <div className="flex items-center justify-between mb-0.5">
-                      <h4 className="text-sm font-bold text-white">
-                        {lang === 'ka' ? obs.object_name_ka : obs.object_name}
-                      </h4>
-                      <span className="text-[10px] text-[#475569]">
-                        {new Date(obs.created_at).toLocaleDateString(lang === 'ka' ? 'ka-GE' : 'en-US')}
-                      </span>
-                    </div>
-                    <p className="text-xs text-[#64748B]">
-                      {obs.status === 'approved'
-                        ? (lang === 'ka' ? `დამტკიცდა · +${obs.points_awarded} XP` : `Approved · +${obs.points_awarded} XP`)
-                        : (lang === 'ka' ? 'განხილვის მოლოდინში' : 'Awaiting review')}
-                    </p>
-                  </div>
-                </div>
-              ))}
+            <div className="flex flex-col items-center justify-center py-8 text-center">
+              <Camera size={28} className="text-[#1E2235] mb-3" />
+              <p className="text-sm text-[#475569] font-medium mb-1">
+                {lang === 'ka' ? 'დაკვირვება ჯერ არ არის' : 'No observations yet'}
+              </p>
+              <p className="text-xs text-[#334155] mb-4">
+                {lang === 'ka' ? 'მისიაზე გადი და პირველი ფოტო გაგზავნე' : 'Complete a mission to log your first observation'}
+              </p>
+              <Link
+                href="/missions"
+                className="text-xs font-bold px-4 py-2 rounded-xl transition-all"
+                style={{ background: '#6366F1', color: 'white' }}
+              >
+                {lang === 'ka' ? 'მისიები →' : 'Go to Missions →'}
+              </Link>
             </div>
           </div>
 

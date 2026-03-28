@@ -20,14 +20,6 @@ interface Obs {
   profiles?: { display_name: string; username: string }
 }
 
-const MOCK_OBS: Obs[] = [
-  { id: 'm1', object_name: 'Moon', description: 'Full moon through 8" reflector — incredible detail on the maria.', photo_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/FullMoon2010.jpg/480px-FullMoon2010.jpg', telescope_used: '8" Reflector', status: 'approved', points_awarded: 50, observed_at: new Date(Date.now() - 86400000 * 2).toISOString(), created_at: new Date(Date.now() - 86400000 * 2).toISOString(), profiles: { display_name: 'გიორგი მ.', username: 'giorgi_m' } },
-  { id: 'm2', object_name: 'Jupiter', description: 'Jupiter with the Great Red Spot visible. Caught the four Galilean moons.', photo_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Jupiter_and_its_shrunken_Great_Red_Spot.jpg/480px-Jupiter_and_its_shrunken_Great_Red_Spot.jpg', telescope_used: '10" Dobsonian', status: 'approved', points_awarded: 75, observed_at: new Date(Date.now() - 86400000 * 4).toISOString(), created_at: new Date(Date.now() - 86400000 * 4).toISOString(), profiles: { display_name: 'ნინო დ.', username: 'nino_d' } },
-  { id: 'm3', object_name: 'Orion Nebula (M42)', description: 'First time capturing M42! Shot with phone through eyepiece.', photo_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Orion_Nebula_-_Hubble_2006_mosaic_18000.jpg/480px-Orion_Nebula_-_Hubble_2006_mosaic_18000.jpg', telescope_used: 'Phone + Eyepiece', status: 'approved', points_awarded: 100, observed_at: new Date(Date.now() - 86400000 * 6).toISOString(), created_at: new Date(Date.now() - 86400000 * 6).toISOString(), profiles: { display_name: 'ლევანი ჭ.', username: 'levani_ch' } },
-  { id: 'm4', object_name: 'Saturn', description: 'Rings clearly visible even at 40x magnification. Stunning.', photo_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/Saturn_during_Equinox.jpg/480px-Saturn_during_Equinox.jpg', telescope_used: '6" Refractor', status: 'pending', points_awarded: 0, observed_at: new Date(Date.now() - 86400000).toISOString(), created_at: new Date(Date.now() - 86400000).toISOString(), profiles: { display_name: 'ანა გ.', username: 'ana_g' } },
-  { id: 'm5', object_name: 'Pleiades (M45)', description: 'Naked eye observation from Tbilisi Sea Park. Counted 6 stars.', photo_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Pleiades_large.jpg/480px-Pleiades_large.jpg', telescope_used: 'Naked Eye', status: 'approved', points_awarded: 60, observed_at: new Date(Date.now() - 86400000 * 9).toISOString(), created_at: new Date(Date.now() - 86400000 * 9).toISOString(), profiles: { display_name: 'Stargazer', username: 'stargazer' } },
-  { id: 'm6', object_name: 'Andromeda Galaxy (M31)', description: 'Faint fuzzy patch visible naked eye from Mtatsminda.', photo_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/Andromeda_Galaxy_%28with_h-alpha%29.jpg/480px-Andromeda_Galaxy_%28with_h-alpha%29.jpg', telescope_used: 'Binoculars', status: 'pending', points_awarded: 0, observed_at: new Date(Date.now() - 86400000 * 1).toISOString(), created_at: new Date(Date.now() - 86400000 * 1).toISOString(), profiles: { display_name: 'თ. კაპანაძე', username: 'tamar_k' } },
-]
 
 const STATUS_CONFIG = {
   approved: { icon: CheckCircle2, color: '#34D399', bg: 'rgba(52,211,153,0.12)', border: 'rgba(52,211,153,0.25)', label_en: 'Approved', label_ka: 'დამტკიცდა' },
@@ -43,7 +35,7 @@ export default function GalleryPage() {
   const { lang } = useLanguage()
   const router = useRouter()
   const [filter, setFilter] = useState<Status>('all')
-  const [obs, setObs] = useState<Obs[]>(MOCK_OBS)
+  const [obs, setObs] = useState<Obs[]>([])
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
@@ -52,7 +44,7 @@ export default function GalleryPage() {
     fetch('/api/observations?status=approved&limit=20')
       .then(r => r.ok ? r.json() : null)
       .then(data => {
-        if (Array.isArray(data) && data.length > 0) setObs([...data, ...MOCK_OBS])
+        if (Array.isArray(data) && data.length > 0) setObs(data)
         setLoading(false)
       })
       .catch(() => setLoading(false))

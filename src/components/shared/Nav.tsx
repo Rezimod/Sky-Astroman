@@ -43,7 +43,7 @@ export default function Nav() {
   async function handleLogout() {
     const supabase = createClient()
     await supabase.auth.signOut()
-    router.push('/')
+    window.location.href = '/'
   }
 
   return (

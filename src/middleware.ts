@@ -45,7 +45,7 @@ export async function middleware(request: NextRequest) {
     }
 
     // ── Protect app pages ──
-    const protectedPrefixes = ['/dashboard', '/missions', '/leaderboard', '/profile', '/sky-tools', '/teams']
+    const protectedPrefixes = ['/dashboard', '/missions', '/gallery', '/leaderboard', '/profile', '/sky-tools', '/teams']
     if (protectedPrefixes.some(p => pathname.startsWith(p)) && !user) {
       return NextResponse.redirect(new URL('/login', request.url))
     }

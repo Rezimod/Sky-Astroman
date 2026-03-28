@@ -30,11 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="ka" className={notoSans.className}>
       <body className="min-h-screen flex flex-col" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
         <LanguageProvider>
-          {/* Cosmic background layers */}
           <StarField />
-          <div className="fixed top-[-15%] right-[-8%] w-[45vw] h-[45vw] rounded-full bg-violet-600/8 blur-[140px] pointer-events-none z-0" />
-          <div className="fixed bottom-[-15%] left-[-8%] w-[45vw] h-[45vw] rounded-full bg-indigo-600/8 blur-[140px] pointer-events-none z-0" />
-          <div className="fixed top-[40%] left-[30%] w-[30vw] h-[30vw] rounded-full bg-cyan-500/3 blur-[160px] pointer-events-none z-0" />
 
           <Nav />
           <main className="relative z-10 flex-1 pb-20 sm:pb-0">{children}</main>

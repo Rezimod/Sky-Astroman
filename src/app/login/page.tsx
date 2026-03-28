@@ -46,22 +46,6 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden">
 
-      {/* Particles */}
-      {[...Array(10)].map((_, i) => (
-        <span key={i} className="auth-particle" style={{
-          left: `${8 + i * 9}%`,
-          width: i % 3 === 0 ? '2px' : '1px',
-          height: i % 3 === 0 ? '2px' : '1px',
-          '--dur': `${11 + i * 2.5}s`,
-          '--delay': `${i * 0.9}s`,
-          '--drift': `${(i % 2 === 0 ? 1 : -1) * (10 + i * 3)}px`,
-        } as React.CSSProperties} />
-      ))}
-
-      {/* Background glows */}
-      <div className="fixed top-[-18%] right-[-8%] w-[55vw] h-[55vw] rounded-full bg-[#6366F1]/12 blur-[140px] pointer-events-none z-0" />
-      <div className="fixed bottom-[-18%] left-[-8%] w-[55vw] h-[55vw] rounded-full bg-[#8B5CF6]/8 blur-[150px] pointer-events-none z-0" />
-
       {/* Header */}
       <header className="relative z-50 border-b border-white/[0.06] bg-[#06080F]/75 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
@@ -87,7 +71,7 @@ export default function LoginPage() {
         <div className="w-full max-w-sm">
 
           {/* Logo */}
-          <div className="flex justify-center mb-6 animate-auth-float">
+          <div className="flex justify-center mb-6">
             <div className="relative">
               <div className="absolute inset-0 rounded-full bg-[#6366F1]/18 blur-2xl scale-150" />
               <SaturnLogo width={58} height={58} />
@@ -95,7 +79,7 @@ export default function LoginPage() {
           </div>
 
           {/* Title */}
-          <div className="text-center mb-6 animate-auth-slide-up-1">
+          <div className="text-center mb-6">
             <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1 leading-tight">
               {lang === 'ka' ? 'კეთილი მობრძანება' : 'Welcome back'}
             </h1>
@@ -105,12 +89,12 @@ export default function LoginPage() {
           </div>
 
           {/* Card */}
-          <div className="animate-auth-slide-up-2 animate-auth-glow bg-[#0A0E1A]/90 backdrop-blur-2xl border border-white/[0.08] rounded-2xl p-6 shadow-2xl">
+          <div className="bg-[#0A0E1A]/90 backdrop-blur-2xl border border-white/[0.08] rounded-2xl p-6 shadow-2xl">
 
             <form onSubmit={handleSubmit} className="space-y-3.5">
 
               {/* Email */}
-              <div className="space-y-1.5 animate-auth-slide-up-3">
+              <div className="space-y-1.5">
                 <label className="text-[10px] font-bold uppercase tracking-widest text-[#64748B] ml-1">
                   {lang === 'ka' ? 'ელ-ფოსტა' : 'Email'}
                 </label>
@@ -129,7 +113,7 @@ export default function LoginPage() {
               </div>
 
               {/* Password */}
-              <div className="space-y-1.5 animate-auth-slide-up-4">
+              <div className="space-y-1.5">
                 <label className="text-[10px] font-bold uppercase tracking-widest text-[#64748B] ml-1">
                   {lang === 'ka' ? 'პაროლი' : 'Password'}
                 </label>
@@ -153,7 +137,7 @@ export default function LoginPage() {
                 </div>
               )}
 
-              <div className="animate-auth-slide-up-5 pt-1">
+              <div className="pt-1">
                 <button
                   type="submit"
                   disabled={loading}
