@@ -15,7 +15,14 @@ export async function GET(req: NextRequest) {
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1)
 
-    if (status === 'approved') {
+    const mine = searchParams.get('mine') === 'true'
+
+    if (mine) {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return NextResponse.json([])
+      query = query.eq('user_id', user.id)
+      if (status !== 'all') query = query.eq('status', status)
+    } else if (status === 'approved') {
       query = query.eq('status', 'approved')
     } else if (status === 'pending' || status === 'rejected') {
       const { data: { user } } = await supabase.auth.getUser()

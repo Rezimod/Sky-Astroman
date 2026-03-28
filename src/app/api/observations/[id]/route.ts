@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
+import { getLevelForPoints } from '@/lib/gamification'
+import { checkAndAwardBadges } from '@/lib/badge-check'
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -69,17 +71,26 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         })
       }
 
-      // Increment observations_count
+      // Fetch updated profile to recalculate level and observations_count
       const { data: profile } = await service
         .from('profiles')
-        .select('observations_count')
+        .select('points, observations_count')
         .eq('id', data.user_id)
         .single()
 
+      const newPoints = (profile?.points ?? 0)
+      const { level: newLevel } = getLevelForPoints(newPoints)
+
       await service
         .from('profiles')
-        .update({ observations_count: (profile?.observations_count ?? 0) + 1 })
+        .update({
+          observations_count: (profile?.observations_count ?? 0) + 1,
+          level: newLevel,
+        })
         .eq('id', data.user_id)
+
+      // Award any newly unlocked badges
+      await checkAndAwardBadges(data.user_id, service)
 
       // Complete matching missions
       if (data.object_name) {

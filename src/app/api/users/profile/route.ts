@@ -14,7 +14,14 @@ export async function GET() {
       .single()
 
     if (error) throw error
-    return NextResponse.json(data)
+
+    // Rank = count of users with strictly more points + 1
+    const { count } = await supabase
+      .from('profiles')
+      .select('*', { count: 'exact', head: true })
+      .gt('points', data.points)
+
+    return NextResponse.json({ ...data, rank: (count ?? 0) + 1 })
   } catch {
     return NextResponse.json({ error: 'Failed to fetch profile' }, { status: 500 })
   }

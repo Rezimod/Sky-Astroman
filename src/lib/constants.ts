@@ -6,7 +6,7 @@ export const DEFAULT_LOCATION = {
 
 export const OPEN_METEO_URL = 'https://api.open-meteo.com/v1/forecast'
 
-export const LEVEL_THRESHOLDS = [0, 100, 300, 600, 1000, 1500, 2500, 4000, 6000, 10000]
+export const LEVEL_THRESHOLDS = [0, 200, 500, 1000, 2000, 4000, 7000, 12000, 20000, 35000]
 
 export function getLevelFromPoints(points: number): number {
   for (let i = LEVEL_THRESHOLDS.length - 1; i >= 0; i--) {
