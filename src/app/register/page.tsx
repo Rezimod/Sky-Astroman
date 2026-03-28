@@ -1,10 +1,13 @@
 'use client'
 import { useState } from 'react'
 import Link from 'next/link'
-import { Lock, User, Mail, CheckCircle } from 'lucide-react'
+import { Lock, User, Mail } from 'lucide-react'
 import { SaturnLogo } from '@/components/shared/SaturnLogo'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { createClient } from '@/lib/supabase/client'
+
+// Registration uses a server-side API route (service role) so users are
+// auto-confirmed and can sign in immediately — no confirmation email sent.
 
 function AuthInput({
   type, value, onChange, placeholder, icon: Icon, label,
@@ -39,7 +42,6 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [done, setDone] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -56,81 +58,43 @@ export default function RegisterPage() {
 
     setLoading(true)
     try {
-      const supabase = createClient()
-
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email: email.trim().toLowerCase(),
-        password,
-        options: {
-          data: { full_name: name.trim(), display_name: name.trim() },
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-        },
+      // Step 1: Create user via server-side route (auto-confirmed, no confirmation email)
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim().toLowerCase(), password, name: name.trim() }),
       })
+      const json = await res.json()
 
-      if (signUpError) {
-        const msg = signUpError.message.toLowerCase()
-        if (msg.includes('already registered') || msg.includes('already been registered') || msg.includes('user already registered')) {
+      if (!res.ok) {
+        if (json.error === 'EMAIL_EXISTS') {
           setError(lang === 'ka' ? 'ეს ელ-ფოსტა უკვე რეგისტრირებულია' : 'This email is already registered')
         } else {
-          setError(signUpError.message)
+          setError(json.error || (lang === 'ka' ? 'შეცდომა. სცადეთ ხელახლა.' : 'Something went wrong. Please try again.'))
         }
         return
       }
 
-      if (data.user) {
-        if (data.session) {
-          // Auto-confirmed — create profile and go to dashboard
-          try {
-            await fetch('/api/auth/profile', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ display_name: name.trim() }),
-            })
-          } catch {
-            // Profile will be created on next load; don't block the user
-          }
-          // Hard redirect ensures fresh session cookies are picked up
-          window.location.href = '/dashboard'
-        } else {
-          // Email confirmation required — profile will be created in auth/callback
-          setDone(true)
-        }
+      // Step 2: Sign in immediately — no confirmation needed
+      const supabase = createClient()
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: email.trim().toLowerCase(),
+        password,
+      })
+
+      if (signInError) {
+        setError(lang === 'ka' ? 'ანგარიში შეიქმნა, მაგრამ შესვლა ვერ მოხერხდა. სცადე შესვლა.' : 'Account created but sign-in failed. Please sign in.')
+        window.location.href = '/login'
+        return
       }
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err)
-      setError(msg || (lang === 'ka' ? 'შეცდომა. სცადეთ ხელახლა.' : 'Something went wrong. Please try again.'))
+
+      // Hard redirect to pick up fresh session cookies
+      window.location.href = '/dashboard'
+    } catch {
+      setError(lang === 'ka' ? 'კავშირის შეცდომა. სცადეთ ხელახლა.' : 'Connection error. Please try again.')
     } finally {
       setLoading(false)
     }
-  }
-
-  // ── Email confirmation screen ──
-  if (done) {
-    return (
-      <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden">
-        <div className="fixed top-[-20%] left-[-10%] w-[55vw] h-[55vw] rounded-full bg-[#6366F1]/12 blur-[140px] pointer-events-none z-0" />
-        <div className="relative z-10 text-center max-w-sm animate-auth-slide-up">
-          <div className="flex justify-center mb-6">
-            <div className="w-18 h-18 rounded-full bg-[#6366F1]/10 border border-[#6366F1]/20 flex items-center justify-center p-5">
-              <CheckCircle size={32} className="text-[#6366F1]" strokeWidth={1.5} />
-            </div>
-          </div>
-          <h2 className="text-2xl font-bold text-white mb-2">
-            {lang === 'ka' ? 'შეამოწმე ელ-ფოსტა' : 'Check your email'}
-          </h2>
-          <p className="text-[#64748B] text-sm mb-2">
-            {lang === 'ka' ? 'დადასტურების ბმული გაიგზავნა:' : 'A confirmation link was sent to:'}
-          </p>
-          <p className="text-white font-semibold text-sm mb-6 bg-white/[0.05] border border-white/[0.08] rounded-lg px-4 py-2 inline-block">{email}</p>
-          <p className="text-[#475569] text-xs mb-8">
-            {lang === 'ka' ? 'ვადა: 24 სთ. spam/junk საქაღალდეც შეამოწმე.' : 'Link expires in 24h. Check your spam folder too.'}
-          </p>
-          <Link href="/login" className="text-[#6366F1] hover:text-[#818CF8] text-sm font-semibold transition-colors">
-            ← {lang === 'ka' ? 'შესვლა' : 'Back to sign in'}
-          </Link>
-        </div>
-      </div>
-    )
   }
 
   return (
