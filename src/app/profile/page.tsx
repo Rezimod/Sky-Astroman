@@ -60,20 +60,33 @@ export default function ProfilePage() {
   const [isAdmin, setIsAdmin] = useState(false)
 
   useEffect(() => {
-    Promise.all([
-      fetch('/api/users/profile').then(r => r.ok ? r.json() : null),
-      fetch('/api/badges').then(r => r.ok ? r.json() : []),
-      fetch('/api/users/streak').then(r => r.ok ? r.json() : { current: 0, max: 0 }),
-      fetch('/api/observations?mine=true&status=all&limit=6').then(r => r.ok ? r.json() : []),
-      createClient().auth.getUser(),
-    ]).then(([profileData, badgesData, streakData, obsData, { data: { user } }]) => {
+    async function load() {
+      const profileRes = await fetch('/api/users/profile')
+      if (profileRes.status === 401) {
+        window.location.href = '/login'
+        return
+      }
+
+      const [badgesRes, streakRes, obsRes, { data: { user } }] = await Promise.all([
+        fetch('/api/badges'),
+        fetch('/api/users/streak'),
+        fetch('/api/observations?mine=true&status=all&limit=6'),
+        createClient().auth.getUser(),
+      ])
+
+      const profileData = profileRes.ok ? await profileRes.json() : null
+      const badgesData  = badgesRes.ok  ? await badgesRes.json()  : []
+      const streakData  = streakRes.ok  ? await streakRes.json()  : { current: 0, max: 0 }
+      const obsData     = obsRes.ok     ? await obsRes.json()     : []
+
       if (profileData && !profileData.error) setProfile(profileData)
       if (Array.isArray(badgesData)) setEarnedBadgeIds(new Set(badgesData.map((b: { badge_id: string }) => b.badge_id)))
       if (streakData) setStreak(streakData)
       if (Array.isArray(obsData)) setRecentObs(obsData.slice(0, 6))
       if (user?.app_metadata?.is_admin === true) setIsAdmin(true)
       setLoading(false)
-    }).catch(() => setLoading(false))
+    }
+    load().catch(() => setLoading(false))
   }, [])
 
   async function handleSignOut() {
@@ -83,8 +96,8 @@ export default function ProfilePage() {
 
   const levelInfo = profile ? getLevelForPoints(profile.points) : null
   const levelProgress = profile ? getProgressToNextLevel(profile.points) : null
-  const displayName = profile?.display_name ?? profile?.username ?? '...'
-  const initials = displayName.slice(0, 2).toUpperCase()
+  const displayName = profile?.display_name ?? profile?.username ?? ''
+  const initials = displayName ? displayName.slice(0, 2).toUpperCase() : '?'
 
   return (
     <div className="max-w-6xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 animate-page-enter">

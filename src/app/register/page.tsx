@@ -83,13 +83,11 @@ export default function RegisterPage() {
       })
 
       if (signInError) {
-        setError(lang === 'ka' ? 'ანგარიში შეიქმნა, მაგრამ შესვლა ვერ მოხერხდა. სცადე შესვლა.' : 'Account created but sign-in failed. Please sign in.')
-        window.location.href = '/login'
+        window.location.replace('/login?registered=1')
         return
       }
 
-      // Hard redirect to pick up fresh session cookies
-      window.location.href = '/dashboard'
+      window.location.replace('/dashboard')
     } catch {
       setError(lang === 'ka' ? 'კავშირის შეცდომა. სცადეთ ხელახლა.' : 'Connection error. Please try again.')
     } finally {

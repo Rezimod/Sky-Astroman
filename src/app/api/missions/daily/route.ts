@@ -1,25 +1,32 @@
 import { NextResponse } from 'next/server'
+import { generateDailyChallenge } from '@/lib/daily-challenge'
 import { createClient } from '@/lib/supabase/server'
+
+export const revalidate = 0
 
 export async function GET() {
   try {
     const supabase = await createClient()
-    const today = new Date().toISOString().slice(0, 10)
+    const { data: { user } } = await supabase.auth.getUser()
 
-    const { data, error } = await supabase
-      .from('missions')
-      .select('*')
-      .eq('active', true)
-      .eq('is_daily', true)
-      .gte('created_at', `${today}T00:00:00Z`)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .single()
+    const challenge = generateDailyChallenge()
 
-    if (error && error.code !== 'PGRST116') throw error
+    let completed = false
+    if (user) {
+      const today = new Date().toISOString().slice(0, 10)
+      const { data } = await supabase
+        .from('observations')
+        .select('id')
+        .eq('user_id', user.id)
+        .ilike('object_name', `%${challenge.object_name}%`)
+        .gte('observed_at', `${today}T00:00:00Z`)
+        .limit(1)
 
-    return NextResponse.json(data ?? null)
+      completed = (data?.length ?? 0) > 0
+    }
+
+    return NextResponse.json({ ...challenge, completed })
   } catch {
-    return NextResponse.json({ error: 'Failed to fetch daily challenge' }, { status: 500 })
+    return NextResponse.json({ error: 'Failed' }, { status: 500 })
   }
 }

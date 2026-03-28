@@ -1,13 +1,17 @@
 'use client'
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Lock, Mail } from 'lucide-react'
 import { SaturnLogo } from '@/components/shared/SaturnLogo'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { createClient } from '@/lib/supabase/client'
 
-export default function LoginPage() {
+function LoginForm() {
   const { lang } = useLanguage()
+  const searchParams = useSearchParams()
+  const redirectTo = searchParams.get('redirectTo') || '/dashboard'
+  const registered = searchParams.get('registered') === '1'
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -34,8 +38,7 @@ export default function LoginPage() {
         return
       }
 
-      // Hard redirect ensures cookies are fresh
-      window.location.href = '/dashboard'
+      window.location.replace(redirectTo)
     } catch {
       setError(lang === 'ka' ? 'კავშირის შეცდომა. სცადეთ ხელახლა.' : 'Connection error. Please try again.')
     } finally {
@@ -87,6 +90,14 @@ export default function LoginPage() {
               {lang === 'ka' ? 'გააგრძელე კოსმოსური მოგზაურობა' : 'Continue your cosmic journey'}
             </p>
           </div>
+
+          {registered && (
+            <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-4 py-2.5 mb-4">
+              <p className="text-emerald-400 text-sm text-center">
+                {lang === 'ka' ? 'ანგარიში შეიქმნა! შედი სისტემაში.' : 'Account created! Please sign in.'}
+              </p>
+            </div>
+          )}
 
           {/* Card */}
           <div className="bg-[#0A0E1A]/90 backdrop-blur-2xl border border-white/[0.08] rounded-2xl p-6 shadow-2xl">
@@ -160,5 +171,13 @@ export default function LoginPage() {
         </div>
       </main>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
   )
 }
