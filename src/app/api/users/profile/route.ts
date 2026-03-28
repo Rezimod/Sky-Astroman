@@ -7,11 +7,26 @@ export async function GET() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const { data, error } = await supabase
+    let { data, error } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', user.id)
       .single()
+
+    // Auto-create profile on first login if it doesn't exist
+    if (error && error.code === 'PGRST116') {
+      const emailPrefix = (user.email?.split('@')[0] ?? 'user').replace(/[^a-zA-Z0-9_]/g, '').slice(0, 20)
+      const username = `${emailPrefix}_${user.id.slice(0, 4)}`
+      const displayName = user.user_metadata?.display_name || user.user_metadata?.full_name || emailPrefix
+      const { data: created, error: createError } = await supabase
+        .from('profiles')
+        .upsert({ id: user.id, username, display_name: displayName, avatar_url: null }, { onConflict: 'id' })
+        .select()
+        .single()
+      if (createError) throw createError
+      data = created
+      error = null
+    }
 
     if (error) throw error
 

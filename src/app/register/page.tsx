@@ -6,9 +6,6 @@ import { SaturnLogo } from '@/components/shared/SaturnLogo'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { createClient } from '@/lib/supabase/client'
 
-// Registration uses a server-side API route (service role) so users are
-// auto-confirmed and can sign in immediately — no confirmation email sent.
-
 function AuthInput({
   type, value, onChange, placeholder, icon: Icon, label,
 }: {
@@ -58,37 +55,38 @@ export default function RegisterPage() {
 
     setLoading(true)
     try {
-      // Step 1: Create user via server-side route (auto-confirmed, no confirmation email)
-      const res = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim().toLowerCase(), password, name: name.trim() }),
-      })
-      const json = await res.json()
+      const supabase = createClient()
+      const cleanEmail = email.trim().toLowerCase()
+      const cleanName = name.trim()
 
-      if (!res.ok) {
-        if (json.error === 'EMAIL_EXISTS') {
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email: cleanEmail,
+        password,
+        options: {
+          data: { full_name: cleanName, display_name: cleanName },
+        },
+      })
+
+      if (signUpError) {
+        const msg = signUpError.message.toLowerCase()
+        if (msg.includes('already registered') || msg.includes('already been registered') || msg.includes('user already registered')) {
           setError(lang === 'ka' ? 'ეს ელ-ფოსტა უკვე რეგისტრირებულია' : 'This email is already registered')
         } else {
-          setError(json.error || (lang === 'ka' ? 'შეცდომა. სცადეთ ხელახლა.' : 'Something went wrong. Please try again.'))
+          setError(signUpError.message)
         }
         return
       }
 
-      // Step 2: Sign in — small delay to let Supabase propagate the new user
-      await new Promise(r => setTimeout(r, 800))
-      const supabase = createClient()
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: email.trim().toLowerCase(),
-        password,
-      })
-
-      if (signInError) {
-        window.location.replace('/login?registered=1')
+      // If session is immediately available, user is auto-confirmed — go to dashboard
+      if (data.session) {
+        window.location.replace('/dashboard')
         return
       }
 
-      window.location.replace('/dashboard')
+      // No session = email confirmation required
+      setError(lang === 'ka'
+        ? 'ელ-ფოსტაზე გაგზავნილია დადასტურების ბმული. შეამოწმე შენი ყუთი.'
+        : 'A confirmation link was sent to your email. Please check your inbox.')
     } catch {
       setError(lang === 'ka' ? 'კავშირის შეცდომა. სცადეთ ხელახლა.' : 'Connection error. Please try again.')
     } finally {
@@ -162,8 +160,8 @@ export default function RegisterPage() {
                 icon={Lock} label={lang === 'ka' ? 'გაიმეორე პაროლი' : 'Confirm password'} />
 
               {error && (
-                <div className="bg-rose-500/10 border border-rose-500/20 rounded-xl px-4 py-2.5">
-                  <p className="text-rose-400 text-sm text-center">{error}</p>
+                <div className={`border rounded-xl px-4 py-2.5 ${error.includes('დადასტურების') || error.includes('confirmation') ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-rose-500/10 border-rose-500/20'}`}>
+                  <p className={`text-sm text-center ${error.includes('დადასტურების') || error.includes('confirmation') ? 'text-emerald-400' : 'text-rose-400'}`}>{error}</p>
                 </div>
               )}
 
