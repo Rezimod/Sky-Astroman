@@ -439,7 +439,7 @@ export default function LandingPage() {
             <span className="text-[11px] font-bold tracking-[0.14em] text-white/40 uppercase">Stellar</span>
           </div>
           <p className="text-[11px] text-[#334155]">
-            © 2025 Stellar · {lang === 'ka' ? 'ვარსკვლავების ქვეყანა' : "Georgia's Astronomy Platform"}
+            © 2026 Stellar · astroman.ge
           </p>
           <nav className="flex items-center gap-4">
             <Link href="/login"    className="text-[11px] text-[#475569] hover:text-white transition-colors">{lang === 'ka' ? 'შესვლა' : 'Sign in'}</Link>

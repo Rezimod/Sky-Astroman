@@ -30,7 +30,7 @@ export default function Footer() {
         </div>
 
         <p className="text-[11px] text-[#334155]">
-          © 2025 Stellar · {lang === 'ka' ? 'ვარსკვლავების ქვეყანა' : 'Georgia\'s Astronomy Platform'}
+          © 2026 Stellar · astroman.ge
         </p>
 
         <nav className="flex items-center gap-4">

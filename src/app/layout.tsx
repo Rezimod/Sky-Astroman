@@ -1,8 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { Noto_Sans_Georgian } from 'next/font/google'
 import './globals.css'
-import Nav from '@/components/shared/Nav'
-import BottomNav from '@/components/shared/BottomNav'
+import Navigation from '@/components/layout/Navigation'
 import StarField from '@/components/shared/StarField'
 import Footer from '@/components/shared/Footer'
 import { LanguageProvider } from '@/contexts/LanguageContext'
@@ -32,10 +31,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <LanguageProvider>
           <StarField />
 
-          <Nav />
+          <Navigation />
           <main className="relative z-10 flex-1 pb-20 sm:pb-0">{children}</main>
           <Footer />
-          <BottomNav />
         </LanguageProvider>
       </body>
     </html>
