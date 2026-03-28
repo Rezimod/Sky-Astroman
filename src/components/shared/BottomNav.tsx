@@ -1,7 +1,7 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Satellite, Trophy, Cloud, User } from 'lucide-react'
+import { LayoutDashboard, Satellite, Images, Cloud, User } from 'lucide-react'
 import { useLanguage } from '@/contexts/LanguageContext'
 
 export default function BottomNav() {
@@ -11,11 +11,11 @@ export default function BottomNav() {
   if (isLanding) return null
 
   const tabs = [
-    { href: '/dashboard',            label: { en: 'HOME',     ka: 'მთავ.' }, icon: LayoutDashboard },
-    { href: '/missions',             label: { en: 'MISSIONS', ka: 'მისია' }, icon: Satellite       },
-    { href: '/leaderboard',          label: { en: 'RANKS',    ka: 'ტოპი'  }, icon: Trophy          },
-    { href: '/sky-tools/conditions', label: { en: 'SKY',      ka: 'ცა'    }, icon: Cloud           },
-    { href: '/profile',              label: { en: 'PROFILE',  ka: 'ანგარ.' }, icon: User           },
+    { href: '/dashboard',            label: { en: 'HOME',    ka: 'მთავ.' }, icon: LayoutDashboard },
+    { href: '/missions',             label: { en: 'MISSIONS',ka: 'მისია' }, icon: Satellite       },
+    { href: '/gallery',              label: { en: 'GALLERY', ka: 'გალ.'  }, icon: Images          },
+    { href: '/sky-tools/conditions', label: { en: 'SKY',     ka: 'ცა'    }, icon: Cloud           },
+    { href: '/profile',              label: { en: 'PROFILE', ka: 'ანგარ.'}, icon: User            },
   ]
 
   return (

@@ -1,47 +1,90 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { CheckCircle2, Clock, Search, Plus, ArrowRight, ChevronLeft, LayoutDashboard } from 'lucide-react'
 import Link from 'next/link'
+import { ChevronLeft, LayoutDashboard, Clock, CheckCircle2 } from 'lucide-react'
 import { DIFFICULTY_CONFIG } from '@/lib/missions'
 import ObservationModal from '@/components/observations/ObservationModal'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { useRouter } from 'next/navigation'
+import { getPointsToNextLevel } from '@/lib/constants'
 import type { GeneratedMission } from '@/lib/types'
-
-// Real astronomy images by object ID (NASA/ESA/Hubble public domain via Wikimedia)
-const OBJECT_IMAGES: Record<string, string> = {
-  moon:          'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/FullMoon2010.jpg/480px-FullMoon2010.jpg',
-  venus:         'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Venus-real_color.jpg/480px-Venus-real_color.jpg',
-  jupiter:       'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Jupiter_and_its_shrunken_Great_Red_Spot.jpg/480px-Jupiter_and_its_shrunken_Great_Red_Spot.jpg',
-  mars:          'https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/OSIRIS_Mars_true_color.jpg/480px-OSIRIS_Mars_true_color.jpg',
-  saturn:        'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/Saturn_during_Equinox.jpg/480px-Saturn_during_Equinox.jpg',
-  mercury:       'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Mercury_in_true_color.jpg/480px-Mercury_in_true_color.jpg',
-  uranus:        'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/Uranus2.jpg/480px-Uranus2.jpg',
-  neptune:       'https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/Neptune_-_Voyager_2_%2829347980845%29_flatten_crop.jpg/480px-Neptune_-_Voyager_2_%2829347980845%29_flatten_crop.jpg',
-  pleiades:      'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Pleiades_large.jpg/480px-Pleiades_large.jpg',
-  double_cluster:'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/NGC_869_%26_884.jpg/480px-NGC_869_%26_884.jpg',
-  andromeda:     'https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/Andromeda_Galaxy_%28with_h-alpha%29.jpg/480px-Andromeda_Galaxy_%28with_h-alpha%29.jpg',
-  orion_nebula:  'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Orion_Nebula_-_Hubble_2006_mosaic_18000.jpg/480px-Orion_Nebula_-_Hubble_2006_mosaic_18000.jpg',
-  beehive:       'https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/M44.jpg/480px-M44.jpg',
-  hercules:      'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Messier_13_Hubble_WikiSky.jpg/480px-Messier_13_Hubble_WikiSky.jpg',
-  ring_nebula:   'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/M57_The_Ring_Nebula.JPG/480px-M57_The_Ring_Nebula.JPG',
-  dumbbell:      'https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Messier27.jpg/480px-Messier27.jpg',
-  crab_nebula:   'https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/Crab_Nebula.jpg/480px-Crab_Nebula.jpg',
-  whirlpool:     'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Hubble_Interacting_Galaxy_NGC_2623_%282008-04-24%29.jpg/480px-Hubble_Interacting_Galaxy_NGC_2623_%282008-04-24%29.jpg',
-}
 
 const DIFF_MAP: Record<string, keyof typeof DIFFICULTY_CONFIG> = {
   easy: 'Beginner', medium: 'Intermediate', hard: 'Hard', expert: 'Expert',
 }
 
-const DIFF_STYLE: Record<string, { label: string; labelGe: string; bg: string; text: string; border: string }> = {
-  easy:   { label: 'EASY',   labelGe: 'მარტივი', bg: 'rgba(52,211,153,0.15)',  text: '#34D399',  border: 'rgba(52,211,153,0.3)'  },
-  medium: { label: 'MEDIUM', labelGe: 'საშუალო', bg: 'rgba(255,209,102,0.15)', text: '#FFD166',  border: 'rgba(255,209,102,0.3)' },
-  hard:   { label: 'HARD',   labelGe: 'რთული',   bg: 'rgba(248,113,113,0.15)', text: '#F87171',  border: 'rgba(248,113,113,0.3)' },
-  expert: { label: 'EXPERT', labelGe: 'ექსპერტი',bg: 'rgba(192,132,252,0.15)', text: '#C084FC',  border: 'rgba(192,132,252,0.3)' },
+const DIFF_DOTS: Record<string, number> = { easy: 2, medium: 3, hard: 4, expert: 5 }
+
+const DIFF_COLOR: Record<string, string> = {
+  easy: '#34D399', medium: '#FFD166', hard: '#F87171', expert: '#C084FC',
 }
 
-type FilterKey = 'all' | 'easy' | 'medium' | 'hard'
+const MOCK_PROFILE = { level: 3, points: 720, missions_completed: 5 }
+
+function PlanetVisual({ id, emoji }: { id: string; emoji: string }) {
+  const SPHERES: Record<string, { bg: string; glow: string }> = {
+    moon:     { bg: 'radial-gradient(circle at 38% 32%, #e2e8f0, #94a3b8 55%, #475569)', glow: 'rgba(148,163,184,0.25)' },
+    jupiter:  { bg: 'radial-gradient(circle at 38% 32%, #fed7aa, #f97316 55%, #92400e)', glow: 'rgba(249,115,22,0.30)' },
+    mars:     { bg: 'radial-gradient(circle at 38% 32%, #fca5a5, #ef4444 55%, #7f1d1d)', glow: 'rgba(239,68,68,0.28)' },
+    venus:    { bg: 'radial-gradient(circle at 38% 32%, #fef9c3, #fbbf24 55%, #d97706)', glow: 'rgba(251,191,36,0.28)' },
+    mercury:  { bg: 'radial-gradient(circle at 38% 32%, #d1d5db, #9ca3af 55%, #4b5563)', glow: 'rgba(156,163,175,0.20)' },
+    neptune:  { bg: 'radial-gradient(circle at 38% 32%, #bfdbfe, #3b82f6 55%, #1e3a8a)', glow: 'rgba(59,130,246,0.28)' },
+    uranus:   { bg: 'radial-gradient(circle at 38% 32%, #a5f3fc, #06b6d4 55%, #0e7490)', glow: 'rgba(6,182,212,0.28)' },
+    saturn:   { bg: 'radial-gradient(circle at 38% 32%, #e2e8f0, #b0bec5 55%, #607d8b)', glow: 'rgba(176,190,197,0.20)' },
+  }
+
+  if (id === 'saturn') {
+    return (
+      <div className="relative flex items-center justify-center" style={{ width: 88, height: 88 }}>
+        <div className="absolute" style={{ width: 108, height: 26, borderRadius: '50%', border: '2px solid rgba(176,190,197,0.35)', transform: 'rotateX(72deg)', top: '50%', marginTop: -13 }} />
+        <div className="rounded-full relative z-10" style={{ width: 64, height: 64, background: SPHERES.saturn.bg, boxShadow: `0 0 24px ${SPHERES.saturn.glow}` }} />
+      </div>
+    )
+  }
+
+  if (SPHERES[id]) {
+    return (
+      <div className="rounded-full" style={{
+        width: 80, height: 80,
+        background: SPHERES[id].bg,
+        boxShadow: `0 0 28px ${SPHERES[id].glow}, inset -8px -8px 20px rgba(0,0,0,0.4)`,
+      }} />
+    )
+  }
+
+  // Nebulae, clusters, galaxies — glowing emoji container
+  const GLOW: Record<string, string> = {
+    orion_nebula: 'rgba(168,85,247,0.35)', andromeda: 'rgba(245,158,11,0.35)',
+    pleiades: 'rgba(99,102,241,0.30)', double_cluster: 'rgba(99,102,241,0.25)',
+    hercules: 'rgba(99,102,241,0.25)', ring_nebula: 'rgba(56,189,248,0.30)',
+    dumbbell: 'rgba(34,197,94,0.25)', crab_nebula: 'rgba(239,68,68,0.30)',
+    whirlpool: 'rgba(168,85,247,0.30)', beehive: 'rgba(251,191,36,0.25)',
+  }
+  return (
+    <div className="rounded-full flex items-center justify-center text-4xl"
+      style={{
+        width: 80, height: 80,
+        background: 'rgba(99,102,241,0.08)',
+        boxShadow: `0 0 28px ${GLOW[id] ?? 'rgba(99,102,241,0.25)'}`,
+        border: '1px solid rgba(255,255,255,0.06)',
+      }}>
+      {emoji}
+    </div>
+  )
+}
+
+function DifficultyDots({ difficulty }: { difficulty: string }) {
+  const filled = DIFF_DOTS[difficulty] ?? 2
+  const color = DIFF_COLOR[difficulty] ?? '#34D399'
+  return (
+    <div className="flex items-center gap-1 justify-center my-1.5">
+      {[1, 2, 3, 4, 5].map(i => (
+        <span key={i} className="rounded-full"
+          style={{ width: 5, height: 5, background: i <= filled ? color : 'rgba(255,255,255,0.12)' }} />
+      ))}
+    </div>
+  )
+}
 
 export default function MissionsPage() {
   const { lang } = useLanguage()
@@ -51,8 +94,8 @@ export default function MissionsPage() {
   const [activeMission, setActiveMission] = useState<GeneratedMission | null>(null)
   const [completedIds, setCompletedIds] = useState<Set<string>>(new Set())
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set())
-  const [filter, setFilter] = useState<FilterKey>('all')
-  const [search, setSearch] = useState('')
+
+  const levelProgress = getPointsToNextLevel(MOCK_PROFILE.points)
 
   useEffect(() => {
     try {
@@ -79,23 +122,14 @@ export default function MissionsPage() {
     setActiveMission(null)
   }
 
-  const featured = missions[0] ?? null
-  const filtered = missions.filter(m => {
-    if (filter !== 'all' && m.difficulty !== filter) return false
-    if (search) {
-      const q = search.toLowerCase()
-      const name = lang === 'ka' ? m.titleGe : m.objectName
-      if (!name.toLowerCase().includes(q)) return false
-    }
-    return true
-  })
+  const completedCount = completedIds.size + pendingIds.size
+  const totalCount = missions.length || 5
+  const toNextRank = Math.max(0, 5 - completedCount)
+  const progressPct = Math.min(100, (completedCount / 5) * 100)
 
-  const filterTabs: { key: FilterKey; label: string; labelGe: string }[] = [
-    { key: 'all',    label: 'ALL',    labelGe: 'ყველა'   },
-    { key: 'easy',   label: 'EASY',   labelGe: 'მარტივი' },
-    { key: 'medium', label: 'MEDIUM', labelGe: 'საშუალო' },
-    { key: 'hard',   label: 'HARD',   labelGe: 'რთული'   },
-  ]
+  const isDay = (() => {
+    const h = new Date().getHours(); return h >= 7 && h < 20
+  })()
 
   return (
     <>
@@ -118,10 +152,10 @@ export default function MissionsPage() {
         />
       )}
 
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 animate-page-enter">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-5 animate-page-enter">
 
         {/* Header */}
-        <div className="relative flex items-center justify-center mb-5 sm:mb-6">
+        <div className="relative flex items-center justify-center mb-4">
           <button
             onClick={() => router.back()}
             className="absolute left-0 w-9 h-9 rounded-full flex items-center justify-center transition-all hover:bg-white/[0.08]"
@@ -129,11 +163,8 @@ export default function MissionsPage() {
           >
             <ChevronLeft size={16} className="text-[#94A3B8]" />
           </button>
-          <h1
-            className="text-base sm:text-lg font-bold text-white px-6 py-2 rounded-full"
-            style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.18), rgba(168,85,247,0.12))', border: '1px solid rgba(99,102,241,0.28)' }}
-          >
-            {lang === 'ka' ? 'აქტიური მისიები' : 'Active Missions'}
+          <h1 className="text-xl sm:text-2xl font-bold text-white">
+            {lang === 'ka' ? 'მისიები' : 'Missions'}
           </h1>
           <Link
             href="/dashboard"
@@ -144,88 +175,66 @@ export default function MissionsPage() {
           </Link>
         </div>
 
-        {/* Featured banner */}
-        {!loading && featured && (
-          <div
-            className="relative overflow-hidden rounded-xl border mb-4 sm:mb-5"
-            style={{ background: 'linear-gradient(135deg, #0D1117 60%, rgba(99,102,241,0.08))', borderColor: 'rgba(99,102,241,0.2)' }}
-          >
-            {/* Background image */}
-            {OBJECT_IMAGES[featured.id] && (
-              <div className="absolute inset-0 opacity-[0.12]">
-                <img
-                  src={OBJECT_IMAGES[featured.id]}
-                  alt={featured.objectName}
-                  className="w-full h-full object-cover"
-                  onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
-                />
+        {/* Sky status */}
+        <div className="flex items-center gap-2 mb-5">
+          <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: isDay ? '#FFD166' : '#34D399' }} />
+          <span className="text-xs text-[#64748B]">
+            {isDay
+              ? (lang === 'ka' ? 'დღეა — მისიები ღამეს' : 'Daytime — missions available tonight')
+              : (lang === 'ka' ? 'ღამის ცა ხელმისაწვდომია' : 'Night sky available now')}
+          </span>
+        </div>
+
+        {/* Observer rank card */}
+        <div className="rounded-2xl p-5 mb-6"
+          style={{ background: 'rgba(245,158,11,0.04)', border: '1px solid rgba(245,158,11,0.20)' }}>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-bold tracking-[0.15em] text-[#64748B] uppercase">
+                {lang === 'ka' ? 'ობზერვატორის რანგი' : 'Observer Rank'}
+              </span>
+            </div>
+            <span className="text-xs font-bold px-3 py-1 rounded-full"
+              style={{ background: 'rgba(245,158,11,0.12)', color: '#F59E0B', border: '1px solid rgba(245,158,11,0.30)' }}>
+              {lang === 'ka' ? 'ობზერვატორი' : 'Observer'}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-3 gap-4 mb-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-white">{completedCount}/{totalCount}</div>
+              <div className="text-[9px] font-bold tracking-widest text-[#64748B] uppercase mt-0.5">
+                {lang === 'ka' ? 'დაკვირვება' : 'Observations'}
               </div>
-            )}
-            <div className="absolute top-0 right-0 w-48 h-48 bg-[#6366F1]/10 rounded-full blur-3xl pointer-events-none -translate-y-1/2 translate-x-1/4" />
-            <div className="relative p-5 sm:p-6">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#6366F1] animate-pulse" />
-                <span className="text-[10px] font-bold tracking-[0.15em] text-[#6366F1] uppercase">
-                  {lang === 'ka' ? 'კვირის მისია' : 'Mission of the Week'}
-                </span>
+            </div>
+            <div className="text-center border-x border-white/[0.06]">
+              <div className="text-2xl font-bold text-white">
+                {MOCK_PROFILE.points} <span className="text-[#F59E0B] text-base">✦</span>
               </div>
-              <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-                <div>
-                  <h2 className="text-lg sm:text-xl font-bold text-white mb-1.5">
-                    {lang === 'ka' ? featured.titleGe : featured.title}
-                  </h2>
-                  <p className="text-xs text-[#64748B] max-w-xl leading-relaxed line-clamp-2">
-                    {lang === 'ka' ? featured.descriptionGe : featured.description}
-                  </p>
-                </div>
-                <div className="flex items-center gap-3 flex-shrink-0">
-                  <div className="text-right">
-                    <div className="text-[10px] text-[#64748B] uppercase tracking-wider">{lang === 'ka' ? 'ჯილდო' : 'Reward'}</div>
-                    <div className="text-lg font-bold text-white">+{featured.points} XP</div>
-                  </div>
-                  <button
-                    onClick={() => !completedIds.has(featured.id) && !pendingIds.has(featured.id) && setActiveMission(featured)}
-                    disabled={completedIds.has(featured.id) || pendingIds.has(featured.id)}
-                    className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                    style={{ background: '#6366F1', color: 'white' }}
-                  >
-                    {completedIds.has(featured.id)
-                      ? (lang === 'ka' ? 'შესრულდა' : 'Done')
-                      : pendingIds.has(featured.id)
-                      ? (lang === 'ka' ? 'განხილვაში' : 'In Review')
-                      : (lang === 'ka' ? 'დაწყება' : 'Begin')}
-                    <ArrowRight size={14} />
-                  </button>
-                </div>
+              <div className="text-[9px] font-bold tracking-widest text-[#64748B] uppercase mt-0.5">
+                {lang === 'ka' ? 'ვარსკვლავი' : 'Stars'}
+              </div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-white">{toNextRank}</div>
+              <div className="text-[9px] font-bold tracking-widest text-[#64748B] uppercase mt-0.5">
+                {lang === 'ka' ? 'შემდეგ რანგამდე' : 'Next Rank'}
               </div>
             </div>
           </div>
-        )}
 
-        {/* Filters + search */}
-        <div className="flex flex-col sm:flex-row gap-3 mb-4">
-          <div className="flex items-center gap-1 p-1 bg-white/[0.03] border border-white/[0.06] rounded-lg">
-            {filterTabs.map(tab => (
-              <button
-                key={tab.key}
-                onClick={() => setFilter(tab.key)}
-                className={`px-3 py-1.5 rounded text-[11px] font-bold tracking-wider transition-all ${
-                  filter === tab.key ? 'bg-[#6366F1] text-white' : 'text-[#64748B] hover:text-white'
-                }`}
-              >
-                {lang === 'ka' ? tab.labelGe : tab.label}
-              </button>
+          <div className="flex items-center gap-1.5 mb-2">
+            {[1, 2, 3, 4, 5].map(i => (
+              <div key={i} className="w-3 h-3 rounded-full transition-all"
+                style={{ background: i <= completedCount ? '#F59E0B' : 'rgba(255,255,255,0.08)' }} />
             ))}
+            <span className="text-[10px] text-[#64748B] ml-auto">
+              {toNextRank} {lang === 'ka' ? 'დარჩა' : 'remaining'}
+            </span>
           </div>
-          <div className="relative flex-1 sm:max-w-64">
-            <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#475569]" />
-            <input
-              type="text"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder={lang === 'ka' ? 'მოძებნე...' : 'Search...'}
-              className="w-full bg-white/[0.03] border border-white/[0.06] rounded-lg py-2 pl-8 pr-4 text-sm text-white placeholder:text-[#475569] focus:outline-none focus:border-[#6366F1]/50 transition-all"
-            />
+          <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
+            <div className="h-full rounded-full transition-all duration-700"
+              style={{ width: `${progressPct}%`, background: 'linear-gradient(90deg, #F59E0B, #FFD166)' }} />
           </div>
         </div>
 
@@ -233,100 +242,81 @@ export default function MissionsPage() {
         {loading ? (
           <div className="grid grid-cols-2 gap-3">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="card h-52 animate-pulse" />
+              <div key={i} className="rounded-2xl h-64 animate-pulse" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }} />
             ))}
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-3">
-            {filtered.map(mission => {
+            {missions.map(mission => {
               const done    = completedIds.has(mission.id)
               const pending = pendingIds.has(mission.id)
-              const style   = DIFF_STYLE[mission.difficulty]
-              const imgSrc  = OBJECT_IMAGES[mission.id]
+              const name    = lang === 'ka'
+                ? (mission.titleGe?.replace(/^[^ ]+ /, '') ?? mission.objectName)
+                : mission.objectName
+              const diffColor = DIFF_COLOR[mission.difficulty] ?? '#34D399'
+              const diffLabel_en = { easy: 'EASY', medium: 'MEDIUM', hard: 'HARD', expert: 'EXPERT' }[mission.difficulty] ?? 'EASY'
+              const diffLabel_ka = { easy: 'მარტივი', medium: 'საშუალო', hard: 'რთული', expert: 'ექსპერტი' }[mission.difficulty] ?? 'მარტივი'
 
               return (
                 <div
                   key={mission.id}
-                  className="card overflow-hidden flex flex-col cursor-pointer group transition-all hover:border-white/10 hover:scale-[1.01]"
-                  style={{ opacity: done ? 0.6 : 1 }}
-                  onClick={() => !done && !pending && setActiveMission(mission)}
+                  className="rounded-2xl flex flex-col items-center p-4 sm:p-5 transition-all relative overflow-hidden"
+                  style={{
+                    background: done ? 'rgba(255,255,255,0.02)' : 'rgba(10,14,26,0.95)',
+                    border: `1px solid ${pending ? 'rgba(245,158,11,0.25)' : done ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.08)'}`,
+                    opacity: done ? 0.6 : 1,
+                  }}
                 >
-                  {/* Image */}
-                  <div className="relative h-24 bg-[#0D1117] overflow-hidden flex-shrink-0">
-                    {imgSrc ? (
-                      <img
-                        src={imgSrc}
-                        alt={mission.objectName}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-[#1a1a3e] to-[#0D1117]" />
-                    )}
-                    {/* Gradient overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#0D1117] via-[#0D1117]/30 to-transparent" />
-
-                    {/* Difficulty badge */}
-                    <div className="absolute top-2 left-2">
-                      <span
-                        className="text-[8px] font-bold tracking-wider px-1.5 py-0.5 rounded-full uppercase backdrop-blur-sm"
-                        style={{ background: style?.bg, color: style?.text, border: `1px solid ${style?.border}` }}
-                      >
-                        {lang === 'ka' ? style?.labelGe : style?.label}
-                      </span>
-                    </div>
-
-                    {/* Status */}
-                    <div className="absolute top-2 right-2">
-                      {done && <CheckCircle2 size={14} className="text-[#34D399]" />}
-                      {pending && <Clock size={14} className="text-[#FFD166]" />}
-                    </div>
+                  {/* Status icon top-right */}
+                  <div className="absolute top-3 right-3">
+                    {done && <CheckCircle2 size={14} className="text-[#34D399]" />}
+                    {pending && <Clock size={14} className="text-[#F59E0B]" />}
                   </div>
 
-                  {/* Content */}
-                  <div className="p-3 flex flex-col flex-1">
-                    <h3 className="text-sm font-bold text-white leading-snug line-clamp-1 mb-1">
-                      {lang === 'ka'
-                        ? mission.titleGe?.replace(/^[^ ]+ /, '') ?? mission.objectName
-                        : mission.objectName}
-                    </h3>
-                    <p className="text-[11px] text-[#64748B] leading-relaxed line-clamp-2 flex-1">
-                      {lang === 'ka' ? mission.descriptionGe : mission.description}
-                    </p>
-
-                    <div className="flex items-center justify-between mt-2.5 pt-2 border-t border-white/[0.06]">
-                      <span className="text-xs font-bold text-white">+{mission.points} XP</span>
-                      {done ? (
-                        <span className="text-[10px] font-bold text-[#34D399]">
-                          {lang === 'ka' ? 'შესრულდა' : 'Done'}
-                        </span>
-                      ) : pending ? (
-                        <span className="text-[10px] font-bold text-[#FFD166]">
-                          {lang === 'ka' ? 'განხილვაში' : 'In Review'}
-                        </span>
-                      ) : (
-                        <span
-                          className="text-[10px] font-bold px-2.5 py-1 rounded transition-all"
-                          style={{ background: 'rgba(99,102,241,0.15)', color: '#818CF8', border: '1px solid rgba(99,102,241,0.25)' }}
-                        >
-                          {lang === 'ka' ? 'დაწყება' : 'Begin'}
-                        </span>
-                      )}
-                    </div>
+                  {/* Planet visual */}
+                  <div className="mb-4 mt-2 flex items-center justify-center" style={{ height: 88 }}>
+                    <PlanetVisual id={mission.id} emoji={mission.objectEmoji} />
                   </div>
+
+                  {/* Name */}
+                  <h3 className="text-sm sm:text-base font-bold text-white text-center leading-snug mb-1 line-clamp-1">
+                    {name}
+                  </h3>
+
+                  {/* Difficulty dots */}
+                  <DifficultyDots difficulty={mission.difficulty} />
+
+                  {/* Difficulty label */}
+                  <span className="text-[9px] font-bold tracking-[0.15em] uppercase mb-3" style={{ color: diffColor }}>
+                    {lang === 'ka' ? diffLabel_ka : diffLabel_en}
+                  </span>
+
+                  {/* XP */}
+                  <div className="text-base font-bold mb-4" style={{ color: '#F59E0B' }}>
+                    +{mission.points} <span className="text-sm">✦</span>
+                  </div>
+
+                  {/* CTA */}
+                  {done ? (
+                    <span className="text-xs font-bold text-[#475569] pb-1">
+                      {lang === 'ka' ? 'შესრულდა' : 'Complete'}
+                    </span>
+                  ) : pending ? (
+                    <span className="text-xs font-bold pb-1" style={{ color: '#F59E0B' }}>
+                      {lang === 'ka' ? 'განხილვაში' : 'Pending'}
+                    </span>
+                  ) : (
+                    <button
+                      onClick={() => setActiveMission(mission)}
+                      className="w-full py-2.5 rounded-xl text-sm font-bold tracking-wide transition-all hover:brightness-110 active:scale-95"
+                      style={{ background: 'linear-gradient(135deg, #F59E0B, #FFD166)', color: '#0A0A0A' }}
+                    >
+                      {lang === 'ka' ? 'დაწყება →' : 'Begin →'}
+                    </button>
+                  )}
                 </div>
               )
             })}
-
-            {/* Suggest card */}
-            <div className="card p-4 flex flex-col items-center justify-center text-center group cursor-pointer hover:border-white/10 transition-all min-h-52">
-              <div className="w-9 h-9 rounded-full bg-white/[0.04] border border-white/[0.06] flex items-center justify-center mb-2.5 group-hover:border-[#6366F1]/40 transition-all">
-                <Plus size={16} className="text-[#475569] group-hover:text-[#6366F1] transition-colors" />
-              </div>
-              <h3 className="text-xs font-bold text-[#475569] group-hover:text-white transition-colors">
-                {lang === 'ka' ? 'მისია შემოგვთავაზე' : 'Suggest a Mission'}
-              </h3>
-            </div>
           </div>
         )}
       </div>

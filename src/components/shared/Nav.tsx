@@ -31,7 +31,8 @@ export default function Nav() {
   const tabs = [
     { href: '/dashboard',            label: { en: 'HOME',     ka: 'მთავარი'  } },
     { href: '/missions',             label: { en: 'MISSIONS', ka: 'მისიები'  } },
-    { href: '/sky-tools/conditions', label: { en: 'SKY',      ka: 'ღამის ცა' } },
+    { href: '/gallery',              label: { en: 'GALLERY',  ka: 'გალერეა'  } },
+    { href: '/sky-tools/conditions', label: { en: 'SKY',      ka: 'ცა'       } },
     { href: '/leaderboard',          label: { en: 'RANKS',    ka: 'რეიტინგი' } },
   ]
 
