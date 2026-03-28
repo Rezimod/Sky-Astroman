@@ -61,18 +61,18 @@ export default function ProfilePage() {
 
   useEffect(() => {
     async function load() {
-      const profileRes = await fetch('/api/users/profile')
-      if (profileRes.status === 401) {
-        window.location.href = '/login'
-        return
-      }
-
-      const [badgesRes, streakRes, obsRes, { data: { user } }] = await Promise.all([
+      const [profileRes, badgesRes, streakRes, obsRes, { data: { user } }] = await Promise.all([
+        fetch('/api/users/profile'),
         fetch('/api/badges'),
         fetch('/api/users/streak'),
         fetch('/api/observations?mine=true&status=all&limit=6'),
         createClient().auth.getUser(),
       ])
+
+      if (!user) {
+        window.location.href = '/login'
+        return
+      }
 
       const profileData = profileRes.ok ? await profileRes.json() : null
       const badgesData  = badgesRes.ok  ? await badgesRes.json()  : []

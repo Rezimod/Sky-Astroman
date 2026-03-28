@@ -75,7 +75,8 @@ export default function RegisterPage() {
         return
       }
 
-      // Step 2: Sign in immediately — no confirmation needed
+      // Step 2: Sign in — small delay to let Supabase propagate the new user
+      await new Promise(r => setTimeout(r, 800))
       const supabase = createClient()
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email: email.trim().toLowerCase(),

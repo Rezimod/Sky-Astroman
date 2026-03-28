@@ -50,8 +50,6 @@ function getEmoji(objectName: string | null): string {
   return EMOJI[objectName ?? ''] ?? '⭐'
 }
 
-const MOCK_PROFILE = { level: 3, points: 720, missions_completed: 5 }
-
 function PlanetVisual({ id, emoji }: { id: string; emoji: string }) {
   const SPHERES: Record<string, { bg: string; glow: string }> = {
     moon:     { bg: 'radial-gradient(circle at 38% 32%, #e2e8f0, #94a3b8 55%, #475569)', glow: 'rgba(148,163,184,0.25)' },
@@ -123,8 +121,9 @@ export default function MissionsPage() {
   const [loading, setLoading] = useState(true)
   const [progress, setProgress] = useState<MissionProgress[]>([])
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set())
+  const [userPoints, setUserPoints] = useState(0)
 
-  const levelProgress = getPointsToNextLevel(MOCK_PROFILE.points)
+  const levelProgress = getPointsToNextLevel(userPoints)
 
   useEffect(() => {
     try {
@@ -142,6 +141,11 @@ export default function MissionsPage() {
     fetch('/api/missions/progress')
       .then(r => r.ok ? r.json() : [])
       .then(data => { if (Array.isArray(data)) setProgress(data) })
+      .catch(() => {})
+
+    fetch('/api/users/profile')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data?.points) setUserPoints(data.points) })
       .catch(() => {})
   }, [])
 
@@ -293,7 +297,7 @@ export default function MissionsPage() {
             </div>
             <div className="text-center border-x border-white/[0.06]">
               <div className="text-2xl font-bold text-white">
-                {MOCK_PROFILE.points} <span className="text-[#F59E0B] text-base">✦</span>
+                {userPoints} <span className="text-[#F59E0B] text-base">✦</span>
               </div>
               <div className="text-[9px] font-bold tracking-widest text-[#64748B] uppercase mt-0.5">
                 {lang === 'ka' ? 'ვარსკვლავი' : 'Stars'}
