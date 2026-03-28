@@ -126,51 +126,75 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Email and password are required' }, { status: 400 })
     }
 
-    const supabase = createServiceClient()
+    const cleanEmail = email.trim().toLowerCase()
+    const cleanName  = name?.trim() ?? ''
+    const emailPrefix = (email.split('@')[0] ?? 'user').replace(/[^a-zA-Z0-9_]/g, '').slice(0, 20)
 
-    // Create user with email already confirmed — no confirmation email sent
-    const { data, error } = await supabase.auth.admin.createUser({
-      email: email.trim().toLowerCase(),
+    // Prefer service role (auto-confirms, no email required).
+    // Fall back to regular signUp if the key isn't configured.
+    if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      const supabase = createServiceClient()
+
+      const { data, error } = await supabase.auth.admin.createUser({
+        email: cleanEmail,
+        password,
+        email_confirm: true,
+        user_metadata: { full_name: cleanName, display_name: cleanName },
+      })
+
+      if (error) {
+        const msg = error.message.toLowerCase()
+        if (msg.includes('already registered') || msg.includes('already been registered') || msg.includes('user already registered')) {
+          return NextResponse.json({ error: 'EMAIL_EXISTS' }, { status: 400 })
+        }
+        return NextResponse.json({ error: error.message }, { status: 400 })
+      }
+
+      if (!data.user) return NextResponse.json({ error: 'Failed to create user' }, { status: 500 })
+
+      const username = `${emailPrefix}_${data.user.id.slice(0, 4)}`
+      await supabase.from('profiles').upsert(
+        { id: data.user.id, username, display_name: cleanName || emailPrefix, avatar_url: null },
+        { onConflict: 'id', ignoreDuplicates: false }
+      )
+
+      try { await sendWelcomeEmail(cleanEmail, cleanName) } catch {}
+      return NextResponse.json({ success: true })
+    }
+
+    // Fallback: use regular anon client signUp (works when Supabase email confirmation is disabled)
+    const { createClient } = await import('@/lib/supabase/server')
+    const supabase = await createClient()
+
+    const { data, error } = await supabase.auth.signUp({
+      email: cleanEmail,
       password,
-      email_confirm: true,
-      user_metadata: {
-        full_name: name?.trim() ?? '',
-        display_name: name?.trim() ?? '',
-      },
+      options: { data: { full_name: cleanName, display_name: cleanName } },
     })
 
     if (error) {
       const msg = error.message.toLowerCase()
-      if (msg.includes('already registered') || msg.includes('already been registered') || msg.includes('user already registered')) {
+      if (msg.includes('already registered') || msg.includes('user already registered')) {
         return NextResponse.json({ error: 'EMAIL_EXISTS' }, { status: 400 })
       }
       return NextResponse.json({ error: error.message }, { status: 400 })
     }
 
-    if (!data.user) {
-      return NextResponse.json({ error: 'Failed to create user' }, { status: 500 })
-    }
+    if (!data.user) return NextResponse.json({ error: 'Failed to create user' }, { status: 500 })
 
-    // Create profile immediately
-    const emailPrefix = (email.split('@')[0] ?? 'user')
-      .replace(/[^a-zA-Z0-9_]/g, '')
-      .slice(0, 20)
+    // Profile will be created by Supabase trigger, but upsert as safety net
     const username = `${emailPrefix}_${data.user.id.slice(0, 4)}`
+    await supabase.from('profiles').upsert(
+      { id: data.user.id, username, display_name: cleanName || emailPrefix, avatar_url: null },
+      { onConflict: 'id', ignoreDuplicates: false }
+    )
 
-    await supabase.from('profiles').upsert({
-      id: data.user.id,
-      username,
-      display_name: name?.trim() || emailPrefix,
-      avatar_url: null,
-    }, { onConflict: 'id', ignoreDuplicates: false })
-
-    // Send welcome email — fails silently if not configured
-    try {
-      await sendWelcomeEmail(email.trim().toLowerCase(), name?.trim() ?? '')
-    } catch {}
-
+    try { await sendWelcomeEmail(cleanEmail, cleanName) } catch {}
     return NextResponse.json({ success: true })
+
   } catch (err) {
-    return NextResponse.json({ error: 'Server error' }, { status: 500 })
+    const message = err instanceof Error ? err.message : 'Unknown error'
+    console.error('[register]', message)
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }
