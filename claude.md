@@ -1,315 +1,97 @@
-# CLAUDE.md — Stellarr Sky Platform (Unified Build Spec)
+# CLAUDE.md — Sky Astroman
 
-## WHAT THIS IS
+## What this is
+Gamified stargazing platform on Solana. Users log observations, complete night missions, earn XP and on-chain rewards. Think "Strava for astronomy." Built for Georgian market first, global second.
 
-Merge two existing Astroman projects into one platform:
-- **Stellarr Club** (stellarrclub.vercel.app) → provides UI system, gamification, leaderboard
-- **Sky Tools** (sky.astroman.ge) → provides astronomy data, sky conditions, telescope recommendations
+Live: https://sky-astroman.vercel.app
+Store: https://astroman.ge
 
-Result: A free social platform for stargazers. Think **Strava for astronomy**.
+## Tech stack
+- Next.js 14 (App Router), React 18, TypeScript
+- Tailwind CSS 4 with custom design tokens (see below)
+- Supabase: auth, Postgres database, Storage for photos
+- astronomy-engine: client-side planet/moon calculations
+- Open-Meteo API: weather/cloud/visibility data (free, no key)
+- Vercel: deployment (push to main = auto-deploy)
 
-## CRITICAL RULES
+## Commands
+- `npm run dev` — local dev server
+- `npm run build` — production build (run before every PR)
+- `npm run lint` — ESLint check
 
-1. **Keep the Stellarr UI as the design system.** Do not redesign. Use the same colors, card-based layout, component patterns.
-2. **NO crypto. NO Solana. NO wallets. NO payments.** Strip all blockchain/payment code. This is a free community platform.
-3. **Reward model: Upload → Admin Confirm → Points awarded.** Users submit observation photos, admins verify, then points/badges unlock.
-4. **All new features are additional cards or pages within the existing Stellarr visual system.**
-5. **Georgian context matters.** Default location: Tbilisi, Georgia. Support Georgian language strings where applicable.
-
-## TECH STACK
-
-- Next.js 14+ (App Router)
-- React 18+
-- Tailwind CSS (match Stellarr theme tokens)
-- TypeScript
-- Supabase (auth, database, storage for photos)
-- Open-Meteo API (weather/sky conditions)
-- Claude API (AI astronomy assistant)
-- Vercel (deployment)
-
-## DATABASE SCHEMA (Supabase)
-
-```sql
--- Users (extends Supabase auth.users)
-create table profiles (
-  id uuid references auth.users primary key,
-  username text unique not null,
-  display_name text,
-  avatar_url text,
-  level int default 1,
-  points int default 0,
-  observations_count int default 0,
-  missions_completed int default 0,
-  team_id uuid references teams(id),
-  location_lat float,
-  location_lng float,
-  created_at timestamptz default now()
-);
-
--- Observations (core content — user uploads)
-create table observations (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid references profiles(id) not null,
-  object_name text not null,
-  description text,
-  photo_url text,
-  telescope_used text,
-  location_lat float,
-  location_lng float,
-  observed_at timestamptz not null,
-  status text default 'pending', -- pending | approved | rejected
-  reviewed_by uuid references profiles(id),
-  reviewed_at timestamptz,
-  points_awarded int default 0,
-  created_at timestamptz default now()
-);
-
--- Missions
-create table missions (
-  id uuid primary key default gen_random_uuid(),
-  title text not null,
-  description text,
-  object_name text,
-  reward_points int default 100,
-  difficulty text default 'easy', -- easy | medium | hard
-  is_daily boolean default false,
-  active boolean default true,
-  created_at timestamptz default now()
-);
-
--- Mission Progress
-create table mission_progress (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid references profiles(id) not null,
-  mission_id uuid references missions(id) not null,
-  status text default 'active', -- active | completed
-  completed_at timestamptz,
-  unique(user_id, mission_id)
-);
-
--- Teams
-create table teams (
-  id uuid primary key default gen_random_uuid(),
-  name text unique not null,
-  description text,
-  avatar_url text,
-  total_points int default 0,
-  created_by uuid references profiles(id),
-  created_at timestamptz default now()
-);
+## Project structure
+```
+src/
+  app/
+    api/sky/conditions/   — Open-Meteo weather fetch
+    api/sky/moon/         — Moon phase via astronomy-engine
+    api/observations/     — CRUD for photo uploads
+    api/missions/         — Mission list + daily challenge
+    api/leaderboard/      — Ranked users
+    dashboard/            — Main authenticated page
+    missions/             — Night mission list
+    gallery/              — Community observation photos
+    leaderboard/          — Rankings (all/month/week)
+    sky-tools/conditions/ — Full sky intelligence dashboard
+    profile/              — User profile + [username] public pages
+    admin/observations/   — Admin review panel
+    login/, register/     — Auth pages
+  components/
+    cards/                — Dashboard card components
+    sky/                  — Weather/moon/planet widgets
+    observations/         — Upload form, gallery cards
+    layout/               — Navigation, DashboardGrid
+    ui/                   — Badge, ProgressBar, Skeleton, ErrorState
+  lib/
+    astronomy.ts          — astronomy-engine helpers
+    gamification.ts       — XP levels, badges, streak calc
+    daily-challenge.ts    — Auto-generate tonight's challenge
+    supabase.ts           — Supabase client
+    night-mode.tsx        — Day/dark/night mode provider
 ```
 
-## NAVIGATION STRUCTURE
+## Database (Supabase)
+Tables: profiles, observations, missions, mission_progress, teams, user_badges
+- observations.status: 'pending' | 'approved' | 'rejected'
+- profiles.is_admin: boolean (for /admin access)
+- Default location: Tbilisi (41.7151, 44.8271), timezone Asia/Tbilisi
 
-```
-/ (Dashboard — main page)
-/missions
-/leaderboard
-/teams
-/teams/[id]
-/sky-tools
-/sky-tools/conditions
-/sky-tools/telescope-finder
-/sky-tools/observation-tips
-/profile
-/profile/[username]
-/admin/observations (review pending uploads)
-```
+## Design system
+Brand colors — NEVER use pure black, always space-navy:
+- Backgrounds: #050810 (void), #0A0F1E (space), #111936 (cosmos), #1A2347 (nebula), #243059 (twilight)
+- Accent: #6366F1 (indigo-500) for buttons/links
+- Rewards: #F59E0B (gold-500) for XP/points numbers
+- Solana: #14F195 (aurora green), #9945FF (sol purple)
+- Text: #F1F5F9 (primary), #CBD5E1 (secondary), #94A3B8 (muted)
+- Fonts: Space Grotesk (headings), JetBrains Mono (data/numbers), Noto Sans Georgian
+- XP numbers always use JetBrains Mono, font-weight 700
 
----
+## Code rules
+- All user-facing text in Georgian. Component props/variables in English.
+- Every page must handle 4 states: loading (skeleton), error (retry button), empty (CTA), data
+- No eternal "loading..." text — always use animated skeletons
+- Use next/image for all photos. Always include sizes prop.
+- API routes return JSON with { data, error } shape
+- Supabase queries: always handle .error case
+- Mobile-first: test at 375px width. Touch targets minimum 44px.
+- Bottom nav on mobile: 5 tabs max (მთავარი, მისიები, upload, ცა, პროფილი)
 
-# BUILD PHASES
+## Do NOT
+- Use "Stellar" as brand name (conflicts with Stellar XLM blockchain)
+- Use pure black (#000000) anywhere — use #050810 minimum
+- Use Inter, Roboto, or system fonts — always Space Grotesk
+- Delete existing pages/components without explicit instruction
+- Use paid APIs — Open-Meteo and astronomy-engine are both free
+- Add crypto jargon ("LFG", "wagmi", "wen") — keep it clean and professional
+- Use localStorage for auth — always Supabase auth
 
-## PHASE 1 — MVP (Build This First)
+## Current state
+- Phase: 0 (fixing broken features)
+- Sky conditions page: needs Open-Meteo API connection
+- Missions: need seeding in Supabase
+- Leaderboard: needs real data (currently hardcoded)
+- Upload flow: not built yet
+- Admin panel: not built yet
 
-### 1.1 Dashboard Page (/)
-
-A card grid using existing Stellarr card components. Cards:
-
-**UserStatsCard**
-- Level, Points, Rank, Missions Completed, Observations Logged
-- Progress bar to next level
-- Data from: `profiles` table
-
-**TonightsSkyCard**
-- Cloud cover %, visibility, moon phase, seeing conditions, best viewing time
-- Data from: Open-Meteo API (https://api.open-meteo.com/v1/forecast)
-- Use user's location or default to Tbilisi (41.7151, 44.8271)
-- Refresh every 30 min
-
-**ActiveMissionsCard**
-- List 3 active missions with reward points + progress indicator
-- Data from: `missions` + `mission_progress` tables
-
-**TonightsChallengeCard**
-- One daily challenge, auto-generated based on visible objects + user location
-- Resets every 24h (UTC midnight)
-- Extra points reward
-- Example: "Photograph the Moon tonight — 200 pts"
-
-**RecommendedObjectCard**
-- Single suggested celestial object for tonight
-- Show: object name, best viewing time, difficulty
-- "View Guide" button → expand with: how to find it, equipment needed
-
-**LeaderboardSnapshotCard**
-- Top 5 users by points
-- "View Full Leaderboard" link → /leaderboard
-
-### 1.2 Sky Conditions Page (/sky-tools/conditions)
-
-Full-page sky conditions dashboard. Cards:
-
-- **HourlyForecastCard** — cloud cover + visibility hour by hour for tonight
-- **MoonPhaseCard** — current phase, illumination %, rise/set times
-- **SeeingConditionsCard** — atmospheric turbulence estimate
-- **BestViewingWindowCard** — calculated optimal observation window
-- **SunriseSunsetCard** — astronomical twilight times
-
-API: Open-Meteo with parameters:
-```
-latitude=41.7151&longitude=44.8271
-&hourly=cloud_cover,visibility,temperature_2m
-&daily=sunrise,sunset
-&timezone=Asia/Tbilisi
-```
-
-### 1.3 Observation Upload + Admin Review
-
-**Upload Flow** (user-facing):
-- Form: object name, description, photo upload, telescope used, date/time, location (auto-detect or manual)
-- Photo stored in Supabase Storage bucket
-- Status: "pending" — user sees "Awaiting Review" badge
-
-**Admin Panel** (/admin/observations):
-- List of pending observations with photos
-- Admin can: Approve (set points) / Reject (with reason)
-- On approval: points added to user profile, mission progress updated
-
-### 1.4 Leaderboard Page (/leaderboard)
-
-- Full ranked list: username, points, level, observations count
-- Tabs: All Time | This Month | This Week
-- Highlight current user's position
-
----
-
-## PHASE 2 — Social + Teams (Build After Phase 1 Works)
-
-- Team creation/joining
-- Team leaderboard
-- Team missions (collaborative goals)
-- User profile pages with observation gallery
-- Follow users
-- Global observation map (markers on world map showing observations)
-
-## PHASE 3 — AI + Advanced (Build After Phase 2)
-
-- AI Astronomy Assistant (floating chat, Claude API)
-- Telescope Finder tool (budget + interest → recommendation)
-- Observation tips/guides library
-- Push notifications for optimal sky conditions
-- Georgian language toggle
-
----
-
-# COMPONENT NAMING
-
-Follow this pattern. All components go in `/components/`:
-
-```
-components/
-  cards/
-    UserStatsCard.tsx
-    TonightsSkyCard.tsx
-    ActiveMissionsCard.tsx
-    TonightsChallengeCard.tsx
-    RecommendedObjectCard.tsx
-    LeaderboardSnapshotCard.tsx
-  sky/
-    HourlyForecastCard.tsx
-    MoonPhaseCard.tsx
-    SeeingConditionsCard.tsx
-    BestViewingWindowCard.tsx
-  observations/
-    ObservationUploadForm.tsx
-    ObservationCard.tsx
-    AdminReviewPanel.tsx
-  layout/
-    Navigation.tsx
-    DashboardGrid.tsx
-    CardWrapper.tsx
-  ui/
-    ProgressBar.tsx
-    Badge.tsx
-    LevelIndicator.tsx
-```
-
----
-
-# API ROUTES
-
-```
-app/api/
-  sky/
-    conditions/route.ts     — fetch Open-Meteo data, transform for frontend
-    moon/route.ts           — moon phase calculations
-  observations/
-    route.ts                — GET list, POST new observation
-    [id]/route.ts           — GET single, PATCH approve/reject
-    upload/route.ts         — handle photo upload to Supabase Storage
-  missions/
-    route.ts                — GET active missions
-    daily/route.ts          — GET/generate daily challenge
-    progress/route.ts       — POST mission completion
-  leaderboard/
-    route.ts                — GET ranked users with filters
-  users/
-    profile/route.ts        — GET/PATCH user profile
-```
-
----
-
-# DESIGN TOKENS (Match Stellarr)
-
-Before building, inspect stellarrclub.vercel.app and extract:
-- Background colors (likely dark theme)
-- Card background + border radius + shadow
-- Accent color (likely cosmic blue/purple)
-- Font family + sizes
-- Spacing system
-- Button styles
-
-Apply these as Tailwind theme extensions in `tailwind.config.ts`.
-
----
-
-# EXECUTION ORDER FOR CLAUDE CODE
-
-When working in terminal, follow this exact sequence:
-
-1. Clone/init the repo, install deps
-2. Set up Tailwind config matching Stellarr theme
-3. Create Supabase schema (provide SQL above)
-4. Build layout: Navigation + DashboardGrid + CardWrapper
-5. Build UserStatsCard (mock data first)
-6. Build TonightsSkyCard (integrate Open-Meteo API)
-7. Build ActiveMissionsCard + TonightsChallengeCard
-8. Build RecommendedObjectCard + LeaderboardSnapshotCard
-9. Build Observation Upload form + Supabase Storage integration
-10. Build Admin review panel
-11. Build Leaderboard page
-12. Build Sky Conditions full page
-13. Connect all to Supabase (swap mock data for real queries)
-14. Deploy to Vercel
-
----
-
-# WHAT NOT TO BUILD
-
-- No crypto/blockchain/wallet integration
-- No payment processing
-- No token minting or NFTs
-- No complex auth — Supabase magic link or Google OAuth is enough
-- No real-time WebSocket features in Phase 1
-- No mobile app — responsive web only
+@package.json
+@src/app/api/sky/conditions/route.ts
