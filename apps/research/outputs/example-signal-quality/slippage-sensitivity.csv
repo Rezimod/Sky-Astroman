@@ -1,0 +1,5 @@
+extraTakerSlippage,trades,winRate,expectancy,netPnl,avgWin,avgLoss,avgHeuristicScore
+0.0,0,,,,,,
+0.001,0,,,,,,
+0.002,0,,,,,,
+0.005,0,,,,,,

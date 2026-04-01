@@ -1,45 +1,47 @@
 {
-  "name": "sky-astroman",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Morningbriefrezi/Sky-Astroman.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "name": "polymarket-bot",
+  "private": true,
+  "version": "0.1.0",
   "type": "module",
-  "bugs": {
-    "url": "https://github.com/Morningbriefrezi/Sky-Astroman/issues"
+  "engines": {
+    "node": ">=20.11.0"
   },
-  "homepage": "https://github.com/Morningbriefrezi/Sky-Astroman#readme",
-  "dependencies": {
-    "@supabase/ssr": "^0.9.0",
-    "@supabase/supabase-js": "^2.99.2",
-    "@tailwindcss/postcss": "^4.2.1",
-    "@types/node": "^25.5.0",
-    "@types/react": "^19.2.14",
-    "@types/react-dom": "^19.2.3",
-    "astronomy-engine": "^2.1.19",
-    "autoprefixer": "^10.4.27",
-    "clsx": "^2.1.1",
-    "eslint": "^9.39.4",
-    "eslint-config-next": "^16.1.6",
-    "lucide-react": "^0.577.0",
-    "next": "^14.2.35",
-    "postcss": "^8.5.8",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "resend": "^6.9.4",
-    "tailwindcss": "^4.2.1",
-    "typescript": "^5.9.3"
+  "workspaces": [
+    "packages/shared",
+    "packages/polymarket-adapter",
+    "packages/backtest-core",
+    "apps/trader",
+    "apps/web"
+  ],
+  "scripts": {
+    "build:packages": "npm run build -w @polymarket-bot/shared && npm run build -w @polymarket-bot/polymarket-adapter && npm run build -w @polymarket-bot/backtest-core",
+    "test:packages": "npm run test -w @polymarket-bot/shared && npm run test -w @polymarket-bot/polymarket-adapter && npm run test -w @polymarket-bot/backtest-core",
+    "test:trader": "npm run test -w @polymarket-bot/trader",
+    "test": "npm run test:packages && npm run test:trader",
+    "typecheck:packages": "npm run typecheck -w @polymarket-bot/shared && npm run typecheck -w @polymarket-bot/polymarket-adapter && npm run typecheck -w @polymarket-bot/backtest-core",
+    "dev:web": "npm run dev -w @polymarket-bot/web",
+    "dev:trader": "npm run dev -w @polymarket-bot/trader",
+    "dev:packages": "tsc -b packages/shared/tsconfig.json packages/polymarket-adapter/tsconfig.json packages/backtest-core/tsconfig.json --watch",
+    "dev:research": "cd apps/research && PYTHONPATH=src python3 -m research",
+    "build": "npm run build:packages && npm run build -w @polymarket-bot/trader && npm run build -w @polymarket-bot/web",
+    "typecheck": "npm run typecheck:packages && npm run typecheck -w @polymarket-bot/trader && npm run typecheck -w @polymarket-bot/web",
+    "lint": "eslint .",
+    "format": "prettier . --check",
+    "format:write": "prettier . --write",
+    "postinstall": "npm run build:packages"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.23.0",
+    "@next/eslint-plugin-next": "^15.5.14",
+    "@types/better-sqlite3": "^7.6.12",
+    "@types/node": "^22.14.1",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "eslint": "^9.23.0",
+    "globals": "^16.0.0",
+    "prettier": "^3.5.3",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2",
+    "typescript-eslint": "^8.28.0"
   }
 }

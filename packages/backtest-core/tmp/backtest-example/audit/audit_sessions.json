@@ -1,0 +1,12 @@
+[
+  {
+    "session_id": "example-session",
+    "source": "backtest-cli",
+    "run_mode": "replay",
+    "status": "completed",
+    "started_at": "2026-04-01T09:43:58.766Z",
+    "ended_at": "2026-04-01T09:43:58.766Z",
+    "correlation_id": "example-session",
+    "metadata_json": "{\"bestRunLabel\":\"base\",\"datasetMetadata\":{\"note\":\"Tiny deterministic dataset for smoke-testing the backtest CLI.\",\"source\":\"synthetic\"},\"datasetPath\":\"/Users/nika/Desktop/Polymarket bot/packages/backtest-core/examples/tiny-dataset.json\",\"limitations\":[\"Historical replay currently uses normalized top-of-book snapshots only. If historical depth is incomplete, passive and aggressive fill realism is limited to displayed best-level information.\"],\"sweepCount\":1,\"walkForwardCount\":0}"
+  }
+]

@@ -1,0 +1,6 @@
+id,session_id,run_label,correlation_id,ts,iso_ts,realized_pnl,unrealized_pnl,equity,drawdown,payload_json
+1,example-session,base,base:1000,1000,1970-01-01T00:00:01.000Z,0,0,1000,0,"{""label"":""base""}"
+2,example-session,base,base:3000,3000,1970-01-01T00:00:03.000Z,0,0,1000,0,"{""label"":""base""}"
+3,example-session,base,base:5000,5000,1970-01-01T00:00:05.000Z,0,0,1000,0,"{""label"":""base""}"
+4,example-session,base,base:7000,7000,1970-01-01T00:00:07.000Z,0,0,1000,0,"{""label"":""base""}"
+5,example-session,base,base:9000,9000,1970-01-01T00:00:09.000Z,0,0,1000,0,"{""label"":""base""}"

@@ -1,15 +1,10 @@
 node_modules
 dist
 .next
-.turbo
-.DS_Store
+.git
 coverage
 *.log
-.env
-.env.local
-.env.live
 apps/research/.venv
 apps/research/__pycache__
 apps/research/src/**/__pycache__
-data
 

@@ -1,0 +1,40 @@
+version: "3.9"
+
+services:
+  trader:
+    build:
+      context: .
+      dockerfile: apps/trader/Dockerfile
+    env_file:
+      - .env.example
+      - apps/trader/.env.example
+    ports:
+      - "4000:4000"
+    volumes:
+      - .:/workspace
+    command: sh -c "npm install && npm run dev -w @polymarket-bot/trader"
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    env_file:
+      - .env.example
+      - apps/web/.env.example
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/workspace
+    depends_on:
+      - trader
+    command: sh -c "npm install && npm run dev -w @polymarket-bot/web -- --hostname 0.0.0.0"
+
+  research:
+    build:
+      context: .
+      dockerfile: apps/research/Dockerfile
+    env_file:
+      - apps/research/.env.example
+    volumes:
+      - .:/workspace
+    command: sh -c "cd apps/research && PYTHONPATH=src python -m research"

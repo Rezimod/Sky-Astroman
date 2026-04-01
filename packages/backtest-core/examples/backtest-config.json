@@ -1,0 +1,43 @@
+{
+  "sessionId": "example-session",
+  "datasetPath": "./tiny-dataset.json",
+  "outputDir": "../tmp/backtest-example",
+  "audit": {
+    "databasePath": "../tmp/backtest-example/audit.sqlite",
+    "exportDir": "../tmp/backtest-example/audit"
+  },
+  "runtime": {
+    "initialCash": 1000,
+    "maxAbsPositionSize": 100,
+    "maxOrderSize": 50,
+    "aggressiveExitOnStrategyExit": true,
+    "cancelOpenOrdersOnHold": true,
+    "cancelOpenOrdersOnReject": true,
+    "strategyConfig": {
+      "minObservationCount": 2,
+      "minEdgeToEnter": 0.0001,
+      "minEdgeToQuote": 0.00005,
+      "minConfidenceToEnter": 0,
+      "minConfidenceToQuote": 0,
+      "maxSpread": 0.05
+    },
+    "riskConfig": {
+      "maxRiskPerTradeNotional": 100,
+      "maxNotionalExposure": 500,
+      "maxInventoryImbalance": 100,
+      "maxConcurrentOpenOrders": 4,
+      "maxDailyLoss": 500,
+      "maxLosingStreak": 10,
+      "rollingExpectancyMinTrades": 100,
+      "minTopBookDepth": 1,
+      "abnormalSpreadAbsolute": 0.1,
+      "noTradeBeforeExpiryHours": 0.05
+    },
+    "paperFillConfig": {
+      "minTouchesBeforeFill": 2,
+      "queuePriorityDelayMs": 1000,
+      "passiveParticipationRate": 0.5,
+      "minPartialFillSize": 1
+    }
+  }
+}

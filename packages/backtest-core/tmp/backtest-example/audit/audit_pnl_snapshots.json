@@ -1,0 +1,67 @@
+[
+  {
+    "id": 1,
+    "session_id": "example-session",
+    "run_label": "base",
+    "correlation_id": "base:1000",
+    "ts": 1000,
+    "iso_ts": "1970-01-01T00:00:01.000Z",
+    "realized_pnl": 0,
+    "unrealized_pnl": 0,
+    "equity": 1000,
+    "drawdown": 0,
+    "payload_json": "{\"label\":\"base\"}"
+  },
+  {
+    "id": 2,
+    "session_id": "example-session",
+    "run_label": "base",
+    "correlation_id": "base:3000",
+    "ts": 3000,
+    "iso_ts": "1970-01-01T00:00:03.000Z",
+    "realized_pnl": 0,
+    "unrealized_pnl": 0,
+    "equity": 1000,
+    "drawdown": 0,
+    "payload_json": "{\"label\":\"base\"}"
+  },
+  {
+    "id": 3,
+    "session_id": "example-session",
+    "run_label": "base",
+    "correlation_id": "base:5000",
+    "ts": 5000,
+    "iso_ts": "1970-01-01T00:00:05.000Z",
+    "realized_pnl": 0,
+    "unrealized_pnl": 0,
+    "equity": 1000,
+    "drawdown": 0,
+    "payload_json": "{\"label\":\"base\"}"
+  },
+  {
+    "id": 4,
+    "session_id": "example-session",
+    "run_label": "base",
+    "correlation_id": "base:7000",
+    "ts": 7000,
+    "iso_ts": "1970-01-01T00:00:07.000Z",
+    "realized_pnl": 0,
+    "unrealized_pnl": 0,
+    "equity": 1000,
+    "drawdown": 0,
+    "payload_json": "{\"label\":\"base\"}"
+  },
+  {
+    "id": 5,
+    "session_id": "example-session",
+    "run_label": "base",
+    "correlation_id": "base:9000",
+    "ts": 9000,
+    "iso_ts": "1970-01-01T00:00:09.000Z",
+    "realized_pnl": 0,
+    "unrealized_pnl": 0,
+    "equity": 1000,
+    "drawdown": 0,
+    "payload_json": "{\"label\":\"base\"}"
+  }
+]

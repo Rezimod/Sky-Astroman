@@ -1,0 +1,30 @@
+{
+  "name": "@polymarket-bot/backtest-core",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "polymarket-backtest": "./dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "backtest": "node dist/cli.js",
+    "backtest:dev": "tsx src/cli.ts",
+    "build": "tsc -p tsconfig.json",
+    "lint": "eslint src",
+    "test": "node --import tsx --test src/**/*.test.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@polymarket-bot/shared": "file:../shared"
+  }
+}
