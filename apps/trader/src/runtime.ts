@@ -8,9 +8,11 @@ import {
   initializeDatabase,
   loadTraderConfig,
   openDatabase,
+  sanitizeTraderConfig,
   SQLiteAuditRepository,
   type SQLiteConnection,
   type PaperTradingSnapshot,
+  type TraderPublicConfig,
   type TraderRuntimeSnapshot,
 } from "@polymarket-bot/shared";
 import {
@@ -113,6 +115,7 @@ export class TraderRuntime {
         () => this.getSnapshot(),
         () => this.marketScanner.getSnapshot(),
         () => this.getPaperSnapshot(),
+        () => this.getPublicConfig(),
       );
       this.server.listen(this.config.trader.port, this.config.trader.host, () => {
         this.logger.info("trader runtime listening", {
@@ -257,5 +260,9 @@ export class TraderRuntime {
 
   getPaperSnapshot(): PaperTradingSnapshot {
     return this.paperTrading.getSnapshot();
+  }
+
+  getPublicConfig(): TraderPublicConfig {
+    return sanitizeTraderConfig(this.config);
   }
 }

@@ -2,9 +2,10 @@ import {
   DEFAULT_MAKER_SIGNAL_CONFIG,
   DEFAULT_RISK_ENGINE_CONFIG,
   loadTraderConfig,
+  sanitizeTraderConfig,
   type MarketScannerSnapshot,
   type PaperTradingSnapshot,
-  type TraderConfig,
+  type TraderPublicConfig,
   type TraderRuntimeSnapshot,
 } from "@polymarket-bot/shared";
 
@@ -13,28 +14,6 @@ import { getWebRuntimeConfig } from "./runtime";
 
 function withTrailingSlash(value: string): string {
   return value.endsWith("/") ? value : `${value}/`;
-}
-
-function sanitizeTraderConfig(config: TraderConfig): DashboardTraderConfigModel {
-  return {
-    appEnv: config.appEnv,
-    runMode: config.runMode,
-    databaseUrl: config.databaseUrl,
-    dataDir: config.dataDir,
-    trader: {
-      host: config.trader.host,
-      port: config.trader.port,
-    },
-    polymarket: {
-      restUrl: config.polymarket.restUrl,
-      wsUrl: config.polymarket.wsUrl,
-      chainId: config.polymarket.chainId,
-      privateKeyConfigured: Boolean(config.polymarket.privateKey),
-      funderAddressConfigured: Boolean(config.polymarket.funderAddress),
-    },
-    risk: { ...config.risk },
-    scanner: { ...config.scanner },
-  };
 }
 
 function safeLoadTraderConfigModel(): DashboardTraderConfigModel {
@@ -79,10 +58,11 @@ async function fetchTraderJson<T>(
 
 export async function loadDashboardSnapshot(): Promise<DashboardSnapshot> {
   const runtimeConfig = getWebRuntimeConfig();
-  const [runtime, scanner, paper] = await Promise.all([
+  const [runtime, scanner, paper, config] = await Promise.all([
     fetchTraderJson<TraderRuntimeSnapshot>(runtimeConfig.traderBaseUrl, "runtime"),
     fetchTraderJson<MarketScannerSnapshot>(runtimeConfig.traderBaseUrl, "scanner"),
     fetchTraderJson<PaperTradingSnapshot>(runtimeConfig.traderBaseUrl, "paper"),
+    fetchTraderJson<TraderPublicConfig>(runtimeConfig.traderBaseUrl, "config"),
   ]);
 
   return {
@@ -92,16 +72,22 @@ export async function loadDashboardSnapshot(): Promise<DashboardSnapshot> {
     scanner: scanner.data,
     paper: paper.data,
     models: {
-      sourceLabel: "Shared backend models + web-side env resolution",
+      sourceLabel:
+        config.data !== null
+          ? "Shared backend models + trader runtime sanitized config"
+          : "Shared backend models + web-side fallback config resolution",
       notes: [
-        "Live merged config is not published by the trader runtime yet.",
+        ...(config.data === null
+          ? ["Live merged config could not be loaded from the trader runtime. Showing fallback values."]
+          : []),
         "Paper trading metrics are local mark-to-mid estimates and should not be treated as live execution results.",
       ],
-      traderConfig: safeLoadTraderConfigModel(),
+      traderConfig: config.data ?? safeLoadTraderConfigModel(),
       strategyDefaults: { ...DEFAULT_MAKER_SIGNAL_CONFIG },
       riskEngineDefaults: { ...DEFAULT_RISK_ENGINE_CONFIG },
     },
     errors: {
+      ...(config.error ? { config: config.error } : {}),
       ...(paper.error ? { paper: paper.error } : {}),
       ...(runtime.error ? { runtime: runtime.error } : {}),
       ...(scanner.error ? { scanner: scanner.error } : {}),

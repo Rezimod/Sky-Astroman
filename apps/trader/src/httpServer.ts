@@ -3,6 +3,7 @@ import { createServer, type IncomingMessage, type ServerResponse } from "node:ht
 import type {
   MarketScannerSnapshot,
   PaperTradingSnapshot,
+  TraderPublicConfig,
   TraderRuntimeSnapshot,
 } from "@polymarket-bot/shared";
 
@@ -17,6 +18,7 @@ export function createHttpServer(
   getSnapshot: () => TraderRuntimeSnapshot,
   getScannerSnapshot: () => MarketScannerSnapshot | null,
   getPaperSnapshot: () => PaperTradingSnapshot,
+  getPublicConfig: () => TraderPublicConfig,
 ) {
   return createServer((request: IncomingMessage, response: ServerResponse) => {
     const url = request.url ?? "/";
@@ -40,6 +42,11 @@ export function createHttpServer(
 
     if (url === "/paper") {
       writeJson(response, 200, getPaperSnapshot());
+      return;
+    }
+
+    if (url === "/config") {
+      writeJson(response, 200, getPublicConfig());
       return;
     }
 

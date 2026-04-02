@@ -51,6 +51,26 @@ export type TraderConfig = {
   };
 };
 
+export type TraderPublicConfig = {
+  appEnv: string;
+  runMode: RunMode;
+  databaseUrl: string;
+  dataDir: string;
+  trader: {
+    host: string;
+    port: number;
+  };
+  polymarket: {
+    restUrl: string;
+    wsUrl: string;
+    chainId: number;
+    privateKeyConfigured: boolean;
+    funderAddressConfigured: boolean;
+  };
+  risk: TraderConfig["risk"];
+  scanner: TraderConfig["scanner"];
+};
+
 function requireString(env: EnvRecord, key: string, fallback?: string): string {
   const value = env[key] ?? fallback;
 
@@ -117,7 +137,7 @@ export function loadTraderConfig(env: EnvRecord = process.env): TraderConfig {
     dataDir: requireString(env, "DATA_DIR", "./data"),
     trader: {
       host: requireString(env, "TRADER_HOST", "0.0.0.0"),
-      port: parseNumber(env, "TRADER_PORT", 4000),
+      port: parseNumber(env, "TRADER_PORT", parseNumber(env, "PORT", 4000)),
     },
     polymarket: {
       restUrl: requireString(env, "POLYMARKET_REST_URL", "https://clob.polymarket.com"),
@@ -159,6 +179,31 @@ export function loadTraderConfig(env: EnvRecord = process.env): TraderConfig {
         updateFrequency: parseNumber(env, "SCANNER_WEIGHT_UPDATE_FREQUENCY", 0.12),
         expiry: parseNumber(env, "SCANNER_WEIGHT_EXPIRY", 0.08),
       },
+    },
+  };
+}
+
+export function sanitizeTraderConfig(config: TraderConfig): TraderPublicConfig {
+  return {
+    appEnv: config.appEnv,
+    runMode: config.runMode,
+    databaseUrl: config.databaseUrl,
+    dataDir: config.dataDir,
+    trader: {
+      host: config.trader.host,
+      port: config.trader.port,
+    },
+    polymarket: {
+      restUrl: config.polymarket.restUrl,
+      wsUrl: config.polymarket.wsUrl,
+      chainId: config.polymarket.chainId,
+      privateKeyConfigured: Boolean(config.polymarket.privateKey),
+      funderAddressConfigured: Boolean(config.polymarket.funderAddress),
+    },
+    risk: { ...config.risk },
+    scanner: {
+      ...config.scanner,
+      weights: { ...config.scanner.weights },
     },
   };
 }

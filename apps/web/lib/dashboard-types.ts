@@ -3,57 +3,11 @@ import type {
   MarketScannerSnapshot,
   PaperTradingSnapshot,
   RiskEngineConfig,
-  RunMode,
+  TraderPublicConfig,
   TraderRuntimeSnapshot,
 } from "@polymarket-bot/shared";
 
-export type DashboardTraderConfigModel = {
-  appEnv: string;
-  runMode: RunMode;
-  databaseUrl: string;
-  dataDir: string;
-  trader: {
-    host: string;
-    port: number;
-  };
-  polymarket: {
-    restUrl: string;
-    wsUrl: string;
-    chainId: number;
-    privateKeyConfigured: boolean;
-    funderAddressConfigured: boolean;
-  };
-  risk: {
-    maxNotionalPerMarket: number;
-    maxGrossExposure: number;
-    maxDailyLoss: number;
-    maxOpenOrders: number;
-    allowTakerExitsOnly: boolean;
-  };
-  scanner: {
-    enabled: boolean;
-    refreshIntervalMs: number;
-    marketLimit: number;
-    maxCandidates: number;
-    minLiquidity: number;
-    minVolume24hr: number;
-    minTopBookDepth: number;
-    maxSpreadCents: number;
-    minHoursToExpiry: number;
-    maxHoursToExpiry: number;
-    preferredHoursToExpiry: number;
-    minUpdateFrequencyPerMinute: number;
-    activityWindowMs: number;
-    weights: {
-      liquidity: number;
-      volume24hr: number;
-      topBookDepth: number;
-      spread: number;
-      updateFrequency: number;
-      expiry: number;
-    };
-  };
-};
+export type DashboardTraderConfigModel = TraderPublicConfig;
 
 export type DashboardConfigModels = {
   sourceLabel: string;
@@ -71,6 +25,7 @@ export type DashboardSnapshot = {
   paper: PaperTradingSnapshot | null;
   models: DashboardConfigModels;
   errors: {
+    config?: string;
     paper?: string;
     runtime?: string;
     scanner?: string;
